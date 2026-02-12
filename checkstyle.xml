@@ -4,20 +4,21 @@
         "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <module name="Checker">
+
+    <module name="LineLength">
+        <property name="max" value="120"/>
+    </module>
+
     <module name="TreeWalker">
 
-        <module name="LineLength">
-            <property name="max" value="120"/>
-        </module>
+        <module name="com.puppycrawl.tools.checkstyle.checks.naming.MethodNameCheck"/>
+        <module name="com.puppycrawl.tools.checkstyle.checks.naming.TypeNameCheck"/>
+        <module name="com.puppycrawl.tools.checkstyle.checks.naming.PackageNameCheck"/>
 
-        <module name="MethodName"/>
-        <module name="ClassName"/>
-        <module name="PackageName"/>
+        <module name="com.puppycrawl.tools.checkstyle.checks.imports.AvoidStarImportCheck"/>
+        <module name="com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheck"/>
 
-        <module name="AvoidStarImport"/>
-        <module name="UnusedImports"/>
-
-        <module name="NeedBraces"/>
+        <module name="com.puppycrawl.tools.checkstyle.checks.blocks.NeedBracesCheck"/>
 
     </module>
 </module>
