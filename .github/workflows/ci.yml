@@ -39,6 +39,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
         #adjust jar name and path as needed
-          name: recommendation-engine-jar
+          name: tv-looker-jar
           path: target/*.jar
           retention-days: 7
