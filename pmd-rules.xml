@@ -26,7 +26,6 @@
     <rule ref="category/java/errorprone.xml/ReturnFromFinallyBlock"/>
 
     <!-- METRICS -->
-    <rule ref="category/java/design.xml/CouplingBetweenObjects"/>
-    <rule ref="category/java/design.xml/TooManyMethods"/>
+    <!-- (removidas duplicadas; ya están en DESIGN) -->
 
 </ruleset>
