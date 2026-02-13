@@ -11,14 +11,14 @@
 
     <module name="TreeWalker">
 
-        <module name="com.puppycrawl.tools.checkstyle.checks.naming.MethodNameCheck"/>
-        <module name="com.puppycrawl.tools.checkstyle.checks.naming.TypeNameCheck"/>
-        <module name="com.puppycrawl.tools.checkstyle.checks.naming.PackageNameCheck"/>
+        <module name="MethodName"/>
+        <module name="TypeName"/>
+        <module name="PackageName"/>
 
-        <module name="com.puppycrawl.tools.checkstyle.checks.imports.AvoidStarImportCheck"/>
-        <module name="com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheck"/>
+        <module name="AvoidStarImport"/>
+        <module name="UnusedImports"/>
 
-        <module name="com.puppycrawl.tools.checkstyle.checks.blocks.NeedBracesCheck"/>
+        <module name="NeedBraces"/>
 
     </module>
 </module>
