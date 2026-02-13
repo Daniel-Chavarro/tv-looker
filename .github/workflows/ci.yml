@@ -38,7 +38,7 @@ jobs:
       - name: 📤 Upload artifact
         uses: actions/upload-artifact@v4
         with:
-        #adjust jar name and path as needed
+          #adjust jar name and path as needed
           name: tv-looker-jar
           path: target/*.jar
           retention-days: 7
