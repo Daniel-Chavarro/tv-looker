@@ -6,7 +6,7 @@
          https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
 
     <description>
-        PMD rules tailored for the Recommendation Engine project.
+        PMD rules tailored for the tv-looker application.
     </description>
 
     <!-- DESIGN -->
