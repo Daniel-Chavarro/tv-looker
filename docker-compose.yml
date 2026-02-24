@@ -10,7 +10,8 @@ services:
     ports:
       - "3306:3306"
     volumes:
-
+      - pgdata:/var/lib/postgresql/data
+      
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres", "-d", "tv-looker"]
       interval: 5s
