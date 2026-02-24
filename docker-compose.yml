@@ -1,0 +1,18 @@
+services:
+  mysql:
+    image: postgres:latest
+    container_name: postgres/tv-looker
+    restart: always
+    environment:
+      POSTGRES_USER: tv-looker-admin
+      POSTGRES_PASSWORD: this-is-a-super-secure-password123
+      POSTGRES_DB: tv-looker
+    ports:
+      - "3306:3306"
+    volumes:
+
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "tv-looker"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
