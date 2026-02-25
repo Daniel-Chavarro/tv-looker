@@ -27,7 +27,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class Reviews {
+public class Review{
     /**
      * The unique identifier for the review, generated as a Long.
      * This field is the primary key of the "reviews" table and is not updatable or nullable.
