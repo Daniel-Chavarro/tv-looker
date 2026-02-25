@@ -8,7 +8,8 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
+  checks: write
 
 jobs:
   build-test-quality:
@@ -29,8 +30,17 @@ jobs:
       - name: 🔍 Validate Maven project
         run: mvn validate
 
-      - name: 🧪 Run tests + Checkstyle + PMD
-        run: mvn clean verify
+      - name: 🧪 Run tests with H2 + Checkstyle + PMD
+        run: mvn clean verify -Dspring.profiles.active=test
+
+      - name: 📊 Publish test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: true
 
       - name: 📦 Package application
         run: mvn package -DskipTests
