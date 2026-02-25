@@ -65,7 +65,7 @@ docker-compose down -v
 scripts/cleanup.bat
 
 # Linux/Mac
-.scripts/cleanup.sh
+./scripts/cleanup.sh
 ```
 
 ## 🧪 Ejecutar Tests

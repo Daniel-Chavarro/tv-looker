@@ -56,8 +56,8 @@ public class ListFavorite {
     private String description;
 
     /**
-     * The user associated with the list of favorites, represented as a UUID.
-     * This field is a foreign key referencing the "users" table and cannot be null.
+     * The user associated with the list of favorites. This field is a foreign key referencing the "users" table and
+     * cannot be null.
      */
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id_fk", nullable = false)
