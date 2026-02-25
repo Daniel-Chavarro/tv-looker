@@ -1,9 +1,24 @@
 package org.tvl.tvlooker.domain.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Represents a list of favorites in the system, with fields for the list's ID, name, description, and associated user.
@@ -11,6 +26,11 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "list_favorites")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
 public class ListFavorite {
     /**
      * The unique identifier for the list of favorites, generated as a Long.
@@ -41,11 +61,13 @@ public class ListFavorite {
      */
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id_fk", nullable = false)
-    private UUID userId;
+    private User user;
 
     /**
      * The set of items associated with the list of favorites, represented as a many-to-many relationship.
-     * This field is mapped to the "favorite_items" join table, which contains foreign keys referencing both the "list_favorites" and "items" tables.
+     * This field is mapped to the "favorite_items" join table, which contains foreign keys referencing both the
+     * "list_favorites" and "items" tables.
+     * <p>
      * The relationship is lazily loaded and cascades persist operations.
      */
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)

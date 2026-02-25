@@ -1,7 +1,23 @@
 package org.tvl.tvlooker.domain.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
 import java.math.BigDecimal;
@@ -11,7 +27,8 @@ import java.util.Set;
 
 /**
  * Represents an item in the system, which can be either a movie or a TV show.
- * The item is identified by a unique ID and contains information such as title, overview, release date, popularity, and vote average.
+ * The item is identified by a unique ID and contains information such as title, overview, release date, popularity, and
+ * vote average.
  */
 @Entity
 @Table(name = "items")
@@ -49,7 +66,7 @@ public class Item {
     /**
      * The title of the item, stored as a string.
      */
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title", nullable = false)
     private String title;
 
     /**

@@ -1,11 +1,24 @@
 package org.tvl.tvlooker.domain.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * Represents a review in the system, containing information about the review text, score, the item being reviewed, and the user who wrote the review.
- * Each review is associated with a specific item and user, and contains a score that represents the rating given by the user.
+ * Represents a review in the system, containing information about the review text, score, the item being reviewed, and
+ * the user who wrote the review. Each review is associated with a specific item and user, and contains a score that
+ * represents the rating given by the user.
  */
 @Entity
 @Table(name = "reviews")
