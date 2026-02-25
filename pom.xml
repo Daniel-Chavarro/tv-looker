@@ -118,6 +118,49 @@
         </dependency>
     </dependencies>
 
+    <!-- ========================================= -->
+    <!-- PERFILES MAVEN                           -->
+    <!-- ========================================= -->
+    <profiles>
+        <!-- Perfil DEFAULT: Desarrollo local con PostgreSQL -->
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spring.profiles.active>default</spring.profiles.active>
+            </properties>
+        </profile>
+
+        <!-- Perfil TEST: Pruebas con H2 en memoria -->
+        <profile>
+            <id>test</id>
+            <activation>
+                <property>
+                    <name>skipTests</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <properties>
+                <spring.profiles.active>test</spring.profiles.active>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <spring.profiles.active>test</spring.profiles.active>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -172,6 +215,7 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.asciidoctor</groupId>
                 <artifactId>asciidoctor-maven-plugin</artifactId>
