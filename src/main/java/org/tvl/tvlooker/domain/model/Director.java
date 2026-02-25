@@ -22,7 +22,7 @@ import lombok.Setter;
 @Setter
 public class Director {
     /**
-     * The unique identifier for the director, generated as a BigInteger.
+     * The unique identifier for the director, generated as a Long.
      * This field is the primary key of the "directors" table and is not updatable or nullable.
      */
     @Id
@@ -37,7 +37,7 @@ public class Director {
     private String name;
 
     /**
-     * The TMDB ID of the director, stored as a BigInteger.
+     * The TMDB ID of the director, stored as a Long.
      * This field is unique and cannot be null.
      */
     @Column(name = "tmdb_id", nullable = false, unique = true)
