@@ -63,7 +63,6 @@ echo.
 echo [ADVERTENCIA] Esto eliminara TODOS los datos de la base de datos
 set /p confirm="Estas seguro? Escribe SI (en mayusculas): "
 echo.
-echo DEBUG: Recibido [%confirm%]
 if "%confirm%"=="SI" (
     echo Confirmacion aceptada. Eliminando...
     echo.

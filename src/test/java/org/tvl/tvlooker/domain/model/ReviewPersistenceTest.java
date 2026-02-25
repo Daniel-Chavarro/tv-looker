@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
@@ -18,20 +19,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Pruebas de persistencia para la entidad Review utilizando JDBC.
- * Estas pruebas verifican que las entidades se persistan correctamente en la base de datos
- * sin utilizar repositorios JPA, usando directamente JdbcTemplate.
+ * Test class for testing the persistence of model entities using JDBC in a Spring Boot application.
  *
  * @author TV Looker Team
  * @version 1.0
  * @since 2026-02-25
  */
 @SpringBootTest
+@DisplayName("Pruebas de Persistencia para Review con JDBC")
+@ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Transactional
 public class ReviewPersistenceTest {
@@ -44,23 +43,22 @@ public class ReviewPersistenceTest {
     private Long testReviewId;
 
     /**
-     * Configuración inicial antes de cada prueba.
-     * Limpia las tablas y prepara datos de prueba.
+     * Initial setup before each test, ensuring a clean state for the database.
      */
     @BeforeEach
     void setUp() {
-        // Limpiar tablas antes de cada prueba
+
         jdbcTemplate.execute("DELETE FROM reviews");
         jdbcTemplate.execute("DELETE FROM items");
         jdbcTemplate.execute("DELETE FROM users");
 
-        // Reiniciar secuencias (H2)
+
         jdbcTemplate.execute("ALTER TABLE reviews ALTER COLUMN review_id_pk RESTART WITH 1");
         jdbcTemplate.execute("ALTER TABLE items ALTER COLUMN item_id_pk RESTART WITH 1");
     }
 
     /**
-     * Limpieza después de cada prueba.
+     * Cleanup after each test, removing any test data from the database to maintain isolation between tests.
      */
     @AfterEach
     void tearDown() {
@@ -71,23 +69,24 @@ public class ReviewPersistenceTest {
     }
 
     /**
-     * Prueba la inserción de un usuario en la base de datos usando JDBC.
+     * Test the insertion of a user into the database using JDBC, ensuring that the user is persisted correctly and can
+     * be retrieved with the expected data.
      */
     @Test
-    @DisplayName("Debe persistir un usuario correctamente usando JDBC")
+    @DisplayName("Has to persist a user correctly using JDBC")
     void testPersistUser() {
-        // Arrange
+
         String username = "testuser";
         String password = "password123";
         Timestamp createdAt = new Timestamp(System.currentTimeMillis());
 
-        // Act
+
         jdbcTemplate.update(
                 "INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
                 UUID.randomUUID(), username, password, createdAt
         );
 
-        // Assert
+
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM users WHERE username = ?",
                 Integer.class,
@@ -95,9 +94,8 @@ public class ReviewPersistenceTest {
         );
 
         assertNotNull(count);
-        assertEquals(1, count, "Debe existir exactamente un usuario con ese username");
+        assertEquals(1, count, "Must exist exactly one user with that username");
 
-        // Verificar los datos del usuario
         Map<String, Object> user = jdbcTemplate.queryForMap(
                 "SELECT username, password, created_at FROM users WHERE username = ?",
                 username
@@ -109,12 +107,12 @@ public class ReviewPersistenceTest {
     }
 
     /**
-     * Prueba la inserción de un item (película/serie) en la base de datos usando JDBC.
+     * Test the insertion of an item into the database using JDBC, ensuring that the item is persisted correctly
      */
     @Test
-    @DisplayName("Debe persistir un item correctamente usando JDBC")
+    @DisplayName("Has to persist an item correctly using JDBC")
     void testPersistItem() {
-        // Arrange
+
         Long tmdbId = 12345L;
         String tmdbType = "MOVIE";
         String title = "The Matrix";
@@ -124,14 +122,14 @@ public class ReviewPersistenceTest {
         BigDecimal voteAverage = new BigDecimal("8.71");
         Timestamp createdAt = new Timestamp(System.currentTimeMillis());
 
-        // Act
+
         jdbcTemplate.update(
                 "INSERT INTO items (tmdb_id, tmdb_type, title, overview, release_date, popularity, vote_average, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 tmdbId, tmdbType, title, overview, releaseDate, popularity, voteAverage, createdAt
         );
 
-        // Assert
+
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM items WHERE tmdb_id = ?",
                 Integer.class,
@@ -139,9 +137,9 @@ public class ReviewPersistenceTest {
         );
 
         assertNotNull(count);
-        assertEquals(1, count, "Debe existir exactamente un item con ese tmdb_id");
+        assertEquals(1, count, "Should exist exactly one item with that TMDB ID");
 
-        // Verificar los datos del item
+
         Map<String, Object> item = jdbcTemplate.queryForMap(
                 "SELECT tmdb_id, tmdb_type, title, overview, release_date, popularity, vote_average FROM items WHERE tmdb_id = ?",
                 tmdbId
@@ -155,12 +153,12 @@ public class ReviewPersistenceTest {
     }
 
     /**
-     * Prueba la inserción de una review completa con usuario e item usando JDBC.
+     * Test the insertion of a complete review into the database using JDBC, ensuring that the review is persisted
+     * correctly and that the relationships with the user and item are maintained.
      */
     @Test
-    @DisplayName("Debe persistir una review completa con usuario e item usando JDBC")
+    @DisplayName("Must persist a complete review with user and item using JDBC")
     void testPersistCompleteReview() {
-        // Arrange - Crear usuario
         UUID userId = UUID.randomUUID();
         String username = "reviewer123";
         String password = "securepass";
@@ -171,7 +169,7 @@ public class ReviewPersistenceTest {
                 userId, username, password, userCreatedAt
         );
 
-        // Arrange - Crear item
+
         Long tmdbId = 550L;
         String tmdbType = "MOVIE";
         String title = "Fight Club";
@@ -187,14 +185,14 @@ public class ReviewPersistenceTest {
                 tmdbId, tmdbType, title, overview, releaseDate, popularity, voteAverage, itemCreatedAt
         );
 
-        // Obtener el ID generado del item
+
         Long itemId = jdbcTemplate.queryForObject(
                 "SELECT item_id_pk FROM items WHERE tmdb_id = ?",
                 Long.class,
                 tmdbId
         );
 
-        // Arrange - Crear review
+
         String reviewText = "Una película extraordinaria que te hace reflexionar sobre la sociedad moderna.";
         int score = 9;
 
@@ -204,7 +202,7 @@ public class ReviewPersistenceTest {
                 reviewText, score, itemId, userId
         );
 
-        // Assert - Verificar que la review se insertó
+
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM reviews WHERE item_id_fk = ? AND user_id_fk = ?",
                 Integer.class,
@@ -212,7 +210,7 @@ public class ReviewPersistenceTest {
         );
 
         assertNotNull(count);
-        assertEquals(1, count, "Debe existir exactamente una review para ese item y usuario");
+        assertEquals(1, count, "Should exist exactly one review for that item and user");
 
         // Verificar los datos de la review con JOIN
         Map<String, Object> result = jdbcTemplate.queryForMap(
@@ -231,12 +229,12 @@ public class ReviewPersistenceTest {
     }
 
     /**
-     * Prueba la persistencia de múltiples reviews para el mismo item.
+     * Test the insertion of multiple reviews for the same item.
      */
     @Test
-    @DisplayName("Debe persistir múltiples reviews para el mismo item")
+    @DisplayName("Must persist multiple reviews for the same item and calculate average score correctly")
     void testPersistMultipleReviewsForSameItem() {
-        // Arrange - Crear item
+
         Long tmdbId = 680L;
         String tmdbType = "MOVIE";
         String title = "Pulp Fiction";
@@ -255,7 +253,6 @@ public class ReviewPersistenceTest {
                 tmdbId
         );
 
-        // Arrange - Crear usuarios
         UUID userId1 = UUID.randomUUID();
         UUID userId2 = UUID.randomUUID();
         UUID userId3 = UUID.randomUUID();
@@ -267,25 +264,22 @@ public class ReviewPersistenceTest {
                 userId2, "user2", "pass2", userCreatedAt);
         jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
                 userId3, "user3", "pass3", userCreatedAt);
-
-        // Act - Insertar múltiples reviews
+        
         jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
                 "Obra maestra del cine", 10, itemId, userId1);
         jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
                 "Muy buena pero no perfecta", 8, itemId, userId2);
         jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
                 "Excelente narrativa", 9, itemId, userId3);
-
-        // Assert
+        
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM reviews WHERE item_id_fk = ?",
                 Integer.class,
                 itemId
         );
 
-        assertEquals(3, count, "Deben existir 3 reviews para el item");
-
-        // Verificar el promedio de scores
+        assertEquals(3, count, "Should exist exactly three reviews for that item");
+        
         Double avgScore = jdbcTemplate.queryForObject(
                 "SELECT AVG(CAST(score AS DOUBLE)) FROM reviews WHERE item_id_fk = ?",
                 Double.class,
@@ -293,16 +287,17 @@ public class ReviewPersistenceTest {
         );
 
         assertNotNull(avgScore);
-        assertEquals(9.0, avgScore, 0.1, "El promedio de scores debe ser 9.0");
+        assertEquals(9.0, avgScore, 0.1, 
+                "The average score should be 9.0 based on the inserted reviews");
     }
 
     /**
-     * Prueba la persistencia de una review con score mínimo y sin texto.
+     * Test the insertion of a review without text.
      */
     @Test
-    @DisplayName("Debe persistir una review sin texto (solo score)")
+    @DisplayName("Should allow inserting a review without text (null review_text)")
     void testPersistReviewWithoutText() {
-        // Arrange
+        
         UUID userId = UUID.randomUUID();
         jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
                 userId, "quickrater", "pass", new Timestamp(System.currentTimeMillis()));
@@ -322,27 +317,25 @@ public class ReviewPersistenceTest {
                 tmdbId
         );
 
-        // Act - Insertar review sin texto (NULL)
         jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
                 null, 10, itemId, userId);
 
-        // Assert
         Map<String, Object> review = jdbcTemplate.queryForMap(
                 "SELECT review_text, score FROM reviews WHERE item_id_fk = ? AND user_id_fk = ?",
                 itemId, userId
         );
 
-        assertEquals(null, review.get("review_text"), "El texto de la review debe ser null");
-        assertEquals(10, review.get("score"), "El score debe ser 10");
+        assertNull(review.get("review_text"), "The review_text should be null");
+        assertEquals(10, review.get("score"), "The score should be 10");
     }
 
     /**
-     * Prueba la integridad referencial - no debe permitir insertar una review sin usuario válido.
+     * Test the insertion of a review with an invalid user ID, expecting a foreign key constraint violation.
      */
     @Test
-    @DisplayName("Debe fallar al insertar review con usuario inexistente")
+    @DisplayName("Should fail to insert a review with an invalid user ID (foreign key constraint violation)")
     void testFailPersistReviewWithInvalidUser() {
-        // Arrange - Crear solo el item, sin usuario
+
         Long tmdbId = 278L;
         jdbcTemplate.update(
                 "INSERT INTO items (tmdb_id, tmdb_type, title, overview, release_date, popularity, vote_average, created_at) " +
@@ -360,30 +353,28 @@ public class ReviewPersistenceTest {
 
         UUID fakeUserId = UUID.randomUUID();
 
-        // Act & Assert - Debe lanzar una excepción
+
         try {
             jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
                     "Esta review no debería insertarse", 5, itemId, fakeUserId);
 
-            // Si llegamos aquí, la prueba falla porque debería haber lanzado una excepción
-            assertTrue(false, "Debería haber lanzado una excepción por violación de clave foránea");
+            fail("Should have thrown an exception due to foreign key constraint violation");
         } catch (Exception e) {
-            // Verificar que es una excepción de integridad referencial
             String errorMessage = e.getMessage().toLowerCase();
             assertTrue(errorMessage.contains("foreign key") ||
                       errorMessage.contains("referential integrity") ||
                       errorMessage.contains("constraint"),
-                    "Debe ser una excepción de integridad referencial");
+                    "Should be a foreign key constraint violation error");
         }
     }
 
     /**
-     * Prueba consultas complejas con múltiples tablas.
+     * Test the execution of complex queries with JOINs to retrieve reviews along with user and item information
      */
     @Test
-    @DisplayName("Debe ejecutar consultas complejas con JOINs correctamente")
+    @DisplayName("Should execute complex queries with JOINs to retrieve reviews with user and item information")
     void testComplexQueryWithJoins() {
-        // Arrange - Crear datos de prueba
+
         UUID userId1 = UUID.randomUUID();
         UUID userId2 = UUID.randomUUID();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -393,7 +384,7 @@ public class ReviewPersistenceTest {
         jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
                 userId2, "critic2", "pass", timestamp);
 
-        // Crear dos items
+
         jdbcTemplate.update(
                 "INSERT INTO items (tmdb_id, tmdb_type, title, overview, release_date, popularity, vote_average, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -410,7 +401,6 @@ public class ReviewPersistenceTest {
         Long itemId1 = jdbcTemplate.queryForObject("SELECT item_id_pk FROM items WHERE tmdb_id = ?", Long.class, 101L);
         Long itemId2 = jdbcTemplate.queryForObject("SELECT item_id_pk FROM items WHERE tmdb_id = ?", Long.class, 102L);
 
-        // Crear reviews
         jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
                 "Mind-bending", 9, itemId1, userId1);
         jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
@@ -418,7 +408,6 @@ public class ReviewPersistenceTest {
         jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
                 "Great movie", 8, itemId1, userId2);
 
-        // Act - Consulta compleja: obtener todas las reviews con información del usuario e item
         List<Map<String, Object>> results = jdbcTemplate.queryForList(
                 "SELECT u.username, i.title, i.tmdb_type, r.review_text, r.score " +
                 "FROM reviews r " +
@@ -427,24 +416,22 @@ public class ReviewPersistenceTest {
                 "ORDER BY r.score DESC"
         );
 
-        // Assert
+        
         assertNotNull(results);
-        assertEquals(3, results.size(), "Deben existir 3 reviews en total");
+        assertEquals(3, results.size(), "Should retrieve three reviews with JOINs");
 
-        // Verificar el primer resultado (mayor score)
-        Map<String, Object> topReview = results.get(0);
+        Map<String, Object> topReview = results.getFirst();
         assertEquals(10, topReview.get("score"));
         assertEquals("Best TV show ever", topReview.get("review_text"));
         assertEquals("Breaking Bad", topReview.get("title"));
     }
 
     /**
-     * Prueba la actualización de una review existente.
+     * Test the update of an existing review.
      */
     @Test
-    @DisplayName("Debe actualizar una review existente correctamente")
+    @DisplayName("Should update an existing review correctly")
     void testUpdateReview() {
-        // Arrange - Crear datos iniciales
         UUID userId = UUID.randomUUID();
         jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
                 userId, "updater", "pass", new Timestamp(System.currentTimeMillis()));
@@ -467,7 +454,6 @@ public class ReviewPersistenceTest {
                 Long.class, itemId, userId
         );
 
-        // Act - Actualizar la review
         String updatedText = "Updated review after second viewing";
         int updatedScore = 9;
 
@@ -476,7 +462,7 @@ public class ReviewPersistenceTest {
                 updatedText, updatedScore, reviewId
         );
 
-        // Assert
+        
         Map<String, Object> review = jdbcTemplate.queryForMap(
                 "SELECT review_text, score FROM reviews WHERE review_id_pk = ?",
                 reviewId
@@ -487,12 +473,12 @@ public class ReviewPersistenceTest {
     }
 
     /**
-     * Prueba la eliminación de una review.
+     * Test the deletion of a review.
      */
     @Test
-    @DisplayName("Debe eliminar una review correctamente")
+    @DisplayName("Should delete a review correctly and maintain data integrity")
     void testDeleteReview() {
-        // Arrange
+        
         UUID userId = UUID.randomUUID();
         jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
                 userId, "deleter", "pass", new Timestamp(System.currentTimeMillis()));
@@ -515,25 +501,23 @@ public class ReviewPersistenceTest {
                 Long.class, itemId, userId
         );
 
-        // Act - Eliminar la review
         jdbcTemplate.update("DELETE FROM reviews WHERE review_id_pk = ?", reviewId);
 
-        // Assert
+        
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM reviews WHERE review_id_pk = ?",
                 Integer.class,
                 reviewId
         );
 
-        assertEquals(0, count, "La review debe haber sido eliminada");
+        assertEquals(0, count, "The review should have been deleted");
 
-        // Verificar que el usuario e item siguen existiendo
         Integer userCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM users WHERE user_id_pk = ?",
                 Integer.class,
                 userId
         );
-        assertEquals(1, userCount, "El usuario debe seguir existiendo");
+        assertEquals(1, userCount, "The user should still exist after review deletion");
     }
 }
 
