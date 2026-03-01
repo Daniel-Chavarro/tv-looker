@@ -25,7 +25,4 @@
     <rule ref="category/java/errorprone.xml/EmptyCatchBlock"/>
     <rule ref="category/java/errorprone.xml/ReturnFromFinallyBlock"/>
 
-    <!-- METRICS -->
-    <!-- (removidas duplicadas; ya están en DESIGN) -->
-
 </ruleset>
