@@ -35,3 +35,5 @@ build/
 ## Agents ##
 .agents/
 skills-lock.json
+.agent
+.claude
