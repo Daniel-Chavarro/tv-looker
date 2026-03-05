@@ -276,7 +276,7 @@ public List<ScoredItem> recommend(User user, RecommendationContext context) {
 
 **Returns:** `List<Item>` of valid candidates
 
-**Special Case:** If no candidates remain, return empty list (engine will return empty recommendations)
+**Special Case:** If no candidates remain, throw `NoCandidatesAvailableException`. 
 
 #### 3. executeStrategies(User user, List<Item> candidates, RecommendationContext context)
 
