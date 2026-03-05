@@ -9,10 +9,7 @@ import org.tvl.tvlooker.domain.model.entity.Item;
 
 
 /**
- * ScoredItem is a simple data structure that holds a User, a score, and an explanation for that score.
- * It is used to represent the result of a recommendation or evaluation process, where each User is assigned a score
- * based on certain criteria. The explanation field provides additional context for why the User received that
- * particular score.
+ * Represents a scored recommendation result.
  */
 @AllArgsConstructor
 @NoArgsConstructor
