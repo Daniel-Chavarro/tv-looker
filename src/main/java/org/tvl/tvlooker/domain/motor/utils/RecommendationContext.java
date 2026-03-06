@@ -74,4 +74,13 @@ public class RecommendationContext {
     public void registerDataProvider(DataProvider<?> dataProvider, Class<?> structure){
         DATA_PROVIDERS.put(structure, dataProvider);
     }
+
+    /**
+     * Checks if the users or items data in the context is not null.
+     *
+     * @return true if either users or items is not null, false otherwise.
+     */
+    public boolean checkDataNotNull(){
+        return users != null || items != null;
+    }
 }

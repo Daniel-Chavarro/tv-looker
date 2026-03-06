@@ -18,3 +18,5 @@ public class RecommendationConfig {
             AggregationStrategy aggregation) {
         return new HybridRecommendationEngine(strategies, aggregation);
     }
+}
+

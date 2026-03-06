@@ -1,5 +1,6 @@
 package org.tvl.tvlooker.domain.motor;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
@@ -22,6 +23,7 @@ import java.util.Map;
  */
 @Setter
 @Getter
+@AllArgsConstructor
 public class HybridRecommendationEngine implements RecommendationEngine {
     /** A list of recommendation strategies that the engine will use to generate recommendations. */
     private  List<RecommendationStrategy> strategies;
@@ -62,11 +64,21 @@ public class HybridRecommendationEngine implements RecommendationEngine {
         return postProcess(aggregated);
     }
 
+    /** Validates the inputs to the recommend method, ensuring that the user, context, strategies, and aggregation
+     * strategy are all properly set before attempting to generate recommendations. This method throws appropriate
+     * exceptions if any of the required inputs are missing or invalid.
+     *
+     * @param user    The user for whom the recommendations are being generated.
+     * @param context The recommendation context that contains relevant data such as users, items, interactions, and
+     *                registered data providers.
+     * @throws IllegalArgumentException If the user or context is null, or if the context does not contain necessary
+     * @throws IllegalStateException If the strategies list is null or empty, or if the aggregation strategy is not set.
+     */
     private void validateInputs(User user, RecommendationContext context) {
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");
         }
-        if (context == null) {
+        if (context == null || context.checkDataNotNull()) {
             throw new IllegalArgumentException("RecommendationContext cannot be null");
         }
         if (strategies == null || strategies.isEmpty()) {
@@ -84,6 +96,19 @@ public class HybridRecommendationEngine implements RecommendationEngine {
         return context.getItems();
     }
 
+    /** Executes all configured recommendation strategies for the given user and candidate items, while handling any
+     * exceptions that may occur during the execution of each strategy. The method collects the results from each
+     * strategy and logs the outcomes, including any failures. If all strategies fail, it throws a
+     * NoRecommendationsAvailableException.
+     *
+     * @param user       The user for whom the recommendations are being generated.
+     * @param candidates The list of candidate items that are valid for recommendation.
+     * @param context    The recommendation context that contains relevant data such as users, items, interactions, and
+     *                   registered data providers.
+     * @return A map where the key is the strategy name and the value is the list of scored items returned by that
+     *         strategy.
+     * @throws NoRecommendationsAvailableException If all recommendation strategies fail to produce results.
+     */
     private Map<String, List<ScoredItem>> executeStrategies(
             User user,
             List<Item> candidates,
@@ -115,10 +140,39 @@ public class HybridRecommendationEngine implements RecommendationEngine {
         return results;
     }
 
+    /** Post-processes the aggregated list of scored items to ensure that there are no duplicate items and that only the
+     * highest-scoring version of each item is retained. This method iterates through the list of scored items, checks
+     * for duplicates based on the item, and removes any lower-scoring duplicates while keeping the one with the
+     * highest score. The resulting list contains unique items with their best scores.
+     *
+     * @param items The list of scored items to be post-processed.
+     * @return A list of scored items with duplicates removed, retaining only the highest-scoring version of each item.
+     */
     private List<ScoredItem> postProcess(List<ScoredItem> items) {
-        // For simplicity, we return the aggregated list as is.
-        // In a real implementation, this could involve sorting, limiting the number of recommendations,
-        // adding explanations, etc.
+        Map<Item, ScoredItem> seenItems = new HashMap<>();
+
+        for (ScoredItem scoredItem : items) {
+            if (scoredItem.getScore() < 0 || scoredItem.getScore() > 1) {
+                logger.warn("Scored item {} has invalid score {}. Deleting.",
+                        scoredItem.getItem().getId(), scoredItem.getScore());
+                items.remove(scoredItem);
+                continue;
+            }
+
+
+            Item item = scoredItem.getItem();
+
+            if (seenItems.containsKey(item)) {
+                ScoredItem existing = seenItems.get(item);
+                if (scoredItem.getScore() > existing.getScore()) {
+                    seenItems.put(item, scoredItem);
+                    items.remove(existing);
+                }
+            } else {
+                seenItems.put(item, scoredItem);
+                items.remove(scoredItem);
+            }
+        }
         return items;
     }
 }
