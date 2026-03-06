@@ -31,7 +31,7 @@ public class RecommendationContext {
      * A map that holds registered data providers, where the key is the class type of the data structure and the
      * value  is the corresponding data provider.
      */
-    private final Map<Class<?>, DataProvider<?>> DATA_PROVIDERS = new HashMap<>();
+    private Map<Class<?>, DataProvider<?>> dataProviders = new HashMap<>();
     /**
      * A list of users in the recommendation context.
      */
@@ -54,7 +54,7 @@ public class RecommendationContext {
      * @throws NoDataProviderException If no data provider is found for the specified structure.
      */
     public <T> T getData(Class<T> structure){
-        DataProvider<?> dataProvider = DATA_PROVIDERS.get(structure);
+        DataProvider<?> dataProvider = dataProviders.get(structure);
 
         if(dataProvider == null){
             throw new NoDataProviderException("No data provider found for " + structure.getSimpleName());
@@ -72,7 +72,7 @@ public class RecommendationContext {
      * @param structure    The class type of the data structure that the provider will supply.
      */
     public void registerDataProvider(DataProvider<?> dataProvider, Class<?> structure){
-        DATA_PROVIDERS.put(structure, dataProvider);
+        dataProviders.put(structure, dataProvider);
     }
 
     /**
