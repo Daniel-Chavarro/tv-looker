@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.tvl.tvlooker.domain.data_provider.DataProvider;
 import org.tvl.tvlooker.domain.exception.NoDataProviderException;
 import org.tvl.tvlooker.domain.model.entity.Interaction;
 import org.tvl.tvlooker.domain.model.entity.Item;
@@ -31,7 +30,7 @@ public class RecommendationContext {
      * A map that holds registered data providers, where the key is the class type of the data structure and the
      * value  is the corresponding data provider.
      */
-    private Map<Class<?>, DataProvider<?>> dataProviders = new HashMap<>();
+    private Map<String, DataProvider<?>> dataProviders = new HashMap<>();
     /**
      * A list of users in the recommendation context.
      */
@@ -45,34 +44,48 @@ public class RecommendationContext {
      */
     private List<Interaction> interactions;
 
-    /**
-     * Retrieves data for a specific data structure using the registered data providers.
-     *
-     * @param structure The class type of the data structure to retrieve.
-     * @param <T>       The type of the data structure.
-     * @return The data corresponding to the specified structure.
-     * @throws NoDataProviderException If no data provider is found for the specified structure.
-     */
-    public <T> T getData(Class<T> structure){
-        DataProvider<?> dataProvider = dataProviders.get(structure);
+    private Map<String, CachedData> dataCache = new HashMap<>();
 
-        if(dataProvider == null){
-            throw new NoDataProviderException("No data provider found for " + structure.getSimpleName());
+    /**
+     * Get computed data from a provider.
+     * Strategies call this to get the data they need.
+     *
+     * @param providerId Unique identifier of the provider
+     * @param dataType Expected return type
+     * @return Computed data structure
+     * @throws NoDataProviderException if provider not registered
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getData(String providerId, Class<T> dataType) {
+
+        CachedData cached = dataCache.get(providerId);
+        if (cached != null && !cached.isExpired()) {
+            return (T) cached.getData();
         }
 
-        Object data = dataProvider.provide(this);
 
-        return structure.cast(data);
+        DataProvider<?> provider = dataProviders.get(providerId);
+        if (provider == null) {
+            throw new NoDataProviderException(
+                    "No provider registered with ID: " + providerId);
+        }
+
+        T data = (T) provider.provide(this);
+
+        if (provider.isCacheable()) {
+            long expirationTime = System.currentTimeMillis() +
+                    (provider.getCacheExpirationSeconds() * 1000);
+            dataCache.put(providerId, new CachedData(data, expirationTime));
+        }
+
+        return data;
     }
 
     /**
-     * Registers a data provider for a specific data structure.
-     *
-     * @param dataProvider The data provider to register.
-     * @param structure    The class type of the data structure that the provider will supply.
+     * Clear all cached data
      */
-    public void registerDataProvider(DataProvider<?> dataProvider, Class<?> structure){
-        dataProviders.put(structure, dataProvider);
+    public void clearCache() {
+        dataCache.clear();
     }
 
     /**
@@ -83,4 +96,30 @@ public class RecommendationContext {
     public boolean checkDataNotNull(){
         return users != null || items != null;
     }
+
+    /**
+     * Registers a new data provider in the context.
+     *
+     * @param provider The data provider to be registered.
+     */
+    public void registerDataProvider(DataProvider<?> provider) {
+        dataProviders.put(provider.getProviderId(), provider);
+    }
+
+    /**
+     * Internal class to hold cached data along with its expiration time.
+     */
+    @AllArgsConstructor
+    @Getter
+    private static class CachedData {
+        private Object data;
+        private long expirationTime;
+
+        public boolean isExpired() {
+            return System.currentTimeMillis() > expirationTime;
+        }
+    }
+
+
+
 }

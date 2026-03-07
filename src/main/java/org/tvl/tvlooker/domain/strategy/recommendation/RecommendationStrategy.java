@@ -1,4 +1,4 @@
-package org.tvl.tvlooker.domain.strategy.recommendation_strategy;
+package org.tvl.tvlooker.domain.strategy.recommendation;
 
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.model.entity.Item;

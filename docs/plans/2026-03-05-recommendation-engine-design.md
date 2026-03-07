@@ -109,7 +109,7 @@ User + Context → [Pre-filtering] → [Strategy Execution] → [Aggregation] �
 ### RecommendationStrategy Interface
 
 ```java
-package org.tvl.tvlooker.domain.strategy.recommendation_strategy;
+package org.tvl.tvlooker.domain.strategy.recommendation;
 
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.model.entity.Item;
@@ -123,10 +123,10 @@ import java.util.List;
  * Each implementation represents a different recommendation algorithm.
  */
 public interface RecommendationStrategy {
-    
+
     /**
      * Generates recommendations for a user.
-     * 
+     *
      * @param user The user to generate recommendations for
      * @param candidateItems Pre-filtered items that are valid candidates for recommendation
      *                       (e.g., not already watched, meet content restrictions)
@@ -134,10 +134,10 @@ public interface RecommendationStrategy {
      * @return List of scored items (can be empty if strategy has no recommendations)
      */
     List<ScoredItem> recommend(User user, List<Item> candidateItems, RecommendationContext context);
-    
+
     /**
      * Returns unique identifier for this strategy (used for logging and debugging).
-     * 
+     *
      * @return Strategy name (e.g., "collaborative-filtering", "content-based")
      */
     String getStrategyName();
@@ -147,7 +147,7 @@ public interface RecommendationStrategy {
 ### AggregationStrategy Interface
 
 ```java
-package org.tvl.tvlooker.domain.strategy.aggregation_strategy;
+package org.tvl.tvlooker.domain.strategy.aggregation;
 
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
@@ -159,19 +159,19 @@ import java.util.Map;
  * Strategy interface for aggregating results from multiple recommendation strategies.
  */
 public interface AggregationStrategy {
-    
+
     /**
      * Combines results from multiple recommendation strategies into a single ranked list.
-     * 
+     *
      * @param strategyResults Map of strategy name to their scored results
      * @param context The recommendation context (for accessing additional data if needed)
      * @return Final ranked list of recommendations
      */
     List<ScoredItem> aggregate(Map<String, List<ScoredItem>> strategyResults, RecommendationContext context);
-    
+
     /**
      * Returns unique identifier for this aggregation strategy.
-     * 
+     *
      * @return Aggregation name (e.g., "weighted-average", "borda-count")
      */
     String getAggregationName();

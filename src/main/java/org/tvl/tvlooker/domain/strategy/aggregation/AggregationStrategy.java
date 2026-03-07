@@ -1,4 +1,4 @@
-package org.tvl.tvlooker.domain.strategy.aggregation_strategy;
+package org.tvl.tvlooker.domain.strategy.aggregation;
 
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
