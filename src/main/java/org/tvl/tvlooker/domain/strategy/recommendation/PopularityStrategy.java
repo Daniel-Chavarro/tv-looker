@@ -1,6 +1,5 @@
 package org.tvl.tvlooker.domain.strategy.recommendation;
 
-import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.model.entity.Item;
 import org.tvl.tvlooker.domain.model.entity.User;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
  * It uses pre-computed popularity scores (e.g., from TMDB) to rank candidate items.
  * This strategy is simple but effective for recommending trending content.
  */
-@Component
 public class PopularityStrategy implements RecommendationStrategy {
     /**
      * Generates recommendations for a user.

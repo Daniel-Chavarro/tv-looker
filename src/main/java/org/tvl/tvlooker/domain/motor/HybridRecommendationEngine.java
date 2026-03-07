@@ -3,6 +3,8 @@ package org.tvl.tvlooker.domain.motor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
+import org.tvl.tvlooker.domain.exception.InsufficientDataException;
+import org.tvl.tvlooker.domain.exception.InvalidEngineConfigurationException;
 import org.tvl.tvlooker.domain.exception.NoRecommendationsAvailableException;
 import org.tvl.tvlooker.domain.model.entity.Item;
 import org.tvl.tvlooker.domain.motor.utils.DataProvider;
@@ -12,6 +14,7 @@ import org.tvl.tvlooker.domain.strategy.aggregation.AggregationStrategy;
 import org.tvl.tvlooker.domain.strategy.recommendation.RecommendationStrategy;
 import org.slf4j.Logger;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,16 +83,19 @@ public class HybridRecommendationEngine implements RecommendationEngine {
      */
     private void validateInputs(User user, RecommendationContext context) {
         if (user == null) {
-            throw new IllegalArgumentException("User cannot be null");
+            throw new InsufficientDataException("User cannot be null");
         }
-        if (context == null || context.checkDataNotNull()) {
-            throw new IllegalArgumentException("RecommendationContext cannot be null");
+        if (context == null) {
+            throw new InvalidEngineConfigurationException("RecommendationContext cannot be null");
+        }
+        if (!context.checkDataNotNull()){
+            throw new InsufficientDataException("RecommendationContext is missing required data");
         }
         if (STRATEGIES == null || STRATEGIES.isEmpty()) {
-            throw new IllegalStateException("At least one recommendation strategy must be set");
+            throw new InvalidEngineConfigurationException("At least one recommendation strategy must be set");
         }
         if (AGGREGATION_STRATEGY == null) {
-            throw new IllegalStateException("Aggregation strategy must be set");
+            throw new InvalidEngineConfigurationException("Aggregation strategy must be set");
         }
     }
 
@@ -97,6 +103,7 @@ public class HybridRecommendationEngine implements RecommendationEngine {
         // For simplicity, we return all items as candidates.
         // In a real implementation, this would filter out items the user has already interacted with,
         // items that don't meet content restrictions, etc.
+        // Use logger INFO to log the filtered candidates
         return context.getItems();
     }
 
@@ -156,27 +163,24 @@ public class HybridRecommendationEngine implements RecommendationEngine {
         Map<Item, ScoredItem> seenItems = new HashMap<>();
 
         for (ScoredItem scoredItem : items) {
+            // Validate score range
             if (scoredItem.getScore() < 0 || scoredItem.getScore() > 1) {
-                logger.warn("Scored item {} has invalid score {}. Deleting.",
+                logger.warn("Scored item {} has invalid score {}. Skipping.",
                         scoredItem.getItem().getId(), scoredItem.getScore());
-                items.remove(scoredItem);
                 continue;
             }
 
-
             Item item = scoredItem.getItem();
 
-            if (seenItems.containsKey(item)) {
-                ScoredItem existing = seenItems.get(item);
-                if (scoredItem.getScore() > existing.getScore()) {
-                    seenItems.put(item, scoredItem);
-                    items.remove(existing);
-                }
-            } else {
+            // Keep only the highest scoring version of each item (deduplication)
+            if (!seenItems.containsKey(item) || scoredItem.getScore() > seenItems.get(item).getScore()) {
                 seenItems.put(item, scoredItem);
-                items.remove(scoredItem);
             }
         }
-        return items;
+        
+        // Convert map values to list and sort by score descending
+        return seenItems.values().stream()
+                .sorted(Comparator.comparing(ScoredItem::getScore).reversed())
+                .collect(java.util.stream.Collectors.toList());
     }
 }

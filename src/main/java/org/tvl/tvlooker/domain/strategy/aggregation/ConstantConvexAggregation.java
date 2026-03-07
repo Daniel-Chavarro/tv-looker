@@ -1,8 +1,5 @@
 package org.tvl.tvlooker.domain.strategy.aggregation;
 
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.model.entity.Item;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
@@ -15,36 +12,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
 public class ConstantConvexAggregation implements AggregationStrategy {
 
-    @Value("${recommendation.weights.popularity:0.15}")
-    private double weightPopularity;
+    private final Map<String, Double> strategyWeights;
 
-    @Value("${recommendation.weights.content:0.25}")
-    private double weightContent;
-
-    @Value("${recommendation.weights.item-collaborative:0.25}")
-    private double weightItemCollaborative;
-
-    @Value("${recommendation.weights.user-collaborative:0.25}")
-    private double weightUserCollaborative;
-
-    @Value("${recommendation.weights.matrix-factorization:0.10}")
-    private double weightMatrixFactorization;
-
-    private Map<String, Double> strategyWeights;
-
-    @PostConstruct
-    public void init() {
-        strategyWeights = Map.of(
-                "popularity", weightPopularity,
-                "content", weightContent,
-                "item-collaborative", weightItemCollaborative,
-                "user-collaborative", weightUserCollaborative,
-                "matrix-factorization", weightMatrixFactorization
-        );
-
+    public ConstantConvexAggregation(Map<String, Double> strategyWeights) {
+        this.strategyWeights = strategyWeights;
+        
+        // Validate weights sum to 1.0
         double totalWeight = strategyWeights.values().stream().mapToDouble(Double::doubleValue).sum();
         if (Math.abs(totalWeight - 1.0) > 0.001) {
             throw new IllegalArgumentException("Weights must sum to 1. Current sum: " + totalWeight);
