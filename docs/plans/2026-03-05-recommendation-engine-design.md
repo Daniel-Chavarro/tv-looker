@@ -546,37 +546,6 @@ public class RecommendationConfig {
 }
 ```
 
-### Evolution Path to Weighted Ensemble (Approach 2)
-
-**Phase 1 (Current):** Pipeline Architecture
-- Simple strategy execution
-- Basic aggregation
-
-**Phase 2 (Future):** Add Optional Metadata
-```java
-public interface StrategyMetadata {
-    double getConfidence();  // 0.0 to 1.0
-    double getDefaultWeight();
-    Set<Class<?>> getRequiredData();
-}
-
-// Strategies can optionally implement
-public class CollaborativeFilteringStrategy 
-        implements RecommendationStrategy, StrategyMetadata {
-    // ...
-}
-```
-
-**Phase 3 (Future):** Metadata-Aware Engine
-```java
-// Engine checks if strategy provides metadata
-if (strategy instanceof StrategyMetadata) {
-    StrategyMetadata meta = (StrategyMetadata) strategy;
-    // Use confidence and weights
-}
-```
-
-**Benefit:** Backward compatible - old strategies continue to work without modification.
 
 ---
 
