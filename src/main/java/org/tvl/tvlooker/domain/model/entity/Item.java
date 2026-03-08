@@ -1,4 +1,4 @@
-package org.tvl.tvlooker.domain.model;
+package org.tvl.tvlooker.domain.model.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
 import java.math.BigDecimal;
@@ -96,6 +97,7 @@ public class Item {
     /**
      * The timestamp when the item was created, stored as a Timestamp.
      */
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private Timestamp createdAt;
 
@@ -123,6 +125,10 @@ public class Item {
     )
     private Set<Director> directors;
 
+    /**
+     * The actors associated with the item, represented as a many-to-many relationship with the Actor entity.
+     * This field is lazily loaded and uses a join table named "actors_items" to link items and actors.
+     */
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinTable(
             name = "actors_items",

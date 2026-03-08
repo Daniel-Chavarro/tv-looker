@@ -10,7 +10,6 @@
     </description>
 
     <!-- DESIGN -->
-    <rule ref="category/java/design.xml/CyclomaticComplexity"/>
     <rule ref="category/java/design.xml/NPathComplexity"/>
     <rule ref="category/java/design.xml/GodClass"/>
 

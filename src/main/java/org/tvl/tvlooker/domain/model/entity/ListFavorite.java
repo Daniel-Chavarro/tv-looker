@@ -1,4 +1,4 @@
-package org.tvl.tvlooker.domain.model;
+package org.tvl.tvlooker.domain.model.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
