@@ -1,0 +1,54 @@
+name: CI - Build, Test & Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  build-test-quality:
+    name: Build, Test and Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: 🔍 Validate Maven project
+        run: mvn validate
+
+      - name: 🧪 Run tests with H2 + Checkstyle + PMD
+        run: mvn clean verify
+
+      - name: 📊 Publish test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: 📦 Package application
+        run: mvn package -DskipTests
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          #adjust jar name and path as needed
+          name: tv-looker-jar
+          path: target/*.jar
+          retention-days: 7
