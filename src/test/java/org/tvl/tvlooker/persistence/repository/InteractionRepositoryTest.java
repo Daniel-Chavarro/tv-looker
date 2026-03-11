@@ -233,8 +233,8 @@ class InteractionRepositoryTest {
         ));
 
         // When
-        List<Interaction> user1Interactions = interactionRepository.findByUser_Id(user1.getId());
-        List<Interaction> user2Interactions = interactionRepository.findByUser_Id(user2.getId());
+        List<Interaction> user1Interactions = interactionRepository.findByUserId(user1.getId());
+        List<Interaction> user2Interactions = interactionRepository.findByUserId(user2.getId());
 
         // Then
         assertThat(user1Interactions).hasSize(2);
@@ -248,7 +248,7 @@ class InteractionRepositoryTest {
         User user = createAndSaveUser("user1");
 
         // When
-        List<Interaction> interactions = interactionRepository.findByUser_Id(user.getId());
+        List<Interaction> interactions = interactionRepository.findByUserId(user.getId());
 
         // Then
         assertThat(interactions).isEmpty();
@@ -261,7 +261,7 @@ class InteractionRepositoryTest {
         UUID nonExistentUserId = UUID.randomUUID();
 
         // When
-        List<Interaction> interactions = interactionRepository.findByUser_Id(nonExistentUserId);
+        List<Interaction> interactions = interactionRepository.findByUserId(nonExistentUserId);
 
         // Then
         assertThat(interactions).isEmpty();

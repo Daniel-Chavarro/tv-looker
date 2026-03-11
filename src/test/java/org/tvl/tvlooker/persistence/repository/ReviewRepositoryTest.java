@@ -204,8 +204,8 @@ class ReviewRepositoryTest {
         reviewRepository.saveAll(List.of(review1, review2, review3));
 
         // When
-        List<Review> user1Reviews = reviewRepository.findByUser_Id(user1.getId());
-        List<Review> user2Reviews = reviewRepository.findByUser_Id(user2.getId());
+        List<Review> user1Reviews = reviewRepository.findByUserId(user1.getId());
+        List<Review> user2Reviews = reviewRepository.findByUserId(user2.getId());
 
         // Then
         assertThat(user1Reviews).hasSize(2);
@@ -224,7 +224,7 @@ class ReviewRepositoryTest {
         userRepository.saveAndFlush(user);
 
         // When
-        List<Review> reviews = reviewRepository.findByUser_Id(user.getId());
+        List<Review> reviews = reviewRepository.findByUserId(user.getId());
 
         // Then
         assertThat(reviews).isEmpty();
@@ -237,7 +237,7 @@ class ReviewRepositoryTest {
         UUID nonExistentUserId = UUID.randomUUID();
 
         // When
-        List<Review> reviews = reviewRepository.findByUser_Id(nonExistentUserId);
+        List<Review> reviews = reviewRepository.findByUserId(nonExistentUserId);
 
         // Then
         assertThat(reviews).isEmpty();

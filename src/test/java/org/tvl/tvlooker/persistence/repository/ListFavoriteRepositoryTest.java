@@ -209,8 +209,8 @@ class ListFavoriteRepositoryTest {
         ));
 
         // When
-        List<ListFavorite> user1Lists = listFavoriteRepository.findByUser_Id(user1.getId());
-        List<ListFavorite> user2Lists = listFavoriteRepository.findByUser_Id(user2.getId());
+        List<ListFavorite> user1Lists = listFavoriteRepository.findByUserId(user1.getId());
+        List<ListFavorite> user2Lists = listFavoriteRepository.findByUserId(user2.getId());
 
         // Then
         assertThat(user1Lists).hasSize(2);
@@ -225,7 +225,7 @@ class ListFavoriteRepositoryTest {
         userRepository.saveAndFlush(user);
 
         // When
-        List<ListFavorite> lists = listFavoriteRepository.findByUser_Id(user.getId());
+        List<ListFavorite> lists = listFavoriteRepository.findByUserId(user.getId());
 
         // Then
         assertThat(lists).isEmpty();
@@ -238,7 +238,7 @@ class ListFavoriteRepositoryTest {
         UUID nonExistentUserId = UUID.randomUUID();
 
         // When
-        List<ListFavorite> lists = listFavoriteRepository.findByUser_Id(nonExistentUserId);
+        List<ListFavorite> lists = listFavoriteRepository.findByUserId(nonExistentUserId);
 
         // Then
         assertThat(lists).isEmpty();

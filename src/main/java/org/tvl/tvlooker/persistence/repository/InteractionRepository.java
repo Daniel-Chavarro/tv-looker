@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 interface InteractionRepository extends JpaRepository<Interaction, Long> {
-    List<Interaction> findByUser_Id(UUID userId);
+    List<Interaction> findByUserId(UUID userId);
 }
