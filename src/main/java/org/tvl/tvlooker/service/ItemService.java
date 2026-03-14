@@ -1,7 +1,7 @@
 package org.tvl.tvlooker.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.exception.ItemNotFoundException;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,11 +31,11 @@ public class ItemService {
      *
      * @param id item id
      * @return item
-     * @throws EntityNotFoundException when the item does not exist
+     * @throws ItemNotFoundException when the item does not exist
      */
     public Item getById(Long id) {
         return itemRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Item not found: " + id));
+                .orElseThrow(() -> new ItemNotFoundException("Item not found: " + id));
     }
 
     /**
@@ -53,11 +53,11 @@ public class ItemService {
      * @param id item id
      * @param item item data to update
      * @return updated item
-     * @throws EntityNotFoundException when the item does not exist
+     * @throws ItemNotFoundException when the item does not exist
      */
     public Item update(Long id, Item item) {
         if (!itemRepository.existsById(id)) {
-            throw new EntityNotFoundException("Item not found: " + id);
+            throw new ItemNotFoundException("Item not found: " + id);
         }
         item.setId(id);
         return itemRepository.save(item);
@@ -67,11 +67,11 @@ public class ItemService {
      * Delete an item by id.
      *
      * @param id item id
-     * @throws EntityNotFoundException when the item does not exist
+     * @throws ItemNotFoundException when the item does not exist
      */
     public void deleteById(Long id) {
         if (!itemRepository.existsById(id)) {
-            throw new EntityNotFoundException("Item not found: " + id);
+            throw new ItemNotFoundException("Item not found: " + id);
         }
         itemRepository.deleteById(id);
     }

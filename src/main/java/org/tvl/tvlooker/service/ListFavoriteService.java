@@ -1,8 +1,8 @@
 package org.tvl.tvlooker.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.tvl.tvlooker.domain.exception.ListFavoriteNotFoundException;
 import org.tvl.tvlooker.domain.model.entity.ListFavorite;
 import org.tvl.tvlooker.persistence.repository.ListFavoriteRepository;
 
@@ -33,11 +33,11 @@ class ListFavoriteService {
      *
      * @param id list id
      * @return favorite list
-     * @throws EntityNotFoundException when the list does not exist
+     * @throws ListFavoriteNotFoundException when the list does not exist
      */
     public ListFavorite getById(Long id) {
         return reviewRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("ListFavorite not found: " + id));
+                .orElseThrow(() -> new ListFavoriteNotFoundException("ListFavorite not found: " + id));
     }
 
     /**
@@ -65,11 +65,11 @@ class ListFavoriteService {
      * @param id list id
      * @param listFavorite list data to update
      * @return updated list
-     * @throws EntityNotFoundException when the list does not exist
+     * @throws ListFavoriteNotFoundException when the list does not exist
      */
     public ListFavorite update(Long id, ListFavorite listFavorite) {
         if (!reviewRepository.existsById(id)) {
-            throw new EntityNotFoundException("ListFavorite not found: " + id);
+            throw new ListFavoriteNotFoundException("ListFavorite not found: " + id);
         }
         listFavorite.setId(id);
         return reviewRepository.save(listFavorite);
@@ -79,11 +79,11 @@ class ListFavoriteService {
      * Delete a favorite list by id.
      *
      * @param id list id
-     * @throws EntityNotFoundException when the list does not exist
+     * @throws ListFavoriteNotFoundException when the list does not exist
      */
     public void deleteById(Long id) {
         if (!reviewRepository.existsById(id)) {
-            throw new EntityNotFoundException("ListFavorite not found: " + id);
+            throw new ListFavoriteNotFoundException("ListFavorite not found: " + id);
         }
         reviewRepository.deleteById(id);
     }

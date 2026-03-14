@@ -1,8 +1,8 @@
 package org.tvl.tvlooker.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.tvl.tvlooker.domain.exception.GenreNotFoundException;
 import org.tvl.tvlooker.domain.model.entity.Genre;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 
@@ -31,11 +31,11 @@ class GenreService {
      *
      * @param id genre id
      * @return genre
-     * @throws EntityNotFoundException when the genre does not exist
+     * @throws GenreNotFoundException when the genre does not exist
      */
     public Genre getById(Long id) {
         return genreRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Genre not found: " + id));
+                .orElseThrow(() -> new GenreNotFoundException("Genre not found: " + id));
     }
 
     /**
@@ -53,11 +53,11 @@ class GenreService {
      * @param id genre id
      * @param genre genre data to update
      * @return updated genre
-     * @throws EntityNotFoundException when the genre does not exist
+     * @throws GenreNotFoundException when the genre does not exist
      */
     public Genre update(Long id, Genre genre) {
         if (!genreRepository.existsById(id)) {
-            throw new EntityNotFoundException("Genre not found: " + id);
+            throw new GenreNotFoundException("Genre not found: " + id);
         }
         genre.setId(id);
         return genreRepository.save(genre);
@@ -67,11 +67,11 @@ class GenreService {
      * Delete a genre by id.
      *
      * @param id genre id
-     * @throws EntityNotFoundException when the genre does not exist
+     * @throws GenreNotFoundException when the genre does not exist
      */
     public void deleteById(Long id) {
         if (!genreRepository.existsById(id)) {
-            throw new EntityNotFoundException("Genre not found: " + id);
+            throw new GenreNotFoundException("Genre not found: " + id);
         }
         genreRepository.deleteById(id);
     }

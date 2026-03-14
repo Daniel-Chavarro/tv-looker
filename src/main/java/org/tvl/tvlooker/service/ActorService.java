@@ -1,9 +1,9 @@
 package org.tvl.tvlooker.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.model.entity.Actor;
+import org.tvl.tvlooker.domain.exception.ActorNotFoundException;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 
 import java.util.List;
@@ -29,11 +29,11 @@ class ActorService {
 	 *
 	 * @param id actor id
 	 * @return actor
-	 * @throws EntityNotFoundException when the actor does not exist
+	 * @throws ActorNotFoundException when the actor does not exist
 	 */
 	public Actor getById(Long id) {
 		return actorRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Actor not found: " + id));
+				.orElseThrow(() -> new ActorNotFoundException("Actor not found: " + id));
 	}
 
 	/**
@@ -51,11 +51,11 @@ class ActorService {
 	 * @param id actor id
 	 * @param actor actor data to update
 	 * @return updated actor
-	 * @throws EntityNotFoundException when the actor does not exist
+	 * @throws ActorNotFoundException when the actor does not exist
 	 */
 	public Actor update(Long id, Actor actor) {
 		if (!actorRepository.existsById(id)) {
-			throw new EntityNotFoundException("Actor not found: " + id);
+			throw new ActorNotFoundException("Actor not found: " + id);
 		}
 		actor.setId(id);
 		return actorRepository.save(actor);
@@ -65,11 +65,11 @@ class ActorService {
 	 * Delete an actor by id.
 	 *
 	 * @param id actor id
-	 * @throws EntityNotFoundException when the actor does not exist
+	 * @throws ActorNotFoundException when the actor does not exist
 	 */
 	public void deleteById(Long id) {
 		if (!actorRepository.existsById(id)) {
-			throw new EntityNotFoundException("Actor not found: " + id);
+			throw new ActorNotFoundException("Actor not found: " + id);
 		}
 		actorRepository.deleteById(id);
 	}

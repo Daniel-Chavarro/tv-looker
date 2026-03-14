@@ -1,7 +1,7 @@
 package org.tvl.tvlooker.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.tvl.tvlooker.domain.model.entity.Interaction;
+import org.tvl.tvlooker.domain.exception.InteractionNotFoundException;
 import org.tvl.tvlooker.persistence.repository.InteractionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,11 +31,11 @@ public class InteractionService {
      *
      * @param id interaction id
      * @return interaction
-     * @throws EntityNotFoundException when the interaction does not exist
+     * @throws InteractionNotFoundException when the interaction does not exist
      */
     public Interaction getById(Long id) {
         return interactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Interaction not found: " + id));
+                .orElseThrow(() -> new InteractionNotFoundException("Interaction not found: " + id));
     }
 
     /**
@@ -53,11 +53,11 @@ public class InteractionService {
      * @param id interaction id
      * @param interaction interaction data to update
      * @return updated interaction
-     * @throws EntityNotFoundException when the interaction does not exist
+     * @throws InteractionNotFoundException when the interaction does not exist
      */
     public Interaction update(Long id, Interaction interaction) {
         if (!interactionRepository.existsById(id)) {
-            throw new EntityNotFoundException("Interaction not found: " + id);
+            throw new InteractionNotFoundException("Interaction not found: " + id);
         }
         interaction.setId(id);
         return interactionRepository.save(interaction);
@@ -67,11 +67,11 @@ public class InteractionService {
      * Delete an interaction by id.
      *
      * @param id interaction id
-     * @throws EntityNotFoundException when the interaction does not exist
+     * @throws InteractionNotFoundException when the interaction does not exist
      */
     public void deleteById(Long id) {
         if (!interactionRepository.existsById(id)) {
-            throw new EntityNotFoundException("Interaction not found: " + id);
+            throw new InteractionNotFoundException("Interaction not found: " + id);
         }
         interactionRepository.deleteById(id);
     }
