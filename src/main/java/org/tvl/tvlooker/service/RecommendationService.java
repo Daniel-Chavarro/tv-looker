@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
-import org.tvl.tvlooker.domain.exception.UserNotFoundException;
 import org.tvl.tvlooker.domain.model.entity.Item;
 import org.tvl.tvlooker.domain.model.entity.User;
 import org.tvl.tvlooker.domain.motor.RecommendationEngine;
@@ -35,7 +34,7 @@ public class RecommendationService {
     public List<Item> getUserRecommendations(UUID userId, int limit) {
         validateInput(userId, limit);
 
-        User user = userService.getUserById(userId);
+        User user = userService.getById(userId);
 
         RecommendationContext context = RecommendationContext.builder()
                 .users(userService.getAllUsers())
