@@ -248,6 +248,7 @@ import org.tvl.tvlooker.domain.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -258,15 +259,15 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class RecommendationService {
-    
+
     // Entity services
     private final UserService userService;
     private final ItemService itemService;
     private final InteractionService interactionService;
-    
+
     // Recommendation engine
     private final RecommendationEngine recommendationEngine;
-    
+
     /**
      * Get personalized recommendations for a user.
      *
@@ -281,38 +282,38 @@ public class RecommendationService {
     public List<Item> getUserRecommendations(UUID userId, int limit) {
         // 1. Validate input
         validateInput(userId, limit);
-        
+
         // 2. Verify user exists (throws UserNotFoundException if not found)
-        userService.getUserById(userId);
-        
+        userService.getById(userId);
+
         // 3. Load ALL system data for recommendation algorithms
         // Note: Collaborative filtering and matrix factorization need complete data
         List<User> allUsers = userService.getAllUsers();
         List<Item> allItems = itemService.getAllItems();
         List<Interaction> allInteractions = interactionService.getAllInteractions();
-        
+
         // 4. Build RecommendationContext with all system data
         RecommendationContext context = buildContext(
-            userId, 
-            allUsers, 
-            allItems, 
-            allInteractions, 
-            limit
+                userId,
+                allUsers,
+                allItems,
+                allInteractions,
+                limit
         );
-        
+
         // 5. Get recommendations from engine
         // Engine returns List<ScoredItem> internally
         List<ScoredItem> scoredRecommendations = recommendationEngine.recommend(context);
-        
+
         // 6. Extract items from ScoredItem results
         // We don't expose scores to the user (for now)
         List<Item> recommendations = scoredRecommendations.stream()
-            .map(ScoredItem::getItem)
-            .toList();
-        
+                .map(ScoredItem::getItem)
+                .toList();
+
         return recommendations;
     }
-    
+
     private void validateInput(UUID userId, int limit) {
         if (userId == null) {
             throw new IllegalArgumentException("userId cannot be null");
@@ -321,21 +322,21 @@ public class RecommendationService {
             throw new IllegalArgumentException("limit must be positive");
         }
     }
-    
+
     private RecommendationContext buildContext(
             UUID targetUserId,
             List<User> allUsers,
             List<Item> allItems,
             List<Interaction> allInteractions,
             int limit) {
-        
+
         return RecommendationContext.builder()
-            .targetUserId(targetUserId)         // The user we're generating recommendations for
-            .users(allUsers)                    // All users in system (for collaborative filtering)
-            .items(allItems)                    // All items in system (candidates + similarity computation)
-            .interactions(allInteractions)      // All interactions (for collaborative filtering)
-            .limit(limit)
-            .build();
+                .targetUserId(targetUserId)         // The user we're generating recommendations for
+                .users(allUsers)                    // All users in system (for collaborative filtering)
+                .items(allItems)                    // All items in system (candidates + similarity computation)
+                .interactions(allInteractions)      // All interactions (for collaborative filtering)
+                .limit(limit)
+                .build();
     }
 }
 ```

@@ -6,6 +6,6 @@ import org.tvl.tvlooker.domain.model.entity.ListFavorite;
 import java.util.List;
 import java.util.UUID;
 
-interface ListFavoriteRepository extends JpaRepository<ListFavorite, Long> {
+public interface ListFavoriteRepository extends JpaRepository<ListFavorite, Long> {
     List<ListFavorite> findByUserId(UUID userId);
 }
