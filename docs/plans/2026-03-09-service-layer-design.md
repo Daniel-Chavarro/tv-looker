@@ -288,7 +288,7 @@ public class RecommendationService {
 
         // 3. Load ALL system data for recommendation algorithms
         // Note: Collaborative filtering and matrix factorization need complete data
-        List<User> allUsers = userService.getAllUsers();
+        List<User> allUsers = userService.getAll();
         List<Item> allItems = itemService.getAllItems();
         List<Interaction> allInteractions = interactionService.getAllInteractions();
 

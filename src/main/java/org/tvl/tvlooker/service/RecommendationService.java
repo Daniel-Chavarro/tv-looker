@@ -37,9 +37,9 @@ public class RecommendationService {
         User user = userService.getById(userId);
 
         RecommendationContext context = RecommendationContext.builder()
-                .users(userService.getAllUsers())
-                .items(itemService.getAllItems())
-                .interactions(interactionService.getAllInteractions())
+                .users(userService.getAll())
+                .items(itemService.getAll())
+                .interactions(interactionService.getAll())
                 .build();
 
         List<ScoredItem> scoredItems = recommendationEngine.recommend(user, context);

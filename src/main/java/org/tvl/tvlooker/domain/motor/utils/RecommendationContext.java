@@ -30,6 +30,7 @@ public class RecommendationContext {
      * A map that holds registered data providers, where the key is the class type of the data structure and the
      * value  is the corresponding data provider.
      */
+    @Builder.Default
     private Map<String, DataProvider<?>> dataProviders = new HashMap<>();
     /**
      * A list of users in the recommendation context.
@@ -44,6 +45,7 @@ public class RecommendationContext {
      */
     private List<Interaction> interactions;
 
+    @Builder.Default
     private Map<String, CachedData> dataCache = new HashMap<>();
 
     /**
