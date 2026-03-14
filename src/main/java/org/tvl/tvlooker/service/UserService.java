@@ -33,6 +33,7 @@ class UserService {
      *
      * @param id user id
      * @return user
+     * @throws UserNotFoundException when the user does not exist
      */
     public User getById(UUID id) {
         return userRepository.findById(id).orElseThrow(() ->
