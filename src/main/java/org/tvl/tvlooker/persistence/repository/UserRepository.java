@@ -5,5 +5,5 @@ import org.tvl.tvlooker.domain.model.entity.User;
 
 import java.util.UUID;
 
-interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID> {
 }
