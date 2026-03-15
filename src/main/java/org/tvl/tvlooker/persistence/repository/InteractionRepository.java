@@ -6,6 +6,6 @@ import org.tvl.tvlooker.domain.model.entity.Interaction;
 import java.util.List;
 import java.util.UUID;
 
-interface InteractionRepository extends JpaRepository<Interaction, Long> {
+public interface InteractionRepository extends JpaRepository<Interaction, Long> {
     List<Interaction> findByUserId(UUID userId);
 }
