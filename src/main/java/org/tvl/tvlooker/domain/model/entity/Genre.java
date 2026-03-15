@@ -31,6 +31,13 @@ public class Genre {
     private Long id;
 
     /**
+     * The TMDB ID of the genre, stored as a Long.
+     * Used for reliable mapping when syncing genres from the TMDB API.
+     */
+    @Column(name = "tmdb_id", unique = true)
+    private Long tmdbId;
+
+    /**
      * The name of the genre, stored as a string.
      */
     @Column(name = "name", nullable = false)

@@ -1,6 +1,7 @@
 package org.tvl.tvlooker.persistence.repository;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,11 @@ class DirectorRepositoryTest {
 
     @Autowired
     private DirectorRepository directorRepository;
+
+    @BeforeEach
+    void setUp() {
+        directorRepository.deleteAll();
+    }
 
     @AfterEach
     void tearDown() {

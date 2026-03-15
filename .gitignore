@@ -45,8 +45,12 @@ replay_pid*
 ### VS Code ###
 .vscode/
 
+# Environment files #
+.env
+
 ## Agents ##
 .agents/
 skills-lock.json
 .agent
 .claude
+
