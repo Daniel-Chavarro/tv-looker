@@ -1,7 +1,7 @@
-package org.tvl.tvlooker.infrastructure.tmdb.mapper;
+package org.tvl.tvlooker.persistence.tmdb.mapper;
 
 import org.tvl.tvlooker.domain.model.entity.Genre;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbGenreDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 
 /**

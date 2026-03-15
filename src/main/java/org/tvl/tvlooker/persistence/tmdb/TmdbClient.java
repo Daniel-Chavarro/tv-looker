@@ -1,4 +1,4 @@
-package org.tvl.tvlooker.infrastructure.tmdb;
+package org.tvl.tvlooker.persistence.tmdb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,12 +6,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbChangesDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbCreditsDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbGenreListDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbMovieDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbPagedResponseDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbTvShowDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
+
 
 import java.time.LocalDate;
 

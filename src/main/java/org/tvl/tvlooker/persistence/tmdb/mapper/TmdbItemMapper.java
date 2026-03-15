@@ -1,9 +1,9 @@
-package org.tvl.tvlooker.infrastructure.tmdb.mapper;
+package org.tvl.tvlooker.persistence.tmdb.mapper;
 
 import org.tvl.tvlooker.domain.model.entity.Item;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbMovieDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbTvShowDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

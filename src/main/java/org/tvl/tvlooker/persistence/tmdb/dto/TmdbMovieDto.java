@@ -1,4 +1,4 @@
-package org.tvl.tvlooker.infrastructure.tmdb.dto;
+package org.tvl.tvlooker.persistence.tmdb.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

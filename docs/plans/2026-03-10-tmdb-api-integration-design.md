@@ -239,6 +239,8 @@ public record TmdbPagedResponseDto<T>(
 package org.tvl.tvlooker.infrastructure.tmdb.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.tvl.tvlooker.tmdb.dto.TmdbGenreDto;
+
 import java.util.List;
 
 /**
@@ -257,7 +259,8 @@ public record TmdbMovieDto(
         @JsonProperty("backdrop_path") String backdropPath,
         @JsonProperty("genre_ids") List<Integer> genreIds,
         List<TmdbGenreDto> genres
-) {}
+) {
+}
 ```
 
 ### TmdbTvShowDto
@@ -266,6 +269,8 @@ public record TmdbMovieDto(
 package org.tvl.tvlooker.infrastructure.tmdb.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.tvl.tvlooker.tmdb.dto.TmdbGenreDto;
+
 import java.util.List;
 
 /**
@@ -284,7 +289,8 @@ public record TmdbTvShowDto(
         @JsonProperty("backdrop_path") String backdropPath,
         @JsonProperty("genre_ids") List<Integer> genreIds,
         List<TmdbGenreDto> genres
-) {}
+) {
+}
 ```
 
 ### TmdbCreditsDto
@@ -334,6 +340,8 @@ public record TmdbCreditsDto(
 ```java
 package org.tvl.tvlooker.infrastructure.tmdb.dto;
 
+import org.tvl.tvlooker.tmdb.dto.TmdbGenreDto;
+
 import java.util.List;
 
 /**
@@ -341,7 +349,8 @@ import java.util.List;
  */
 public record TmdbGenreListDto(
         List<TmdbGenreDto> genres
-) {}
+) {
+}
 ```
 
 ```java
@@ -385,8 +394,8 @@ package org.tvl.tvlooker.infrastructure.tmdb.mapper;
 
 import org.tvl.tvlooker.domain.model.entity.Item;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbMovieDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbTvShowDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbTvShowDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -470,7 +479,7 @@ public class TmdbItemMapper {
 package org.tvl.tvlooker.infrastructure.tmdb.mapper;
 
 import org.tvl.tvlooker.domain.model.entity.Genre;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbGenreDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 
 /**
@@ -501,7 +510,7 @@ package org.tvl.tvlooker.infrastructure.tmdb.mapper;
 
 import org.tvl.tvlooker.domain.model.entity.Actor;
 import org.tvl.tvlooker.domain.model.entity.Director;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbCreditsDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 
@@ -660,19 +669,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbChangesDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbCreditsDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbGenreListDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbMovieDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbPagedResponseDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbTvShowDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbChangesDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbCreditsDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbGenreListDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbPagedResponseDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbTvShowDto;
 
 import java.time.LocalDate;
 
 /**
  * Client for the TMDB API v3.
  * Encapsulates all HTTP communication with the TMDB API.
- * 
+ *
  * Rate Limit: TMDB allows ~40 requests/second.
  * This client does NOT handle rate limiting — that responsibility belongs to the caller
  * (TmdbDataCollector and TmdbDataSynchronizer) which add delays between calls.
@@ -703,7 +712,8 @@ public class TmdbClient {
         return restClient.get()
                 .uri("/movie/popular?language={lang}&page={page}", language, page)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
     }
 
     /**
@@ -742,7 +752,8 @@ public class TmdbClient {
                 .uri("/movie/changes?start_date={start}&end_date={end}&page={page}",
                         startDate, endDate, page)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
     }
 
     // ===================== TV SHOWS =====================
@@ -756,7 +767,8 @@ public class TmdbClient {
         return restClient.get()
                 .uri("/tv/popular?language={lang}&page={page}", language, page)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
     }
 
     /**
@@ -791,7 +803,8 @@ public class TmdbClient {
                 .uri("/tv/changes?start_date={start}&end_date={end}&page={page}",
                         startDate, endDate, page)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
     }
 
     // ===================== GENRES =====================
@@ -850,16 +863,16 @@ import org.tvl.tvlooker.domain.model.entity.Director;
 import org.tvl.tvlooker.domain.model.entity.Genre;
 import org.tvl.tvlooker.domain.model.entity.Item;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
-import org.tvl.tvlooker.infrastructure.tmdb.TmdbClient;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbCreditsDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbGenreDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbGenreListDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbMovieDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbPagedResponseDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbTvShowDto;
-import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbGenreMapper;
-import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbItemMapper;
-import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbPersonMapper;
+import org.tvl.tvlooker.tmdb.TmdbClient;
+import org.tvl.tvlooker.tmdb.dto.TmdbCreditsDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbGenreDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbGenreListDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbPagedResponseDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbTvShowDto;
+import org.tvl.tvlooker.tmdb.mapper.TmdbGenreMapper;
+import org.tvl.tvlooker.tmdb.mapper.TmdbItemMapper;
+import org.tvl.tvlooker.tmdb.mapper.TmdbPersonMapper;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
@@ -1209,16 +1222,16 @@ import org.tvl.tvlooker.domain.model.entity.Director;
 import org.tvl.tvlooker.domain.model.entity.Genre;
 import org.tvl.tvlooker.domain.model.entity.Item;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
-import org.tvl.tvlooker.infrastructure.tmdb.TmdbClient;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbChangesDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbCreditsDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbGenreDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbMovieDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbPagedResponseDto;
-import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbTvShowDto;
-import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbGenreMapper;
-import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbItemMapper;
-import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbPersonMapper;
+import org.tvl.tvlooker.tmdb.TmdbClient;
+import org.tvl.tvlooker.tmdb.dto.TmdbChangesDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbCreditsDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbGenreDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbPagedResponseDto;
+import org.tvl.tvlooker.tmdb.dto.TmdbTvShowDto;
+import org.tvl.tvlooker.tmdb.mapper.TmdbGenreMapper;
+import org.tvl.tvlooker.tmdb.mapper.TmdbItemMapper;
+import org.tvl.tvlooker.tmdb.mapper.TmdbPersonMapper;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
