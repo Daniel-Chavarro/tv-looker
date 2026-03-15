@@ -81,7 +81,7 @@ public class TmdbDataCollectorService {
      * @return CompletableFuture that completes when collection is done
      * @throws TmdbCollectionInProgressException if collection is already running
      */
-    @Async("tmdbTaskExecutor")
+    @Async("taskExecutor")
     public CompletableFuture<Void> collectAllAsync() {
         if (!collectionInProgress.compareAndSet(false, true)) {
             throw new TmdbCollectionInProgressException(
@@ -103,7 +103,7 @@ public class TmdbDataCollectorService {
      * @return CompletableFuture that completes when movie collection is done
      * @throws TmdbCollectionInProgressException if collection is already running
      */
-    @Async("tmdbTaskExecutor")
+    @Async("taskExecutor")
     public CompletableFuture<Void> collectPopularMoviesAsync() {
         if (!collectionInProgress.compareAndSet(false, true)) {
             throw new TmdbCollectionInProgressException(
@@ -125,7 +125,7 @@ public class TmdbDataCollectorService {
      * @return CompletableFuture that completes when TV show collection is done
      * @throws TmdbCollectionInProgressException if collection is already running
      */
-    @Async("tmdbTaskExecutor")
+    @Async("taskExecutor")
     public CompletableFuture<Void> collectPopularTvShowsAsync() {
         if (!collectionInProgress.compareAndSet(false, true)) {
             throw new TmdbCollectionInProgressException(

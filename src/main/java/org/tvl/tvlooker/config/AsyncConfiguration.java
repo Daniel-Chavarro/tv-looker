@@ -1,5 +1,6 @@
 package org.tvl.tvlooker.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -17,21 +18,23 @@ import java.util.concurrent.Executor;
  */
 @Configuration
 @EnableAsync
+@Slf4j
 public class AsyncConfiguration {
 
     /**
-     * Dedicated thread pool for TMDB data collection tasks.
-     * Configured to handle long-running background operations without blocking the main application.
-     *
-     * @return configured executor for TMDB tasks
+     * Defines a TaskExecutor bean with a thread pool configured based on available processors.
      */
-    @Bean(name = "tmdbTaskExecutor")
-    public Executor tmdbTaskExecutor() {
+    @Bean(name = "taskExecutor")
+    public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("tmdb-async-");
+        int corePoolSize = Runtime.getRuntime().availableProcessors();
+        log.info("Configuring TMDB Task Executor with core pool size: {}", corePoolSize);
+        executor.setCorePoolSize(corePoolSize);
+        executor.setMaxPoolSize(corePoolSize * 2);
+        executor.setQueueCapacity(corePoolSize * 2);
+        executor.setThreadNamePrefix("Tasks-Async-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(60);
         executor.initialize();
         return executor;
     }
