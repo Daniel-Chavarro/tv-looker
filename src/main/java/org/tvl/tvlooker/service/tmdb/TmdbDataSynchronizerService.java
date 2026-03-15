@@ -44,13 +44,12 @@ import java.util.Optional;
  */
 @Service
 @ConditionalOnProperty(name = "tmdb.sync.enabled", havingValue = "true", matchIfMissing = true)
-public class TmdbDataSynchronizer {
+public class TmdbDataSynchronizerService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TmdbDataSynchronizer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TmdbDataSynchronizerService.class);
 
     private final TmdbClient tmdbClient;
     private final ItemRepository itemRepository;
-    private final GenreRepository genreRepository;
     private final TmdbItemPersistenceService persistenceService;
 
     @Value("${tmdb.sync.popular-pages:5}")
@@ -59,14 +58,12 @@ public class TmdbDataSynchronizer {
     /** Tracks when the last successful sync completed. */
     private LocalDate lastSyncDate = LocalDate.now().minusDays(1);
 
-    public TmdbDataSynchronizer(
+    public TmdbDataSynchronizerService(
             TmdbClient tmdbClient,
             ItemRepository itemRepository,
-            GenreRepository genreRepository,
             TmdbItemPersistenceService persistenceService) {
         this.tmdbClient = tmdbClient;
         this.itemRepository = itemRepository;
-        this.genreRepository = genreRepository;
         this.persistenceService = persistenceService;
     }
 

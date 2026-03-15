@@ -1928,9 +1928,649 @@ This design provides:
 
 ---
 
+## TMDB Admin Controller — REST API Redesign
+
+**Date Added:** 2026-03-15  
+**Status:** Approved  
+
+### Problem Statement
+
+The current implementation has critical issues for testing and manageability:
+
+1. **TmdbDataCollector** implements `ApplicationRunner` — runs every time the app starts, including during tests
+2. **TmdbDataSynchronizer** uses `@Scheduled` — runs automatically on a timer even in test contexts
+3. **Tests delete all data** — The existing tests delete all TMDB data before/after each test, affecting the database
+4. **No manual control** — No way to trigger collection on-demand without restarting the application
+
+### Goals
+
+1. **On-demand collection** — Trigger TMDB data collection via REST API instead of on startup
+2. **Improved test isolation** — Tests should not trigger automatic collection/synchronization
+3. **Scheduled sync retained** — Keep automatic synchronization but make it easier to disable
+4. **Admin visibility** — Provide status endpoints to monitor collection state
+
+### Non-Goals
+
+1. Authentication/Authorization — No security layer for admin endpoints (future enhancement)
+2. Progress tracking — No WebSocket/SSE for real-time progress (future enhancement)
+3. Collection cancellation — No way to stop a running collection (future enhancement)
+
+---
+
+### Architecture Changes
+
+#### Before (Current State)
+
+```
+Application Start
+       ↓
+ApplicationRunner.run() ← TmdbDataCollector
+       ↓
+collectAll() runs automatically
+       ↓
+Database populated
+
+@Scheduled (every 24h)
+       ↓
+TmdbDataSynchronizer.synchronize()
+       ↓
+Database updated
+```
+
+#### After (New Design)
+
+```
+Admin Request: POST /api/v1/admin/tmdb/collect
+       ↓
+TmdbAdminController
+       ↓
+TmdbDataCollector.collectAllAsync() ← @Async
+       ↓
+Database populated (background)
+
+@Scheduled (every 24h) + @Profile("!test") + @ConditionalOnProperty
+       ↓
+TmdbDataSynchronizer.synchronize()
+       ↓
+Database updated
+```
+
+---
+
+### REST API Endpoints
+
+**Base URL:** `/api/v1/admin/tmdb`
+
+| Method | Endpoint | Description | Response |
+|--------|----------|-------------|----------|
+| `POST` | `/collect` | Trigger full data collection (async) | `202 Accepted` |
+| `POST` | `/collect/genres` | Collect only genres (sync) | `200 OK` |
+| `POST` | `/collect/movies` | Collect only movies (async) | `202 Accepted` |
+| `POST` | `/collect/tvshows` | Collect only TV shows (async) | `202 Accepted` |
+| `POST` | `/sync` | Manually trigger synchronization | `200 OK` |
+| `GET` | `/status` | Check collection/sync status | `200 OK` |
+
+#### Endpoint Specifications
+
+**1. POST /api/v1/admin/tmdb/collect**
+
+Triggers full TMDB data collection (genres + movies + TV shows) in the background.
+
+- **Request Body:** None
+- **Success Response:** `202 Accepted`
+  ```json
+  {
+    "status": "started",
+    "message": "TMDB data collection initiated",
+    "timestamp": "2026-03-15T10:30:00Z"
+  }
+  ```
+- **Error Response (collection already running):** `409 Conflict`
+  ```json
+  {
+    "type": "/errors/tmdb-collection-in-progress",
+    "title": "Collection Already Running",
+    "status": 409,
+    "detail": "TMDB data collection is already in progress",
+    "instance": "/api/v1/admin/tmdb/collect",
+    "timestamp": "2026-03-15T10:30:00Z"
+  }
+  ```
+
+**2. POST /api/v1/admin/tmdb/collect/genres**
+
+Collects only genres from TMDB (quick, synchronous operation).
+
+- **Request Body:** None
+- **Success Response:** `200 OK`
+  ```json
+  {
+    "status": "completed",
+    "message": "Genre collection completed",
+    "timestamp": "2026-03-15T10:30:00Z",
+    "data": {
+      "genresCollected": 19
+    }
+  }
+  ```
+
+**3. POST /api/v1/admin/tmdb/collect/movies**
+
+Triggers movie collection in the background.
+
+- **Request Body:** None
+- **Success Response:** `202 Accepted`
+  ```json
+  {
+    "status": "started",
+    "message": "Movie collection initiated",
+    "timestamp": "2026-03-15T10:30:00Z"
+  }
+  ```
+
+**4. POST /api/v1/admin/tmdb/collect/tvshows**
+
+Triggers TV show collection in the background.
+
+- **Request Body:** None
+- **Success Response:** `202 Accepted`
+  ```json
+  {
+    "status": "started",
+    "message": "TV show collection initiated",
+    "timestamp": "2026-03-15T10:30:00Z"
+  }
+  ```
+
+**5. POST /api/v1/admin/tmdb/sync**
+
+Manually triggers the synchronization process.
+
+- **Request Body:** None
+- **Success Response:** `200 OK`
+  ```json
+  {
+    "status": "completed",
+    "message": "TMDB synchronization completed",
+    "timestamp": "2026-03-15T10:30:00Z",
+    "data": {
+      "updatedMovies": 15,
+      "updatedTvShows": 8,
+      "newMovies": 3,
+      "newTvShows": 2
+    }
+  }
+  ```
+
+**6. GET /api/v1/admin/tmdb/status**
+
+Returns the current status of collection and synchronization.
+
+- **Request Body:** None
+- **Success Response:** `200 OK`
+  ```json
+  {
+    "collectorRunning": false,
+    "lastSyncDate": "2026-03-15",
+    "syncEnabled": true,
+    "timestamp": "2026-03-15T10:30:00Z"
+  }
+  ```
+
+---
+
+### Service Layer Changes
+
+#### TmdbDataCollector
+
+**Remove:**
+- `implements ApplicationRunner`
+- `@Override run(ApplicationArguments args)` method
+- `@ConditionalOnProperty(name = "tmdb.collector.run-on-startup", ...)`
+
+**Add:**
+- `AtomicBoolean collectionInProgress` — Prevents concurrent collection
+- `@Async("tmdbTaskExecutor")` on `collectAllAsync()` — Background execution
+- `isCollectionInProgress()` — Status check method
+
+```java
+@Service
+public class TmdbDataCollector {
+
+    private final AtomicBoolean collectionInProgress = new AtomicBoolean(false);
+
+    /**
+     * Async version for REST API trigger.
+     * Throws exception if already running.
+     */
+    @Async("tmdbTaskExecutor")
+    public CompletableFuture<Void> collectAllAsync() {
+        if (!collectionInProgress.compareAndSet(false, true)) {
+            throw new TmdbCollectionInProgressException(
+                "TMDB data collection is already in progress");
+        }
+        try {
+            collectAll();
+            return CompletableFuture.completedFuture(null);
+        } finally {
+            collectionInProgress.set(false);
+        }
+    }
+
+    /**
+     * Synchronous collection (existing method, unchanged).
+     */
+    public void collectAll() {
+        collectGenres();
+        collectPopularMovies();
+        collectPopularTvShows();
+    }
+
+    public boolean isCollectionInProgress() {
+        return collectionInProgress.get();
+    }
+
+    // ... rest unchanged
+}
+```
+
+#### TmdbDataSynchronizer
+
+**Add:**
+- `@Profile("!test")` — Prevents automatic scheduling during tests
+- `getLastSyncDate()` — Exposes last sync date for status endpoint
+
+```java
+@Service
+@ConditionalOnProperty(name = "tmdb.sync.enabled", havingValue = "true", matchIfMissing = true)
+@Profile("!test")  // ← NEW: Prevents execution during tests
+public class TmdbDataSynchronizer {
+
+    public LocalDate getLastSyncDate() {
+        return lastSyncDate;
+    }
+
+    // ... rest unchanged
+}
+```
+
+---
+
+### New Components
+
+#### TmdbAdminController
+
+```java
+package org.tvl.tvlooker.api.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.tvl.tvlooker.api.dto.response.TmdbOperationResponse;
+import org.tvl.tvlooker.api.dto.response.TmdbStatusResponse;
+import org.tvl.tvlooker.service.tmdb.TmdbDataCollectorService;
+import org.tvl.tvlooker.service.tmdb.TmdbDataSynchronizerService;
+
+import java.time.Instant;
+
+@RestController
+@RequestMapping("/api/v1/admin/tmdb")
+@RequiredArgsConstructor
+public class TmdbAdminController {
+
+  private final TmdbDataCollectorService collector;
+  private final TmdbDataSynchronizerService synchronizer;
+
+  @PostMapping("/collect")
+  public ResponseEntity<TmdbOperationResponse> collectAll() {
+    collector.collectAllAsync();
+    return ResponseEntity.status(HttpStatus.ACCEPTED)
+            .body(TmdbOperationResponse.started("TMDB data collection initiated"));
+  }
+
+  @PostMapping("/collect/genres")
+  public ResponseEntity<TmdbOperationResponse> collectGenres() {
+    collector.collectGenres();
+    return ResponseEntity.ok(
+            TmdbOperationResponse.completed("Genre collection completed"));
+  }
+
+  @PostMapping("/collect/movies")
+  public ResponseEntity<TmdbOperationResponse> collectMovies() {
+    collector.collectPopularMoviesAsync();
+    return ResponseEntity.status(HttpStatus.ACCEPTED)
+            .body(TmdbOperationResponse.started("Movie collection initiated"));
+  }
+
+  @PostMapping("/collect/tvshows")
+  public ResponseEntity<TmdbOperationResponse> collectTvShows() {
+    collector.collectPopularTvShowsAsync();
+    return ResponseEntity.status(HttpStatus.ACCEPTED)
+            .body(TmdbOperationResponse.started("TV show collection initiated"));
+  }
+
+  @PostMapping("/sync")
+  public ResponseEntity<TmdbOperationResponse> sync() {
+    synchronizer.synchronize();
+    return ResponseEntity.ok(
+            TmdbOperationResponse.completed("TMDB synchronization completed"));
+  }
+
+  @GetMapping("/status")
+  public ResponseEntity<TmdbStatusResponse> getStatus() {
+    return ResponseEntity.ok(TmdbStatusResponse.builder()
+            .collectorRunning(collector.isCollectionInProgress())
+            .lastSyncDate(synchronizer.getLastSyncDate())
+            .syncEnabled(true)
+            .timestamp(Instant.now())
+            .build());
+  }
+}
+```
+
+#### TmdbOperationResponse DTO
+
+```java
+package org.tvl.tvlooker.api.dto.response;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.AllArgsConstructor;
+
+import java.time.Instant;
+import java.util.Map;
+
+@Builder
+@Getter
+@AllArgsConstructor
+public class TmdbOperationResponse {
+    private String status;      // "started" or "completed"
+    private String message;
+    private Instant timestamp;
+    private Map<String, Object> data;
+
+    public static TmdbOperationResponse started(String message) {
+        return TmdbOperationResponse.builder()
+            .status("started")
+            .message(message)
+            .timestamp(Instant.now())
+            .build();
+    }
+
+    public static TmdbOperationResponse completed(String message) {
+        return TmdbOperationResponse.builder()
+            .status("completed")
+            .message(message)
+            .timestamp(Instant.now())
+            .build();
+    }
+
+    public static TmdbOperationResponse completed(String message, Map<String, Object> data) {
+        return TmdbOperationResponse.builder()
+            .status("completed")
+            .message(message)
+            .timestamp(Instant.now())
+            .data(data)
+            .build();
+    }
+}
+```
+
+#### TmdbStatusResponse DTO
+
+```java
+package org.tvl.tvlooker.api.dto.response;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.AllArgsConstructor;
+
+import java.time.Instant;
+import java.time.LocalDate;
+
+@Builder
+@Getter
+@AllArgsConstructor
+public class TmdbStatusResponse {
+    private boolean collectorRunning;
+    private LocalDate lastSyncDate;
+    private boolean syncEnabled;
+    private Instant timestamp;
+}
+```
+
+#### TmdbCollectionInProgressException
+
+```java
+package org.tvl.tvlooker.domain.exception;
+
+/**
+ * Thrown when attempting to start TMDB collection while another is in progress.
+ */
+public class TmdbCollectionInProgressException extends RuntimeException {
+    public TmdbCollectionInProgressException(String message) {
+        super(message);
+    }
+}
+```
+
+---
+
+### GlobalExceptionHandler Extensions
+
+Add these handlers to the existing `GlobalExceptionHandler` (from REST controller design):
+
+```java
+@ExceptionHandler(TmdbCollectionInProgressException.class)
+public ResponseEntity<ErrorResponse> handleCollectionInProgress(
+        TmdbCollectionInProgressException ex,
+        HttpServletRequest request) {
+    ErrorResponse error = buildErrorResponse(
+        "/errors/tmdb-collection-in-progress",
+        "Collection Already Running",
+        HttpStatus.CONFLICT.value(),
+        ex.getMessage(),
+        request.getRequestURI()
+    );
+    log.warn("TMDB collection already in progress");
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+}
+
+@ExceptionHandler(TmdbApiException.class)
+public ResponseEntity<ErrorResponse> handleTmdbApiError(
+        TmdbApiException ex,
+        HttpServletRequest request) {
+    ErrorResponse error = buildErrorResponse(
+        "/errors/tmdb-api-error",
+        "TMDB API Error",
+        HttpStatus.BAD_GATEWAY.value(),
+        ex.getMessage(),
+        request.getRequestURI()
+    );
+    log.error("TMDB API error: {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
+}
+```
+
+### Exception to HTTP Status Mapping (TMDB-Specific)
+
+| Exception | HTTP Status | Type |
+|-----------|-------------|------|
+| `TmdbCollectionInProgressException` | 409 Conflict | `/errors/tmdb-collection-in-progress` |
+| `TmdbApiException` | 502 Bad Gateway | `/errors/tmdb-api-error` |
+| `TmdbRateLimitException` | 429 Too Many Requests | `/errors/tmdb-rate-limit` |
+
+---
+
+### Configuration Changes
+
+#### AsyncConfiguration
+
+```java
+package org.tvl.tvlooker.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.Executor;
+
+@Configuration
+@EnableAsync
+public class AsyncConfiguration {
+
+    @Bean(name = "tmdbTaskExecutor")
+    public Executor tmdbTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("tmdb-async-");
+        executor.initialize();
+        return executor;
+    }
+}
+```
+
+#### Application Properties
+
+**Remove (no longer needed):**
+```properties
+# tmdb.collector.run-on-startup=true  ← DELETE THIS
+```
+
+**Keep:**
+```properties
+# TMDB Collector Configuration
+tmdb.collector.max-pages=50
+tmdb.collector.request-delay-ms=40
+
+# TMDB Synchronizer Configuration
+tmdb.sync.enabled=true
+tmdb.sync.interval-ms=86400000
+tmdb.sync.initial-delay-ms=60000
+tmdb.sync.popular-pages=5
+```
+
+#### Test Properties
+
+**application-test.properties:**
+```properties
+# Disable all automatic TMDB operations in tests
+tmdb.sync.enabled=false
+
+# Use mocked API key
+tmdb.api.key=test-api-key
+```
+
+---
+
+### Testing Strategy
+
+#### Unit Tests (with Mocks)
+
+**TmdbDataCollectorTest:**
+- Use `@MockBean` for `TmdbClient` and repositories
+- Test `collectAll()` calls all sub-methods
+- Test concurrent collection prevention (`AtomicBoolean`)
+- Verify no `ApplicationRunner` behavior
+
+**TmdbDataSynchronizerTest:**
+- Use `@MockBean` for `TmdbClient` and repositories
+- Test `synchronize()` method directly
+- Verify `@Profile("!test")` excludes from test context
+
+**TmdbAdminControllerTest:**
+- Use `@WebMvcTest(TmdbAdminController.class)`
+- Mock service layer
+- Verify HTTP status codes and response format
+- Test concurrent collection returns 409
+
+#### Integration Tests
+
+**TmdbDataCollectorIntegrationTest:**
+- Mark with `@Disabled` by default (opt-in)
+- Use `@ActiveProfiles("integration")` 
+- Test against real TMDB API (optional)
+- Verify full pipeline with mocked `TmdbClient`
+
+---
+
+### Implementation Roadmap (Redesign)
+
+#### Issue #7: Remove ApplicationRunner, Add Async Support
+
+**Scope:**
+- Remove `implements ApplicationRunner` from `TmdbDataCollector`
+- Add `AtomicBoolean collectionInProgress` concurrency control
+- Add `@Async` methods for background execution
+- Create `AsyncConfiguration` with `tmdbTaskExecutor`
+- Update `TmdbDataSynchronizer` with `@Profile("!test")`
+- Remove `tmdb.collector.run-on-startup` from properties
+
+**Acceptance Criteria:**
+- Application starts without automatic data collection
+- Collector methods can be called manually
+- Concurrent collection is prevented
+- Synchronizer doesn't run during tests
+
+---
+
+#### Issue #8: Create TmdbAdminController
+
+**Scope:**
+- Create `TmdbAdminController` with all endpoints
+- Create `TmdbOperationResponse` and `TmdbStatusResponse` DTOs
+- Create `TmdbCollectionInProgressException`
+- Add handlers to `GlobalExceptionHandler`
+- Unit tests for controller
+
+**Acceptance Criteria:**
+- All 6 endpoints functional
+- Correct HTTP status codes (200, 202, 409)
+- RFC 7807 error responses
+- Controller tests pass
+
+---
+
+#### Issue #9: Update Tests for New Architecture
+
+**Scope:**
+- Update `TmdbDataCollectorLocalTest` to not require cleanup
+- Create `TmdbDataCollectorTest` (unit test with mocks)
+- Create `TmdbDataSynchronizerTest` (unit test with mocks)
+- Create `TmdbAdminControllerTest` (WebMvc test)
+- Verify no tests trigger automatic collection
+
+**Acceptance Criteria:**
+- All tests pass without deleting data
+- Tests don't hit real TMDB API
+- Tests don't trigger scheduled tasks
+- Clean test isolation
+
+---
+
+### Summary
+
+This redesign provides:
+
+✅ **On-demand collection** — REST API endpoints for manual triggers  
+✅ **Test isolation** — `@Profile("!test")` and `@MockBean` prevent auto-execution  
+✅ **Async execution** — Long-running operations don't block HTTP requests  
+✅ **Concurrency control** — Prevents duplicate collection runs  
+✅ **Admin visibility** — Status endpoint shows current state  
+✅ **Backward compatible** — Scheduled sync still works in production  
+✅ **RFC 7807 errors** — Consistent error responses  
+✅ **Clean architecture** — Follows existing REST controller patterns  
+
+---
+
 **Next Steps:**
 1. Review and approve this design document
 2. Add `tmdbId` column to `Genre` entity
 3. Begin implementation with Issue #1 (Configuration + TmdbClient)
 4. Sequential implementation through Issue #6
+5. Implement Issue #7-#9 for REST API redesign
 

@@ -2,11 +2,9 @@ package org.tvl.tvlooker.service.tmdb;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
@@ -16,10 +14,9 @@ import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class TmdbDataCollectorLocalTest {
     @Autowired
-    private TmdbDataCollector collector;
+    private TmdbDataCollectorService collector;
     @Autowired
     private ItemRepository itemRepository;
     @Autowired

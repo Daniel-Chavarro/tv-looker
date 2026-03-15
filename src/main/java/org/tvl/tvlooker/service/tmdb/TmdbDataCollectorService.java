@@ -3,9 +3,6 @@ package org.tvl.tvlooker.service.tmdb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
@@ -47,10 +44,9 @@ import java.util.Set;
  * @since 2026-03-10
  */
 @Service
-@ConditionalOnProperty(name = "tmdb.collector.run-on-startup", havingValue = "true")
-public class TmdbDataCollector implements ApplicationRunner {
+public class TmdbDataCollectorService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TmdbDataCollector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TmdbDataCollectorService.class);
 
     private final TmdbClient tmdbClient;
     private final ItemRepository itemRepository;
@@ -60,7 +56,7 @@ public class TmdbDataCollector implements ApplicationRunner {
     @Value("${tmdb.collector.max-pages:50}")
     private int maxPages;
 
-    public TmdbDataCollector(
+    public TmdbDataCollectorService(
             TmdbClient tmdbClient,
             ItemRepository itemRepository,
             GenreRepository genreRepository,
@@ -69,13 +65,6 @@ public class TmdbDataCollector implements ApplicationRunner {
         this.itemRepository = itemRepository;
         this.genreRepository = genreRepository;
         this.persistenceService = persistenceService;
-    }
-
-    @Override
-    public void run(ApplicationArguments args) {
-        LOGGER.info("========== TMDB DATA COLLECTION STARTED ==========");
-        collectAll();
-        LOGGER.info("========== TMDB DATA COLLECTION FINISHED ==========");
     }
 
     /**

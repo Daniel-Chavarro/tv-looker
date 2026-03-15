@@ -29,8 +29,8 @@ import java.util.Set;
 /**
  * Shared service containing common TMDB item persistence and mapping operations.
  *
- * <p>This service extracts duplicated logic from {@link TmdbDataCollector} and
- * {@link TmdbDataSynchronizer} for:</p>
+ * <p>This service extracts duplicated logic from {@link TmdbDataCollectorService} and
+ * {@link TmdbDataSynchronizerService} for:</p>
  * <ul>
  *   <li>Persisting movies and TV shows with their genres, actors, and directors</li>
  *   <li>Mapping TMDB DTOs to domain entities</li>
