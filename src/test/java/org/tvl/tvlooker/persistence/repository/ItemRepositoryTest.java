@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayName("ItemRepository TDD Tests")
-class ItemRepositoryPersistenceTest {
+class ItemRepositoryTest {
 
     @Autowired
     private ItemRepository itemRepository;

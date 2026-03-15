@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayName("ActorRepository TDD Tests")
-class ActorRepositoryPersistenceTest {
+class ActorRepositoryTest {
 
     @Autowired
     private ActorRepository actorRepository;

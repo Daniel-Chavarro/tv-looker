@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayName("GenreRepository TDD Tests")
-class GenreRepositoryPersistenceTest {
+class GenreRepositoryTest {
 
     @Autowired
     private GenreRepository genreRepository;
