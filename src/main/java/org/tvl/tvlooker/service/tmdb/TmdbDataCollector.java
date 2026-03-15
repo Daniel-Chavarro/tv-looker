@@ -7,30 +7,19 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.tvl.tvlooker.domain.model.entity.Actor;
-import org.tvl.tvlooker.domain.model.entity.Director;
-import org.tvl.tvlooker.domain.model.entity.Genre;
-import org.tvl.tvlooker.domain.model.entity.Item;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
-import org.tvl.tvlooker.persistence.repository.ActorRepository;
-import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
-import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemMapper;
-import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbPersonMapper;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -66,29 +55,20 @@ public class TmdbDataCollector implements ApplicationRunner {
     private final TmdbClient tmdbClient;
     private final ItemRepository itemRepository;
     private final GenreRepository genreRepository;
-    private final ActorRepository actorRepository;
-    private final DirectorRepository directorRepository;
+    private final TmdbItemPersistenceService persistenceService;
 
     @Value("${tmdb.collector.max-pages:50}")
     private int maxPages;
-
-    @Value("${tmdb.collector.request-delay-ms:40}")
-    private long requestDelayMs;
-
-    /** Maximum number of actors to store per item (top billed). */
-    private static final int MAX_ACTORS_PER_ITEM = 10;
 
     public TmdbDataCollector(
             TmdbClient tmdbClient,
             ItemRepository itemRepository,
             GenreRepository genreRepository,
-            ActorRepository actorRepository,
-            DirectorRepository directorRepository) {
+            TmdbItemPersistenceService persistenceService) {
         this.tmdbClient = tmdbClient;
         this.itemRepository = itemRepository;
         this.genreRepository = genreRepository;
-        this.actorRepository = actorRepository;
-        this.directorRepository = directorRepository;
+        this.persistenceService = persistenceService;
     }
 
     @Override
@@ -114,9 +94,9 @@ public class TmdbDataCollector implements ApplicationRunner {
         LOGGER.info("Collecting genres...");
 
         TmdbGenreListDto movieGenres = tmdbClient.getMovieGenres();
-        throttle();
+        persistenceService.throttle();
         TmdbGenreListDto tvGenres = tmdbClient.getTvGenres();
-        throttle();
+        persistenceService.throttle();
 
         Set<Integer> seen = new HashSet<>();
         int count = 0;
@@ -138,7 +118,7 @@ public class TmdbDataCollector implements ApplicationRunner {
 
         for (int page = 1; page <= maxPages; page++) {
             TmdbPagedResponseDto<TmdbMovieDto> response = tmdbClient.getPopularMovies(page);
-            throttle();
+            persistenceService.throttle();
 
             if (response == null || response.results() == null || response.results().isEmpty()) {
                 break;
@@ -150,7 +130,7 @@ public class TmdbDataCollector implements ApplicationRunner {
                         skipped++;
                         continue;
                     }
-                    persistMovie(movie);
+                    persistenceService.persistMovie(movie);
                     collected++;
                 } catch (Exception e) {
                     LOGGER.warn("Failed to persist movie '{}' (tmdbId={}): {}",
@@ -182,7 +162,7 @@ public class TmdbDataCollector implements ApplicationRunner {
 
         for (int page = 1; page <= maxPages; page++) {
             TmdbPagedResponseDto<TmdbTvShowDto> response = tmdbClient.getPopularTvShows(page);
-            throttle();
+            persistenceService.throttle();
 
             if (response == null || response.results() == null || response.results().isEmpty()) {
                 break;
@@ -194,7 +174,7 @@ public class TmdbDataCollector implements ApplicationRunner {
                         skipped++;
                         continue;
                     }
-                    persistTvShow(tvShow);
+                    persistenceService.persistTvShow(tvShow);
                     collected++;
                 } catch (Exception e) {
                     LOGGER.warn("Failed to persist TV show '{}' (tmdbId={}): {}",
@@ -217,50 +197,6 @@ public class TmdbDataCollector implements ApplicationRunner {
 
     // ===================== PRIVATE HELPERS =====================
 
-    @Transactional
-    protected void persistMovie(TmdbMovieDto movieDto) {
-        Item item = TmdbItemMapper.fromMovie(movieDto);
-
-        // Fetch full details for genre objects
-        TmdbMovieDto details = tmdbClient.getMovieDetails(movieDto.id());
-        throttle();
-        if (details != null && details.genres() != null) {
-            item.setGenres(mapGenres(details.genres()));
-        }
-
-        // Fetch credits for actors and directors
-        TmdbCreditsDto credits = tmdbClient.getMovieCredits(movieDto.id());
-        throttle();
-        if (credits != null) {
-            item.setActors(mapActors(credits));
-            item.setDirectors(mapDirectors(credits));
-        }
-
-        itemRepository.save(item);
-        LOGGER.debug("Persisted movie: '{}' (tmdbId={})", movieDto.title(), movieDto.id());
-    }
-
-    @Transactional
-    protected void persistTvShow(TmdbTvShowDto tvDto) {
-        Item item = TmdbItemMapper.fromTvShow(tvDto);
-
-        TmdbTvShowDto details = tmdbClient.getTvShowDetails(tvDto.id());
-        throttle();
-        if (details != null && details.genres() != null) {
-            item.setGenres(mapGenres(details.genres()));
-        }
-
-        TmdbCreditsDto credits = tmdbClient.getTvShowCredits(tvDto.id());
-        throttle();
-        if (credits != null) {
-            item.setActors(mapActors(credits));
-            item.setDirectors(mapDirectors(credits));
-        }
-
-        itemRepository.save(item);
-        LOGGER.debug("Persisted TV show: '{}' (tmdbId={})", tvDto.name(), tvDto.id());
-    }
-
     private int persistGenreList(TmdbGenreListDto genreList, Set<Integer> seen) {
         int count = 0;
         if (genreList != null && genreList.genres() != null) {
@@ -272,46 +208,6 @@ public class TmdbDataCollector implements ApplicationRunner {
             }
         }
         return count;
-    }
-
-    private Set<Genre> mapGenres(List<TmdbGenreDto> genreDtos) {
-        Set<Genre> genres = new HashSet<>();
-        for (TmdbGenreDto dto : genreDtos) {
-            genres.add(TmdbGenreMapper.findOrCreate(dto, genreRepository));
-        }
-        return genres;
-    }
-
-    private Set<Actor> mapActors(TmdbCreditsDto credits) {
-        Set<Actor> actors = new HashSet<>();
-        if (credits.cast() != null) {
-            credits.cast().stream()
-                    .sorted((a, b) -> Integer.compare(a.order(), b.order()))
-                    .limit(MAX_ACTORS_PER_ITEM)
-                    .forEach(c -> actors.add(
-                            TmdbPersonMapper.findOrCreateActor(c, actorRepository)));
-        }
-        return actors;
-    }
-
-    private Set<Director> mapDirectors(TmdbCreditsDto credits) {
-        Set<Director> directors = new HashSet<>();
-        if (credits.crew() != null) {
-            credits.crew().stream()
-                    .filter(c -> "Director".equalsIgnoreCase(c.job()))
-                    .forEach(c -> directors.add(
-                            TmdbPersonMapper.findOrCreateDirector(c, directorRepository)));
-        }
-        return directors;
-    }
-
-    private void throttle() {
-        try {
-            Thread.sleep(requestDelayMs);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            LOGGER.warn("Throttle interrupted");
-        }
     }
 }
 

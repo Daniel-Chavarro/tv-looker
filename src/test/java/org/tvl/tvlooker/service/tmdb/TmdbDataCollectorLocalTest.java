@@ -1,19 +1,17 @@
 package org.tvl.tvlooker.service.tmdb;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.tvl.tvlooker.domain.model.entity.Genre;
-import org.tvl.tvlooker.domain.model.entity.Item;
-import org.tvl.tvlooker.domain.model.enums.TmdbType;
+
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,6 +29,7 @@ public class TmdbDataCollectorLocalTest {
     @Autowired
     private DirectorRepository directorRepository;
 
+    @AfterEach
     @BeforeEach
     void cleanDb() {
         itemRepository.deleteAll();
@@ -38,6 +37,7 @@ public class TmdbDataCollectorLocalTest {
         actorRepository.deleteAll();
         directorRepository.deleteAll();
     }
+
 
     @Test
     void testNoDuplicatesWithRealCollector() {
