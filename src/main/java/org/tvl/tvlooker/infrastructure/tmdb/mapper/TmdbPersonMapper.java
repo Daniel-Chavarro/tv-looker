@@ -3,8 +3,8 @@ package org.tvl.tvlooker.infrastructure.tmdb.mapper;
 import org.tvl.tvlooker.domain.model.entity.Actor;
 import org.tvl.tvlooker.domain.model.entity.Director;
 import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbCreditsDto;
-import org.tvl.tvlooker.repository.ActorRepository;
-import org.tvl.tvlooker.repository.DirectorRepository;
+import org.tvl.tvlooker.persistence.repository.ActorRepository;
+import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 
 /**
  * Maps TMDB cast/crew members to Actor and Director JPA entities using find-or-create by tmdbId.

@@ -1,0 +1,55 @@
+package org.tvl.tvlooker.service.tmdb;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.tvl.tvlooker.domain.model.entity.Genre;
+import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.enums.TmdbType;
+import org.tvl.tvlooker.persistence.repository.ActorRepository;
+import org.tvl.tvlooker.persistence.repository.DirectorRepository;
+import org.tvl.tvlooker.persistence.repository.GenreRepository;
+import org.tvl.tvlooker.persistence.repository.ItemRepository;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+public class TmdbDataCollectorLocalTest {
+    @Autowired
+    private TmdbDataCollector collector;
+    @Autowired
+    private ItemRepository itemRepository;
+    @Autowired
+    private GenreRepository genreRepository;
+    @Autowired
+    private ActorRepository actorRepository;
+    @Autowired
+    private DirectorRepository directorRepository;
+
+    @BeforeEach
+    void cleanDb() {
+        itemRepository.deleteAll();
+        genreRepository.deleteAll();
+        actorRepository.deleteAll();
+        directorRepository.deleteAll();
+    }
+
+    @Test
+    void testNoDuplicatesWithRealCollector() {
+        collector.collectAll();
+        long items1 = itemRepository.count();
+        long genres1 = genreRepository.count();
+
+        collector.collectAll();
+        long items2 = itemRepository.count();
+        long genres2 = genreRepository.count();
+
+        assertEquals(items1, items2, "No debe haber duplicados en items");
+        assertEquals(genres1, genres2, "No debe haber duplicados en géneros");
+    }
+}

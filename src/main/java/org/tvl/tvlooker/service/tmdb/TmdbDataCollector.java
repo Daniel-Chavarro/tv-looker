@@ -23,10 +23,10 @@ import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbTvShowDto;
 import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbGenreMapper;
 import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbItemMapper;
 import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbPersonMapper;
-import org.tvl.tvlooker.repository.ActorRepository;
-import org.tvl.tvlooker.repository.DirectorRepository;
-import org.tvl.tvlooker.repository.GenreRepository;
-import org.tvl.tvlooker.repository.ItemRepository;
+import org.tvl.tvlooker.persistence.repository.ActorRepository;
+import org.tvl.tvlooker.persistence.repository.DirectorRepository;
+import org.tvl.tvlooker.persistence.repository.GenreRepository;
+import org.tvl.tvlooker.persistence.repository.ItemRepository;
 
 import java.util.HashSet;
 import java.util.List;

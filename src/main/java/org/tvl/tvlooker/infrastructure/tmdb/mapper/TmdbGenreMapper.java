@@ -2,7 +2,7 @@ package org.tvl.tvlooker.infrastructure.tmdb.mapper;
 
 import org.tvl.tvlooker.domain.model.entity.Genre;
 import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbGenreDto;
-import org.tvl.tvlooker.repository.GenreRepository;
+import org.tvl.tvlooker.persistence.repository.GenreRepository;
 
 /**
  * Maps TMDB genre DTOs to Genre JPA entities using find-or-create by tmdbId.

@@ -471,7 +471,7 @@ package org.tvl.tvlooker.infrastructure.tmdb.mapper;
 
 import org.tvl.tvlooker.domain.model.entity.Genre;
 import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbGenreDto;
-import org.tvl.tvlooker.repository.GenreRepository;
+import org.tvl.tvlooker.persistence.repository.GenreRepository;
 
 /**
  * Maps TMDB genre DTOs to Genre JPA entities.
@@ -502,8 +502,8 @@ package org.tvl.tvlooker.infrastructure.tmdb.mapper;
 import org.tvl.tvlooker.domain.model.entity.Actor;
 import org.tvl.tvlooker.domain.model.entity.Director;
 import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbCreditsDto;
-import org.tvl.tvlooker.repository.ActorRepository;
-import org.tvl.tvlooker.repository.DirectorRepository;
+import org.tvl.tvlooker.persistence.repository.ActorRepository;
+import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 
 /**
  * Maps TMDB cast/crew members to Actor and Director JPA entities.
@@ -860,10 +860,10 @@ import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbTvShowDto;
 import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbGenreMapper;
 import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbItemMapper;
 import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbPersonMapper;
-import org.tvl.tvlooker.repository.ActorRepository;
-import org.tvl.tvlooker.repository.DirectorRepository;
-import org.tvl.tvlooker.repository.GenreRepository;
-import org.tvl.tvlooker.repository.ItemRepository;
+import org.tvl.tvlooker.persistence.repository.ActorRepository;
+import org.tvl.tvlooker.persistence.repository.DirectorRepository;
+import org.tvl.tvlooker.persistence.repository.GenreRepository;
+import org.tvl.tvlooker.persistence.repository.ItemRepository;
 
 import java.util.HashSet;
 import java.util.List;
@@ -871,13 +871,13 @@ import java.util.Set;
 
 /**
  * Collects and persists data from the TMDB API into the local database.
- * 
+ *
  * Responsible for the initial bulk load of:
  * - Genres (from /genre/movie/list and /genre/tv/list)
  * - Popular movies (from /movie/popular, paginated)
  * - Popular TV shows (from /tv/popular, paginated)
  * - Credits for each item (actors and directors from /movie/{id}/credits and /tv/{id}/credits)
- * 
+ *
  * Design Principles:
  * - Idempotent: Re-running does not create duplicates (checks by tmdbId)
  * - Per-item transactions: One item failing does not abort the entire batch
@@ -1219,14 +1219,13 @@ import org.tvl.tvlooker.infrastructure.tmdb.dto.TmdbTvShowDto;
 import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbGenreMapper;
 import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbItemMapper;
 import org.tvl.tvlooker.infrastructure.tmdb.mapper.TmdbPersonMapper;
-import org.tvl.tvlooker.repository.ActorRepository;
-import org.tvl.tvlooker.repository.DirectorRepository;
-import org.tvl.tvlooker.repository.GenreRepository;
-import org.tvl.tvlooker.repository.ItemRepository;
+import org.tvl.tvlooker.persistence.repository.ActorRepository;
+import org.tvl.tvlooker.persistence.repository.DirectorRepository;
+import org.tvl.tvlooker.persistence.repository.GenreRepository;
+import org.tvl.tvlooker.persistence.repository.ItemRepository;
 
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -1286,7 +1285,7 @@ public class TmdbDataSynchronizer {
      * Runs at a fixed interval (default: every 24 hours).
      */
     @Scheduled(fixedDelayString = "${tmdb.sync.interval-ms:86400000}",
-               initialDelayString = "${tmdb.sync.initial-delay-ms:60000}")
+            initialDelayString = "${tmdb.sync.initial-delay-ms:60000}")
     public void synchronize() {
         logger.info("========== TMDB SYNC STARTED (changes since {}) ==========", lastSyncDate);
 
