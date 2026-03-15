@@ -190,6 +190,10 @@
                     <configLocation>checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
+                    <excludes>
+                        <exclude>src/main/resources/application.properties</exclude>
+                        <exclude>src/test/resources/application-test.properties</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
