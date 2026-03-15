@@ -3,7 +3,9 @@ package org.tvl.tvlooker.service.tmdb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.tvl.tvlooker.domain.exception.TmdbCollectionInProgressException;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
@@ -18,6 +20,8 @@ import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Collects and persists data from the TMDB API into the local database.
@@ -53,6 +57,9 @@ public class TmdbDataCollectorService {
     private final GenreRepository genreRepository;
     private final TmdbItemPersistenceService persistenceService;
 
+    /** Prevents concurrent collection operations */
+    private final AtomicBoolean collectionInProgress = new AtomicBoolean(false);
+
     @Value("${tmdb.collector.max-pages:50}")
     private int maxPages;
 
@@ -65,6 +72,82 @@ public class TmdbDataCollectorService {
         this.itemRepository = itemRepository;
         this.genreRepository = genreRepository;
         this.persistenceService = persistenceService;
+    }
+
+    /**
+     * Async version of collectAll() for REST API trigger.
+     * Prevents concurrent collection operations.
+     *
+     * @return CompletableFuture that completes when collection is done
+     * @throws TmdbCollectionInProgressException if collection is already running
+     */
+    @Async("tmdbTaskExecutor")
+    public CompletableFuture<Void> collectAllAsync() {
+        if (!collectionInProgress.compareAndSet(false, true)) {
+            throw new TmdbCollectionInProgressException(
+                    "TMDB data collection is already in progress");
+        }
+        try {
+            LOGGER.info("========== TMDB DATA COLLECTION STARTED (ASYNC) ==========");
+            collectAll();
+            LOGGER.info("========== TMDB DATA COLLECTION FINISHED ==========");
+            return CompletableFuture.completedFuture(null);
+        } finally {
+            collectionInProgress.set(false);
+        }
+    }
+
+    /**
+     * Async version of collectPopularMovies() for REST API trigger.
+     *
+     * @return CompletableFuture that completes when movie collection is done
+     * @throws TmdbCollectionInProgressException if collection is already running
+     */
+    @Async("tmdbTaskExecutor")
+    public CompletableFuture<Void> collectPopularMoviesAsync() {
+        if (!collectionInProgress.compareAndSet(false, true)) {
+            throw new TmdbCollectionInProgressException(
+                    "TMDB data collection is already in progress");
+        }
+        try {
+            LOGGER.info("========== TMDB MOVIE COLLECTION STARTED (ASYNC) ==========");
+            collectPopularMovies();
+            LOGGER.info("========== TMDB MOVIE COLLECTION FINISHED ==========");
+            return CompletableFuture.completedFuture(null);
+        } finally {
+            collectionInProgress.set(false);
+        }
+    }
+
+    /**
+     * Async version of collectPopularTvShows() for REST API trigger.
+     *
+     * @return CompletableFuture that completes when TV show collection is done
+     * @throws TmdbCollectionInProgressException if collection is already running
+     */
+    @Async("tmdbTaskExecutor")
+    public CompletableFuture<Void> collectPopularTvShowsAsync() {
+        if (!collectionInProgress.compareAndSet(false, true)) {
+            throw new TmdbCollectionInProgressException(
+                    "TMDB data collection is already in progress");
+        }
+        try {
+            LOGGER.info("========== TMDB TV SHOW COLLECTION STARTED (ASYNC) ==========");
+            collectPopularTvShows();
+            LOGGER.info("========== TMDB TV SHOW COLLECTION FINISHED ==========");
+            return CompletableFuture.completedFuture(null);
+        } finally {
+            collectionInProgress.set(false);
+        }
+    }
+
+    /**
+     * Checks if a collection operation is currently in progress.
+     *
+     * @return true if collection is running, false otherwise
+     */
+    public boolean isCollectionInProgress() {
+        return collectionInProgress.get();
     }
 
     /**
