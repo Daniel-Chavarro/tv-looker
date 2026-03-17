@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
-class UserService {
+public class UserService {
 
     private final UserRepository userRepository;
 
@@ -24,7 +24,7 @@ class UserService {
      * @param user user to persist
      * @return saved user
      */
-    public User createUser(User user) {
+    public User create(User user) {
         return userRepository.save(user);
     }
 
@@ -57,7 +57,7 @@ class UserService {
      * @return updated user
      * @throws UserNotFoundException when the user does not exist
      */
-    public User updateUser(UUID id, User user) {
+    public User update(UUID id, User user) {
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException("User not found with id: " + id);
         }
@@ -71,7 +71,7 @@ class UserService {
      * @param id user id
      * @throws UserNotFoundException when the user does not exist
      */
-    public void deleteUser(UUID id) {
+    public void delete(UUID id) {
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException("User not found with id: " + id);
         }

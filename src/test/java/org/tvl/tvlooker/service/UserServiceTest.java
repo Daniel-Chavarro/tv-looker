@@ -50,13 +50,13 @@ class UserServiceTest {
     // ========== CREATE TESTS ==========
 
     @Test
-    @DisplayName("createUser - should save and return user")
-    void createUser_shouldSaveAndReturnUser() {
+    @DisplayName("create - should save and return user")
+    void createUser_shouldSaveAndReturn() {
         // Arrange
         when(userRepository.save(any(User.class))).thenReturn(testUser);
 
         // Act
-        User result = userService.createUser(testUser);
+        User result = userService.create(testUser);
 
         // Assert
         assertThat(result).isNotNull();
@@ -137,8 +137,8 @@ class UserServiceTest {
     // ========== UPDATE TESTS ==========
 
     @Test
-    @DisplayName("updateUser - should update and return user when user exists")
-    void updateUser_shouldUpdateAndReturnUser_whenUserExists() {
+    @DisplayName("update - should update and return user when user exists")
+    void updateUser_shouldUpdateAndReturnUser_whenExists() {
         // Arrange
         User updatedUser = User.builder()
                 .username("updateduser")
@@ -154,7 +154,7 @@ class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         // Act
-        User result = userService.updateUser(testUserId, updatedUser);
+        User result = userService.update(testUserId, updatedUser);
 
         // Assert
         assertThat(result).isNotNull();
@@ -165,8 +165,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("updateUser - should throw UserNotFoundException when user does not exist")
-    void updateUser_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
+    @DisplayName("update - should throw UserNotFoundException when user does not exist")
+    void updateUser_shouldThrowUserNotFoundException_whenDoesNotExist() {
         // Arrange
         UUID nonExistentId = UUID.randomUUID();
         User updatedUser = User.builder()
@@ -177,7 +177,7 @@ class UserServiceTest {
         when(userRepository.existsById(nonExistentId)).thenReturn(false);
 
         // Act & Assert
-        assertThatThrownBy(() -> userService.updateUser(nonExistentId, updatedUser))
+        assertThatThrownBy(() -> userService.update(nonExistentId, updatedUser))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User not found with id: " + nonExistentId);
         verify(userRepository, times(1)).existsById(nonExistentId);
@@ -185,8 +185,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("updateUser - should set ID on user entity before saving")
-    void updateUser_shouldSetIdOnUserEntity_beforeSaving() {
+    @DisplayName("update - should set ID on user entity before saving")
+    void updateUser_shouldSetIdOnEntity_beforeSaving() {
         // Arrange
         User updatedUser = User.builder()
                 .username("updateduser")
@@ -201,7 +201,7 @@ class UserServiceTest {
         });
 
         // Act
-        userService.updateUser(testUserId, updatedUser);
+        userService.update(testUserId, updatedUser);
 
         // Assert
         verify(userRepository, times(1)).save(any(User.class));
@@ -210,14 +210,14 @@ class UserServiceTest {
     // ========== DELETE TESTS ==========
 
     @Test
-    @DisplayName("deleteUser - should delete user when user exists")
-    void deleteUser_shouldDeleteUser_whenUserExists() {
+    @DisplayName("delete - should delete user when user exists")
+    void deleteUser_shouldDeleteUser_whenExists() {
         // Arrange
         when(userRepository.existsById(testUserId)).thenReturn(true);
         doNothing().when(userRepository).deleteById(testUserId);
 
         // Act
-        userService.deleteUser(testUserId);
+        userService.delete(testUserId);
 
         // Assert
         verify(userRepository, times(1)).existsById(testUserId);
@@ -225,14 +225,14 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("deleteUser - should throw UserNotFoundException when user does not exist")
-    void deleteUser_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
+    @DisplayName("delete - should throw UserNotFoundException when user does not exist")
+    void deleteUser_shouldThrowUserNotFoundException_whenDoesNotExist() {
         // Arrange
         UUID nonExistentId = UUID.randomUUID();
         when(userRepository.existsById(nonExistentId)).thenReturn(false);
 
         // Act & Assert
-        assertThatThrownBy(() -> userService.deleteUser(nonExistentId))
+        assertThatThrownBy(() -> userService.delete(nonExistentId))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User not found with id: " + nonExistentId);
         verify(userRepository, times(1)).existsById(nonExistentId);
