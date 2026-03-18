@@ -23,14 +23,14 @@ import org.tvl.tvlooker.domain.model.enums.InteractionType;
  * The interaction is identified by a unique ID and contains information such as the type of interaction,
  * the timestamp when it was created, and the associated user, item, and review.
  */
-@Table
-@Entity(name = "interactions")
+@Entity
+@Table(name = "interactions")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Builder
-public class Interaction {
+public class InteractionEntity {
     /**
      * The unique identifier for the interaction, generated as a Long.
      * This field is the primary key of the "interactions" table.
@@ -60,7 +60,7 @@ public class Interaction {
      */
     @ManyToOne
     @JoinColumn(name = "user_id_fk", nullable = false)
-    private User user;
+    private UserEntity user;
 
     /**
      * The item associated with the interaction, represented as a many-to-one relationship.
@@ -68,7 +68,7 @@ public class Interaction {
      */
     @ManyToOne
     @JoinColumn(name = "item_id_pk", nullable = false)
-    private Item item;
+    private ItemEntity item;
 
     /**
      * The review associated with the interaction, represented as a many-to-one relationship.
@@ -76,6 +76,6 @@ public class Interaction {
      */
     @ManyToOne
     @JoinColumn(name = "review_id_pk")
-    private Review review;
+    private ReviewEntity review;
 
 }

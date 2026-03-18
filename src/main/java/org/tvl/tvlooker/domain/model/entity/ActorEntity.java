@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +21,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Actor {
+@Builder
+public class ActorEntity {
     /**
      * The unique identifier for the actor, generated as a Long.
      * This field is the primary key of the "actors" table and is not updatable or nullable.

@@ -31,7 +31,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
-public class ListFavorite {
+public class ListFavoriteEntity {
     /**
      * The unique identifier for the list of favorites, generated as a Long.
      * This field is the primary key of the "list_favorites" table and is not updatable or nullable.
@@ -61,7 +61,7 @@ public class ListFavorite {
      */
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id_fk", nullable = false)
-    private User user;
+    private UserEntity user;
 
     /**
      * The set of items associated with the list of favorites, represented as a many-to-many relationship.
@@ -76,5 +76,5 @@ public class ListFavorite {
             joinColumns = @JoinColumn(name = "list_id_fk"),
             inverseJoinColumns = @JoinColumn(name = "item_id_fk")
     )
-    private Set<Item> items;
+    private Set<ItemEntity> items;
 }

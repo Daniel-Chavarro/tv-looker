@@ -9,11 +9,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.sql.Timestamp;
 
 /**
  * Represents a review in the system, containing information about the review text, score, the item being reviewed, and
@@ -27,7 +31,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class Review{
+public class ReviewEntity {
     /**
      * The unique identifier for the review, generated as a Long.
      * This field is the primary key of the "reviews" table and is not updatable or nullable.
@@ -51,13 +55,17 @@ public class Review{
     @Column(name = "score", nullable = false)
     private int score;
 
+    @Column(name = "review_date", nullable = false)
+    @UpdateTimestamp
+    private Timestamp reviewDate;
+
     /**
      * The item being reviewed, represented as a many-to-one relationship with the Item entity.
      * This field is not nullable and is linked to the "items" table via a foreign key.
      */
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "item_id_fk", nullable = false)
-    private Item item;
+    private ItemEntity item;
 
     /**
      * The user who wrote the review, represented as a many-to-one relationship with the User entity.
@@ -65,5 +73,5 @@ public class Review{
      */
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id_fk", nullable = false)
-    private User user;
+    private UserEntity user;
 }
