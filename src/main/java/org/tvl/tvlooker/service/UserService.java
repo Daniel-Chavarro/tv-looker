@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
 import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.persistence.mapper.UserEntityMapper;
 import org.tvl.tvlooker.persistence.repository.UserRepository;
 
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserEntityMapper userMapper;
 
     /**
      * Create a new user.
@@ -28,8 +28,8 @@ public class UserService {
      * @return saved user
      */
     public User create(User user) {
-        var entity = userMapper.toEntity(user);
-        return userMapper.toDomain(userRepository.save(entity));
+        UserEntity entity = UserEntityMapper.toEntity(user);
+        return UserEntityMapper.toDomain(userRepository.save(entity));
     }
 
     /**
@@ -41,7 +41,7 @@ public class UserService {
      */
     public User getById(UUID id) {
         return userRepository.findById(id)
-                .map(userMapper::toDomain)
+                .map(UserEntityMapper::toDomain)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
     }
 
@@ -52,7 +52,7 @@ public class UserService {
      */
     public List<User> getAll() {
         return userRepository.findAll().stream()
-                .map(userMapper::toDomain)
+                .map(UserEntityMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
@@ -68,9 +68,23 @@ public class UserService {
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException("User not found with id: " + id);
         }
-        var entity = userMapper.toEntity(user);
-        entity.setId(id);
-        return userMapper.toDomain(userRepository.save(entity));
+        UserEntity actual = userRepository.getReferenceById(id);
+        UserEntity update = UserEntityMapper.toEntity(user);
+
+        if (update.getEmail() != null) {
+            actual.setEmail(update.getEmail());
+        }
+        if (update.getName() != null) {
+            actual.setName(update.getName());
+        }
+        if (update.getPassword() != null) {
+            actual.setPassword(update.getPassword());
+        }
+        if (update.getUsername() != null) {
+            actual.setUsername(update.getUsername());
+        }
+
+        return UserEntityMapper.toDomain(userRepository.save(actual));
     }
 
     /**

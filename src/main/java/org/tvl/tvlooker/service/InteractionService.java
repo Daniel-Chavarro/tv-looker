@@ -2,7 +2,9 @@ package org.tvl.tvlooker.service;
 
 import org.tvl.tvlooker.domain.model.Interaction;
 import org.tvl.tvlooker.domain.exception.InteractionNotFoundException;
+import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.model.Review;
+import org.tvl.tvlooker.domain.model.User;
 import org.tvl.tvlooker.domain.model.entity.InteractionEntity;
 import org.tvl.tvlooker.persistence.mapper.InteractionEntityMapper;
 import org.tvl.tvlooker.persistence.repository.InteractionRepository;
@@ -20,6 +22,8 @@ public class InteractionService {
 
     private final InteractionRepository interactionRepository;
     private final ReviewService reviewService;
+    private final UserService userService;
+    private final ItemService itemService;
 
     /**
      * Create a new interaction.
@@ -28,7 +32,11 @@ public class InteractionService {
      * @return saved interaction
      */
     public Interaction create(Interaction interaction) {
-        InteractionEntity entity = InteractionEntityMapper.toEntity(interaction);
+        User user = userService.getById(interaction.getUserId());
+        Item item = itemService.getById(interaction.getItemId());
+        Review review = reviewService.getById(interaction.getReviewId());
+
+        InteractionEntity entity = InteractionEntityMapper.toEntity(interaction, user, item, review);
         return InteractionEntityMapper.toDomain(interactionRepository.save(entity));
     }
 
@@ -70,8 +78,11 @@ public class InteractionService {
         }
         InteractionEntity actual = interactionRepository.getReferenceById(id);
 
+        User user = userService.getById(interaction.getUserId());
+        Item item = itemService.getById(interaction.getItemId());
         Review review = reviewService.getById(interaction.getReviewId());
-        InteractionEntity update = InteractionEntityMapper.toEntity(interaction, review);
+
+        InteractionEntity update = InteractionEntityMapper.toEntity(interaction, user, item, review);
 
         if (update.getReview() != null) {
             actual.setReview(update.getReview());

@@ -3,8 +3,12 @@ package org.tvl.tvlooker.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.ReviewNotFoundException;
+import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.model.Review;
+import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.entity.ReviewEntity;
 import org.tvl.tvlooker.persistence.mapper.ReviewEntityMapper;
+import org.tvl.tvlooker.persistence.mapper.UserEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ReviewRepository;
 
 import java.util.List;
@@ -19,7 +23,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
-    private final ReviewEntityMapper reviewMapper;
+    private final UserService userService;
+    private final ItemService itemService;
 
     /**
      * Create a new review.
@@ -28,8 +33,10 @@ public class ReviewService {
      * @return saved review
      */
     public Review create(Review review) {
-        var entity = reviewMapper.toEntity(review);
-        return reviewMapper.toDomain(reviewRepository.save(entity));
+        User user = userService.getById(review.getUserId());
+        Item item = itemService.getById(review.getItemId());
+        ReviewEntity entity = ReviewEntityMapper.toEntity(review, user, item);
+        return ReviewEntityMapper.toDomain(reviewRepository.save(entity));
     }
 
     /**
@@ -41,7 +48,7 @@ public class ReviewService {
      */
     public Review getById(Long id) {
         return reviewRepository.findById(id)
-                .map(reviewMapper::toDomain)
+                .map(ReviewEntityMapper::toDomain)
                 .orElseThrow(() -> new ReviewNotFoundException("Review not found: " + id));
     }
 
@@ -52,7 +59,7 @@ public class ReviewService {
      */
     public List<Review> getAll() {
         return reviewRepository.findAll().stream()
-                .map(reviewMapper::toDomain)
+                .map(ReviewEntityMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
@@ -68,9 +75,25 @@ public class ReviewService {
         if (!reviewRepository.existsById(id)) {
             throw new ReviewNotFoundException("Review not found: " + id);
         }
-        var entity = reviewMapper.toEntity(review);
-        entity.setId(id);
-        return reviewMapper.toDomain(reviewRepository.save(entity));
+
+        User user = userService.getById(review.getUserId());
+        Item item = itemService.getById(review.getItemId());
+        ReviewEntity update = ReviewEntityMapper.toEntity(review, user, item);
+        ReviewEntity actual = reviewRepository.getReferenceById(id);
+
+        if (update.getReviewDate() != null) {
+            actual.setReviewDate(update.getReviewDate());
+        }
+
+        if (update.getReviewText() != null) {
+            actual.setReviewText(update.getReviewText());
+        }
+
+        if (0 <= update.getScore() && update.getScore() <= 5) {
+            actual.setScore(update.getScore());
+        }
+
+        return ReviewEntityMapper.toDomain(reviewRepository.save(actual));
     }
 
     /**
@@ -95,6 +118,6 @@ public class ReviewService {
      */
     public Optional<Review> findByUserIdAndItemId(UUID userId, Long itemId) {
         return reviewRepository.findByUserIdAndItemId(userId, itemId)
-                .map(reviewMapper::toDomain);
+                .map(ReviewEntityMapper::toDomain);
     }
 }
