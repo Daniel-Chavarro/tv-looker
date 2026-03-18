@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.mapper.InteractionMapper;
 import org.tvl.tvlooker.api.dto.request.CreateInteractionRequest;
+import org.tvl.tvlooker.api.dto.request.UpdateInteractionRequest;
 import org.tvl.tvlooker.api.dto.response.InteractionResponse;
 import org.tvl.tvlooker.domain.model.entity.Interaction;
 import org.tvl.tvlooker.service.InteractionService;
@@ -59,14 +60,16 @@ public class InteractionController {
         return ResponseEntity.ok(INTERACTION_MAPPER.toResponse(interaction));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<InteractionResponse> updateInteraction(
-            @PathVariable Long id,
-            @RequestBody CreateInteractionRequest request) {
-        Interaction interaction = INTERACTION_MAPPER.fromCreateRequest(request);
-        Interaction updated = INTERACTION_SERVICE.update(id, interaction);
-        return ResponseEntity.ok(INTERACTION_MAPPER.toResponse(updated));
-    }
+    //TODO: REFACTOR update services to accept an id, old and new objects, then update only the fields that are not
+    // null in the new object
+//    @PutMapping("/{id}")
+//    public ResponseEntity<InteractionResponse> updateInteraction(
+//            @PathVariable Long id,
+//            @RequestBody UpdateInteractionRequest request) {
+//        Interaction interaction = INTERACTION_MAPPER.fromUpdateRequest(id, request);
+//        Interaction updated = INTERACTION_SERVICE.update(id, interaction);
+//        return ResponseEntity.ok(INTERACTION_MAPPER.toResponse(updated));
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInteraction(@PathVariable Long id) {
