@@ -159,7 +159,7 @@ public class TmdbItemPersistenceService {
      * @return set of Actor entities
      */
     public Set<ActorEntity> mapActors(TmdbCreditsDto credits) {
-        Set<Actor> actors = new HashSet<>();
+        Set<ActorEntity> actors = new HashSet<>();
         if (credits.cast() != null) {
             credits.cast().stream()
                     .sorted((a, b) -> Integer.compare(a.order(), b.order()))
@@ -178,7 +178,7 @@ public class TmdbItemPersistenceService {
      * @return set of Director entities
      */
     public Set<DirectorEntity> mapDirectors(TmdbCreditsDto credits) {
-        Set<Director> directors = new HashSet<>();
+        Set<DirectorEntity> directors = new HashSet<>();
         if (credits.crew() != null) {
             credits.crew().stream()
                     .filter(c -> "Director".equalsIgnoreCase(c.job()))

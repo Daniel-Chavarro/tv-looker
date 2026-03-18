@@ -1,7 +1,8 @@
 package org.tvl.tvlooker.persistence.tmdb.mapper;
 
-import org.tvl.tvlooker.domain.model.entity.Actor;
-import org.tvl.tvlooker.domain.model.entity.Director;
+
+import org.tvl.tvlooker.domain.model.entity.ActorEntity;
+import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
@@ -26,12 +27,12 @@ public final class TmdbPersonMapper {
      * @param repository the actor repository
      * @return the existing or newly created Actor entity
      */
-    public static Actor findOrCreateActor(
+    public static ActorEntity findOrCreateActor(
             TmdbCreditsDto.CastMember castMember,
             ActorRepository repository) {
         return repository.findByTmdbId(castMember.id())
                 .orElseGet(() -> {
-                    Actor actor = new Actor();
+                    ActorEntity actor = new ActorEntity();
                     actor.setTmdbId(castMember.id());
                     actor.setName(castMember.name());
                     return repository.save(actor);
@@ -46,12 +47,12 @@ public final class TmdbPersonMapper {
      * @param repository the director repository
      * @return the existing or newly created Director entity
      */
-    public static Director findOrCreateDirector(
+    public static DirectorEntity findOrCreateDirector(
             TmdbCreditsDto.CrewMember crewMember,
             DirectorRepository repository) {
         return repository.findByTmdbId(crewMember.id())
                 .orElseGet(() -> {
-                    Director director = new Director();
+                    DirectorEntity director = new DirectorEntity();
                     director.setTmdbId(crewMember.id());
                     director.setName(crewMember.name());
                     return repository.save(director);
