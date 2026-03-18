@@ -1,11 +1,14 @@
 package org.tvl.tvlooker.service;
 
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.exception.ItemNotFoundException;
+import org.tvl.tvlooker.domain.model.entity.ItemEntity;
+import org.tvl.tvlooker.persistence.mapper.ItemEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service for Item entity operations.
@@ -23,7 +26,8 @@ public class ItemService {
      * @return saved item
      */
     public Item create(Item item) {
-        return itemRepository.save(item);
+        ItemEntity entity = ItemEntityMapper.toEntity(item);
+        return ItemEntityMapper.toDomain(itemRepository.save(entity));
     }
 
     /**
@@ -35,6 +39,7 @@ public class ItemService {
      */
     public Item getById(Long id) {
         return itemRepository.findById(id)
+                .map(ItemEntityMapper::toDomain)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found: " + id));
     }
 
@@ -44,7 +49,9 @@ public class ItemService {
      * @return list of items
      */
     public List<Item> getAll() {
-        return itemRepository.findAll();
+        return itemRepository.findAll().stream()
+                .map(ItemEntityMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -59,8 +66,42 @@ public class ItemService {
         if (!itemRepository.existsById(id)) {
             throw new ItemNotFoundException("Item not found: " + id);
         }
-        item.setId(id);
-        return itemRepository.save(item);
+
+        ItemEntity actual = itemRepository.getReferenceById(id);
+        ItemEntity update = ItemEntityMapper.toEntity(item);
+
+        if (update.getTitle() != null) {
+            actual.setTitle(update.getTitle());
+        }
+        if (update.getGenres() != null) {
+            actual.setGenres(update.getGenres());
+        }
+        if (update.getDirectors() != null) {
+            actual.setDirectors(update.getDirectors());
+        }
+        if (update.getActors() != null) {
+            actual.setActors(update.getActors());
+        }
+        if (update.getTmdbId() != null) {
+            actual.setTmdbId(update.getTmdbId());
+        }
+        if (update.getTmdbType() != null) {
+            actual.setTmdbType(update.getTmdbType());
+        }
+        if (update.getOverview() != null) {
+            actual.setOverview(update.getOverview());
+        }
+        if (update.getReleaseDate() != null) {
+            actual.setReleaseDate(update.getReleaseDate());
+        }
+        if (update.getVoteAverage() != null) {
+            actual.setVoteAverage(update.getVoteAverage());
+        }
+        if (update.getPopularity() != null) {
+            actual.setPopularity(update.getPopularity());
+        }
+
+        return ItemEntityMapper.toDomain(itemRepository.save(actual));
     }
 
     /**

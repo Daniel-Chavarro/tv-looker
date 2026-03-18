@@ -3,11 +3,13 @@ package org.tvl.tvlooker.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.persistence.mapper.UserEntityMapper;
 import org.tvl.tvlooker.persistence.repository.UserRepository;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service for User entity operations.
@@ -17,6 +19,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserEntityMapper userMapper;
 
     /**
      * Create a new user.
@@ -25,7 +28,8 @@ public class UserService {
      * @return saved user
      */
     public User create(User user) {
-        return userRepository.save(user);
+        var entity = userMapper.toEntity(user);
+        return userMapper.toDomain(userRepository.save(entity));
     }
 
     /**
@@ -36,8 +40,9 @@ public class UserService {
      * @throws UserNotFoundException when the user does not exist
      */
     public User getById(UUID id) {
-        return userRepository.findById(id).orElseThrow(() ->
-                new UserNotFoundException("User not found with id: " + id));
+        return userRepository.findById(id)
+                .map(userMapper::toDomain)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
     }
 
     /**
@@ -46,7 +51,9 @@ public class UserService {
      * @return list of users
      */
     public List<User> getAll() {
-        return userRepository.findAll();
+        return userRepository.findAll().stream()
+                .map(userMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -61,8 +68,9 @@ public class UserService {
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException("User not found with id: " + id);
         }
-        user.setId(id);
-        return userRepository.save(user);
+        var entity = userMapper.toEntity(user);
+        entity.setId(id);
+        return userMapper.toDomain(userRepository.save(entity));
     }
 
     /**

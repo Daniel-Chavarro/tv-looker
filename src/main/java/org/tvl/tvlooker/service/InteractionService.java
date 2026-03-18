@@ -1,11 +1,15 @@
 package org.tvl.tvlooker.service;
 
-import org.tvl.tvlooker.domain.model.entity.Interaction;
+import org.tvl.tvlooker.domain.model.Interaction;
 import org.tvl.tvlooker.domain.exception.InteractionNotFoundException;
+import org.tvl.tvlooker.domain.model.Review;
+import org.tvl.tvlooker.domain.model.entity.InteractionEntity;
+import org.tvl.tvlooker.persistence.mapper.InteractionEntityMapper;
 import org.tvl.tvlooker.persistence.repository.InteractionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service for Interaction entity operations.
@@ -15,6 +19,7 @@ import java.util.List;
 public class InteractionService {
 
     private final InteractionRepository interactionRepository;
+    private final ReviewService reviewService;
 
     /**
      * Create a new interaction.
@@ -23,7 +28,8 @@ public class InteractionService {
      * @return saved interaction
      */
     public Interaction create(Interaction interaction) {
-        return interactionRepository.save(interaction);
+        InteractionEntity entity = InteractionEntityMapper.toEntity(interaction);
+        return InteractionEntityMapper.toDomain(interactionRepository.save(entity));
     }
 
     /**
@@ -35,6 +41,7 @@ public class InteractionService {
      */
     public Interaction getById(Long id) {
         return interactionRepository.findById(id)
+                .map(InteractionEntityMapper::toDomain)
                 .orElseThrow(() -> new InteractionNotFoundException("Interaction not found: " + id));
     }
 
@@ -44,7 +51,9 @@ public class InteractionService {
      * @return list of interactions
      */
     public List<Interaction> getAll() {
-        return interactionRepository.findAll();
+        return interactionRepository.findAll().stream()
+                .map(InteractionEntityMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -59,8 +68,18 @@ public class InteractionService {
         if (!interactionRepository.existsById(id)) {
             throw new InteractionNotFoundException("Interaction not found: " + id);
         }
-        interaction.setId(id);
-        return interactionRepository.save(interaction);
+        InteractionEntity actual = interactionRepository.getReferenceById(id);
+
+        Review review = reviewService.getById(interaction.getReviewId());
+        InteractionEntity update = InteractionEntityMapper.toEntity(interaction, review);
+
+        if (update.getReview() != null) {
+            actual.setReview(update.getReview());
+        }
+        if (update.getInteractionType() != null) {
+            actual.setInteractionType(update.getInteractionType());}
+
+        return InteractionEntityMapper.toDomain(interactionRepository.save(actual));
     }
 
     /**

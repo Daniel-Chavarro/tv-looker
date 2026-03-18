@@ -3,17 +3,20 @@ package org.tvl.tvlooker.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.DirectorNotFoundException;
-import org.tvl.tvlooker.domain.model.entity.Director;
+import org.tvl.tvlooker.domain.model.Director;
+import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
+import org.tvl.tvlooker.persistence.mapper.DirectorEntityMapper;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service for Director entity operations
  */
 @RequiredArgsConstructor
 @Service
-class DirectorService {
+public class DirectorService {
 
 	private final DirectorRepository directorRepository;
 
@@ -24,7 +27,8 @@ class DirectorService {
 	 * @return saved director
 	 */
 	public Director create(Director director) {
-		return directorRepository.save(director);
+		DirectorEntity entity = DirectorEntityMapper.toEntity(director);
+		return DirectorEntityMapper.toDomain(directorRepository.save(entity));
 	}
 
 	/**
@@ -36,6 +40,7 @@ class DirectorService {
 	 */
 	public Director getById(Long id) {
 		return directorRepository.findById(id)
+				.map(DirectorEntityMapper::toDomain)
 				.orElseThrow(() -> new DirectorNotFoundException("Director not found: " + id));
 	}
 
@@ -45,7 +50,9 @@ class DirectorService {
 	 * @return list of directors
 	 */
 	public List<Director> getAll() {
-		return directorRepository.findAll();
+		return directorRepository.findAll().stream()
+				.map(DirectorEntityMapper::toDomain)
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -60,8 +67,19 @@ class DirectorService {
 		if (!directorRepository.existsById(id)) {
 			throw new DirectorNotFoundException("Director not found: " + id);
 		}
-		director.setId(id);
-		return directorRepository.save(director);
+		DirectorEntity actual = directorRepository.getReferenceById(id);
+		DirectorEntity update = DirectorEntityMapper.toEntity(director);
+
+		if (update.getName() != null) {
+			actual.setName(update.getName());
+		}
+		if (update.getTmdbId() != null) {
+			actual.setTmdbId(update.getTmdbId());
+		}
+
+		return DirectorEntityMapper.toDomain(directorRepository.save(actual));
+
+
 	}
 
 	/**
