@@ -234,14 +234,14 @@ class InteractionServiceTest {
     // ========== DELETE TESTS ==========
 
     @Test
-    @DisplayName("deleteById - should delete interaction when interaction exists")
+    @DisplayName("delete - should delete interaction when interaction exists")
     void deleteById_shouldDeleteInteraction_whenInteractionExists() {
         // Arrange
         when(interactionRepository.existsById(testInteractionId)).thenReturn(true);
         doNothing().when(interactionRepository).deleteById(testInteractionId);
 
         // Act
-        interactionService.deleteById(testInteractionId);
+        interactionService.delete(testInteractionId);
 
         // Assert
         verify(interactionRepository, times(1)).existsById(testInteractionId);
@@ -249,14 +249,14 @@ class InteractionServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById - should throw InteractionNotFoundException when interaction does not exist")
+    @DisplayName("delete - should throw InteractionNotFoundException when interaction does not exist")
     void deleteById_shouldThrowInteractionNotFoundException_whenInteractionDoesNotExist() {
         // Arrange
         Long nonExistentId = 999L;
         when(interactionRepository.existsById(nonExistentId)).thenReturn(false);
 
         // Act & Assert
-        assertThatThrownBy(() -> interactionService.deleteById(nonExistentId))
+        assertThatThrownBy(() -> interactionService.delete(nonExistentId))
                 .isInstanceOf(InteractionNotFoundException.class)
                 .hasMessageContaining("Interaction not found: " + nonExistentId);
         verify(interactionRepository, times(1)).existsById(nonExistentId);

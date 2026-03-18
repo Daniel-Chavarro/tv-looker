@@ -204,7 +204,7 @@ class DirectorServiceTest {
     // ========== DELETE TESTS ==========
 
     @Test
-    @DisplayName("deleteById - should delete director when director exists")
+    @DisplayName("delete - should delete director when director exists")
     void deleteById_shouldDeleteDirector_whenDirectorExists() {
         // Arrange
         when(directorRepository.existsById(testDirectorId)).thenReturn(true);
@@ -219,7 +219,7 @@ class DirectorServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById - should throw DirectorNotFoundException when director does not exist")
+    @DisplayName("delete - should throw DirectorNotFoundException when director does not exist")
     void deleteById_shouldThrowDirectorNotFoundException_whenDirectorDoesNotExist() {
         // Arrange
         Long nonExistentId = 999L;

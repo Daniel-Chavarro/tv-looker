@@ -69,7 +69,7 @@ public class InteractionService {
      * @param id interaction id
      * @throws InteractionNotFoundException when the interaction does not exist
      */
-    public void deleteById(Long id) {
+    public void delete(Long id) {
         if (!interactionRepository.existsById(id)) {
             throw new InteractionNotFoundException("Interaction not found: " + id);
         }

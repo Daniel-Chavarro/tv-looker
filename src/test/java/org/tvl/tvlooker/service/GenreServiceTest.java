@@ -196,7 +196,7 @@ class GenreServiceTest {
     // ========== DELETE TESTS ==========
 
     @Test
-    @DisplayName("deleteById - should delete genre when genre exists")
+    @DisplayName("delete - should delete genre when genre exists")
     void deleteById_shouldDeleteGenre_whenGenreExists() {
         // Arrange
         when(genreRepository.existsById(testGenreId)).thenReturn(true);
@@ -211,7 +211,7 @@ class GenreServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById - should throw GenreNotFoundException when genre does not exist")
+    @DisplayName("delete - should throw GenreNotFoundException when genre does not exist")
     void deleteById_shouldThrowGenreNotFoundException_whenGenreDoesNotExist() {
         // Arrange
         Long nonExistentId = 999L;

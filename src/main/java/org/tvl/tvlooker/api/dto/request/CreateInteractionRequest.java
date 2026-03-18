@@ -20,4 +20,6 @@ public class CreateInteractionRequest {
 
     @NotNull(message = "Interaction type is required")
     private InteractionType interactionType;
+
+    private Long reviewId; // Optional, only needed for certain interaction types
 }

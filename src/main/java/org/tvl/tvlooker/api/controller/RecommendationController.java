@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.tvl.tvlooker.api.dto.mapper.ItemMapper;
 import org.tvl.tvlooker.api.dto.response.ItemResponse;
 import org.tvl.tvlooker.api.dto.response.RecommendationResponse;
 import org.tvl.tvlooker.domain.model.entity.Item;
@@ -22,7 +23,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RecommendationController {
     private final RecommendationService recommendationService;
-    private final ItemMapper itemMapper;
+
+    private final ItemMapper ITEM_MAPPER;
 
     @GetMapping
     public ResponseEntity<RecommendationResponse> getRecommendations(
@@ -33,7 +35,7 @@ public class RecommendationController {
                 recommendationService.getUserRecommendations(userId, limit);
 
         List<ItemResponse> items = recommendations.stream()
-                .map(itemMapper::toResponse)
+                .map(ITEM_MAPPER::toResponse)
                 .toList();
 
         RecommendationResponse response = RecommendationResponse.builder()

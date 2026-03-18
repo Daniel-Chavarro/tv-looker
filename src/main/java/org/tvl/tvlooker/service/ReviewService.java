@@ -7,13 +7,15 @@ import org.tvl.tvlooker.domain.model.entity.Review;
 import org.tvl.tvlooker.persistence.repository.ReviewRepository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Service for Review entity operations.
  */
 @Service
 @RequiredArgsConstructor
-class ReviewService {
+public class ReviewService {
     private final ReviewRepository reviewRepository;
 
     /**
@@ -74,5 +76,16 @@ class ReviewService {
             throw new ReviewNotFoundException("Review not found: " + id);
         }
         reviewRepository.deleteById(id);
+    }
+
+    /**
+     * Find a review by user ID and item ID.
+     *
+     * @param userId user ID
+     * @param itemId item ID
+     * @return optional review.
+     */
+    public Optional<Review> findByUserIdAndItemId(UUID userId, Long itemId) {
+        return reviewRepository.findByUserIdAndItemId(userId, itemId);
     }
 }

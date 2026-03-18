@@ -251,7 +251,7 @@ class ListFavoriteServiceTest {
     // ========== DELETE TESTS ==========
 
     @Test
-    @DisplayName("deleteById - should delete list favorite when list exists")
+    @DisplayName("delete - should delete list favorite when list exists")
     void deleteById_shouldDeleteListFavorite_whenListExists() {
         // Arrange
         when(listFavoriteRepository.existsById(testListId)).thenReturn(true);
@@ -266,7 +266,7 @@ class ListFavoriteServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById - should throw ListFavoriteNotFoundException when list does not exist")
+    @DisplayName("delete - should throw ListFavoriteNotFoundException when list does not exist")
     void deleteById_shouldThrowListFavoriteNotFoundException_whenListDoesNotExist() {
         // Arrange
         Long nonExistentId = 999L;

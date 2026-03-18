@@ -24,6 +24,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class TmdbAdminController {
 
+
     private final TmdbDataCollectorService collector;
     private final TmdbDataSynchronizerService synchronizer;
 

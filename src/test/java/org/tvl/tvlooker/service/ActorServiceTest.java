@@ -204,7 +204,7 @@ class ActorServiceTest {
     // ========== DELETE TESTS ==========
 
     @Test
-    @DisplayName("deleteById - should delete actor when actor exists")
+    @DisplayName("delete - should delete actor when actor exists")
     void deleteById_shouldDeleteActor_whenActorExists() {
         // Arrange
         when(actorRepository.existsById(testActorId)).thenReturn(true);
@@ -219,7 +219,7 @@ class ActorServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById - should throw ActorNotFoundException when actor does not exist")
+    @DisplayName("delete - should throw ActorNotFoundException when actor does not exist")
     void deleteById_shouldThrowActorNotFoundException_whenActorDoesNotExist() {
         // Arrange
         Long nonExistentId = 999L;

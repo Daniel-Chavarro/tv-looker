@@ -215,7 +215,7 @@ class ItemServiceTest {
     // ========== DELETE TESTS ==========
 
     @Test
-    @DisplayName("deleteById - should delete item when item exists")
+    @DisplayName("delete - should delete item when item exists")
     void deleteById_shouldDeleteItem_whenItemExists() {
         // Arrange
         when(itemRepository.existsById(testItemId)).thenReturn(true);
@@ -230,7 +230,7 @@ class ItemServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById - should throw ItemNotFoundException when item does not exist")
+    @DisplayName("delete - should throw ItemNotFoundException when item does not exist")
     void deleteById_shouldThrowItemNotFoundException_whenItemDoesNotExist() {
         // Arrange
         Long nonExistentId = 999L;

@@ -209,7 +209,7 @@ class ReviewServiceTest {
     // ========== DELETE TESTS ==========
 
     @Test
-    @DisplayName("deleteById - should delete review when review exists")
+    @DisplayName("delete - should delete review when review exists")
     void deleteById_shouldDeleteReview_whenReviewExists() {
         // Arrange
         when(reviewRepository.existsById(testReviewId)).thenReturn(true);
@@ -224,7 +224,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById - should throw ReviewNotFoundException when review does not exist")
+    @DisplayName("delete - should throw ReviewNotFoundException when review does not exist")
     void deleteById_shouldThrowReviewNotFoundException_whenReviewDoesNotExist() {
         // Arrange
         Long nonExistentId = 999L;

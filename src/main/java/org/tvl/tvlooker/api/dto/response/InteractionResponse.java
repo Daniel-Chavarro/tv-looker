@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Builder
@@ -15,6 +15,7 @@ public class InteractionResponse {
     private Long id;
     private UUID userId;
     private Long itemId;
+    private Long reviewId;
     private InteractionType interactionType;
-    private Timestamp timestamp;
+    private Timestamp createdAt;
 }
