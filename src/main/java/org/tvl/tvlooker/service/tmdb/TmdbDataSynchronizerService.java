@@ -1,5 +1,7 @@
 package org.tvl.tvlooker.service.tmdb;
 
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,9 +10,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
+import org.tvl.tvlooker.persistence.mapper.GenreEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
@@ -43,11 +47,10 @@ import java.util.Optional;
  * @since 2026-03-10
  */
 @Service
+@Slf4j
 @ConditionalOnProperty(name = "tmdb.sync.enabled", havingValue = "true", matchIfMissing = true)
 @Profile("!test")
 public class TmdbDataSynchronizerService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TmdbDataSynchronizerService.class);
 
     private final TmdbClient tmdbClient;
     private final ItemRepository itemRepository;
@@ -55,8 +58,8 @@ public class TmdbDataSynchronizerService {
 
     @Value("${tmdb.sync.popular-pages:5}")
     private int popularPages;
-
-    /** Tracks when the last successful sync completed. */
+    
+    @Getter
     private LocalDate lastSyncDate = LocalDate.now().minusDays(1);
 
     public TmdbDataSynchronizerService(
@@ -69,15 +72,6 @@ public class TmdbDataSynchronizerService {
     }
 
     /**
-     * Returns the date of the last successful synchronization.
-     *
-     * @return the last sync date
-     */
-    public LocalDate getLastSyncDate() {
-        return lastSyncDate;
-    }
-
-    /**
      * Main scheduled sync method.
      * Default: runs every 24 hours, first run 60 seconds after startup.
      */
@@ -85,7 +79,7 @@ public class TmdbDataSynchronizerService {
             fixedDelayString = "${tmdb.sync.interval-ms:86400000}",
             initialDelayString = "${tmdb.sync.initial-delay-ms:60000}")
     public void synchronize() {
-        LOGGER.info("========== TMDB SYNC STARTED (changes since {}) ==========", lastSyncDate);
+        log.info("========== TMDB SYNC STARTED (changes since {}) ==========", lastSyncDate);
 
         LocalDate today = LocalDate.now();
 
@@ -97,11 +91,11 @@ public class TmdbDataSynchronizerService {
 
             lastSyncDate = today;
 
-            LOGGER.info("========== TMDB SYNC COMPLETED ==========");
-            LOGGER.info("Updated: {} movies, {} TV shows | New: {} movies, {} TV shows",
+            log.info("========== TMDB SYNC COMPLETED ==========");
+            log.info("Updated: {} movies, {} TV shows | New: {} movies, {} TV shows",
                     updatedMovies, updatedTvShows, newMovies, newTvShows);
         } catch (Exception e) {
-            LOGGER.error("TMDB sync failed: {}", e.getMessage(), e);
+            log.error("TMDB sync failed: {}", e.getMessage(), e);
         }
     }
 
@@ -115,7 +109,7 @@ public class TmdbDataSynchronizerService {
      * @return number of items updated
      */
     private int syncChanges(TmdbType type, LocalDate startDate, LocalDate endDate) {
-        LOGGER.info("Syncing {} changes from {} to {}", type, startDate, endDate);
+        log.info("Syncing {} changes from {} to {}", type, startDate, endDate);
 
         int updatedCount = 0;
         int page = 1;
@@ -130,7 +124,7 @@ public class TmdbDataSynchronizerService {
                 changes = tmdbClient.getTvShowChanges(startDate, endDate, page);
             }
             persistenceService.throttle();
-
+            
             if (changes == null || changes.results() == null) {
                 break;
             }
@@ -139,7 +133,7 @@ public class TmdbDataSynchronizerService {
 
             for (TmdbChangesDto change : changes.results()) {
                 try {
-                    Optional<Item> existing = itemRepository.findByTmdbIdAndTmdbType(
+                    Optional<ItemEntity> existing = itemRepository.findByTmdbIdAndTmdbType(
                             change.id(), type);
 
                     if (existing.isPresent()) {
@@ -147,7 +141,7 @@ public class TmdbDataSynchronizerService {
                         updatedCount++;
                     }
                 } catch (Exception e) {
-                    LOGGER.warn("Failed to sync {} (tmdbId={}): {}",
+                    log.warn("Failed to sync {} (tmdbId={}): {}",
                             type, change.id(), e.getMessage());
                 }
             }
@@ -155,7 +149,7 @@ public class TmdbDataSynchronizerService {
             page++;
         }
 
-        LOGGER.info("Synced {} {} updates", updatedCount, type);
+        log.info("Synced {} {} updates", updatedCount, type);
         return updatedCount;
     }
 
@@ -167,7 +161,7 @@ public class TmdbDataSynchronizerService {
      * @return number of new items added
      */
     private int discoverNewPopularItems(TmdbType type) {
-        LOGGER.info("Discovering new popular {} (first {} pages)", type, popularPages);
+        log.info("Discovering new popular {} (first {} pages)", type, popularPages);
 
         int newCount = 0;
 
@@ -179,7 +173,7 @@ public class TmdbDataSynchronizerService {
                     newCount += discoverNewTvShows(page);
                 }
             } catch (Exception e) {
-                LOGGER.warn("Error discovering new {} at page {}: {}", type, page, e.getMessage());
+                log.warn("Error discovering new {} at page {}: {}", type, page, e.getMessage());
             }
         }
 
@@ -198,7 +192,7 @@ public class TmdbDataSynchronizerService {
                         persistenceService.persistMovie(movie);
                         count++;
                     } catch (Exception e) {
-                        LOGGER.warn("Failed to add new movie '{}': {}", movie.title(), e.getMessage());
+                        log.warn("Failed to add new movie '{}': {}", movie.title(), e.getMessage());
                     }
                 }
             }
@@ -218,7 +212,7 @@ public class TmdbDataSynchronizerService {
                         persistenceService.persistTvShow(tvShow);
                         count++;
                     } catch (Exception e) {
-                        LOGGER.warn("Failed to add new TV show '{}': {}", tvShow.name(), e.getMessage());
+                        log.warn("Failed to add new TV show '{}': {}", tvShow.name(), e.getMessage());
                     }
                 }
             }
@@ -232,7 +226,7 @@ public class TmdbDataSynchronizerService {
      * Re-fetches details and credits from TMDB and updates an existing item.
      */
     @Transactional
-    protected void updateExistingItem(Item item, TmdbType type) {
+    protected void updateExistingItem(ItemEntity item, TmdbType type) {
         if (type == TmdbType.MOVIE) {
             TmdbMovieDto details = tmdbClient.getMovieDetails(item.getTmdbId());
             persistenceService.throttle();
@@ -268,7 +262,7 @@ public class TmdbDataSynchronizerService {
         }
 
         itemRepository.save(item);
-        LOGGER.debug("Updated {} '{}' (tmdbId={})", type, item.getTitle(), item.getTmdbId());
+        log.debug("Updated {} '{}' (tmdbId={})", type, item.getTitle(), item.getTmdbId());
     }
 }
 

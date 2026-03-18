@@ -1,5 +1,6 @@
 package org.tvl.tvlooker.service.tmdb;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,10 +49,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 2026-03-10
  */
 @Service
+@Slf4j
 public class TmdbDataCollectorService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TmdbDataCollectorService.class);
-
     private final TmdbClient tmdbClient;
     private final ItemRepository itemRepository;
     private final GenreRepository genreRepository;
@@ -88,9 +87,9 @@ public class TmdbDataCollectorService {
                     "TMDB data collection is already in progress");
         }
         try {
-            LOGGER.info("========== TMDB DATA COLLECTION STARTED (ASYNC) ==========");
+            log.info("========== TMDB DATA COLLECTION STARTED (ASYNC) ==========");
             collectAll();
-            LOGGER.info("========== TMDB DATA COLLECTION FINISHED ==========");
+            log.info("========== TMDB DATA COLLECTION FINISHED ==========");
             return CompletableFuture.completedFuture(null);
         } finally {
             collectionInProgress.set(false);
@@ -110,9 +109,9 @@ public class TmdbDataCollectorService {
                     "TMDB data collection is already in progress");
         }
         try {
-            LOGGER.info("========== TMDB MOVIE COLLECTION STARTED (ASYNC) ==========");
+            log.info("========== TMDB MOVIE COLLECTION STARTED (ASYNC) ==========");
             collectPopularMovies();
-            LOGGER.info("========== TMDB MOVIE COLLECTION FINISHED ==========");
+            log.info("========== TMDB MOVIE COLLECTION FINISHED ==========");
             return CompletableFuture.completedFuture(null);
         } finally {
             collectionInProgress.set(false);
@@ -132,9 +131,9 @@ public class TmdbDataCollectorService {
                     "TMDB data collection is already in progress");
         }
         try {
-            LOGGER.info("========== TMDB TV SHOW COLLECTION STARTED (ASYNC) ==========");
+            log.info("========== TMDB TV SHOW COLLECTION STARTED (ASYNC) ==========");
             collectPopularTvShows();
-            LOGGER.info("========== TMDB TV SHOW COLLECTION FINISHED ==========");
+            log.info("========== TMDB TV SHOW COLLECTION FINISHED ==========");
             return CompletableFuture.completedFuture(null);
         } finally {
             collectionInProgress.set(false);
@@ -163,7 +162,7 @@ public class TmdbDataCollectorService {
      * Fetches and persists all genres from TMDB (movie + TV, deduplicated).
      */
     public void collectGenres() {
-        LOGGER.info("Collecting genres...");
+        log.info("Collecting genres...");
 
         TmdbGenreListDto movieGenres = tmdbClient.getMovieGenres();
         persistenceService.throttle();
@@ -176,14 +175,14 @@ public class TmdbDataCollectorService {
         count += persistGenreList(movieGenres, seen);
         count += persistGenreList(tvGenres, seen);
 
-        LOGGER.info("Genres collected: {} total", count);
+        log.info("Genres collected: {} total", count);
     }
 
     /**
      * Fetches popular movies from TMDB page by page and persists each one.
      */
     public void collectPopularMovies() {
-        LOGGER.info("Collecting popular movies (max {} pages)...", maxPages);
+        log.info("Collecting popular movies (max {} pages)...", maxPages);
 
         int collected = 0;
         int skipped = 0;
@@ -205,7 +204,7 @@ public class TmdbDataCollectorService {
                     persistenceService.persistMovie(movie);
                     collected++;
                 } catch (Exception e) {
-                    LOGGER.warn("Failed to persist movie '{}' (tmdbId={}): {}",
+                    log.warn("Failed to persist movie '{}' (tmdbId={}): {}",
                             movie.title(), movie.id(), e.getMessage());
                 }
             }
@@ -215,19 +214,19 @@ public class TmdbDataCollectorService {
             }
 
             if (page % 10 == 0) {
-                LOGGER.info("Movies progress: page {}/{}, collected={}, skipped={}",
+                log.info("Movies progress: page {}/{}, collected={}, skipped={}",
                         page, Math.min(maxPages, response.totalPages()), collected, skipped);
             }
         }
 
-        LOGGER.info("Popular movies done: {} collected, {} skipped", collected, skipped);
+        log.info("Popular movies done: {} collected, {} skipped", collected, skipped);
     }
 
     /**
      * Fetches popular TV shows from TMDB page by page and persists each one.
      */
     public void collectPopularTvShows() {
-        LOGGER.info("Collecting popular TV shows (max {} pages)...", maxPages);
+        log.info("Collecting popular TV shows (max {} pages)...", maxPages);
 
         int collected = 0;
         int skipped = 0;
@@ -249,7 +248,7 @@ public class TmdbDataCollectorService {
                     persistenceService.persistTvShow(tvShow);
                     collected++;
                 } catch (Exception e) {
-                    LOGGER.warn("Failed to persist TV show '{}' (tmdbId={}): {}",
+                    log.warn("Failed to persist TV show '{}' (tmdbId={}): {}",
                             tvShow.name(), tvShow.id(), e.getMessage());
                 }
             }
@@ -259,12 +258,12 @@ public class TmdbDataCollectorService {
             }
 
             if (page % 10 == 0) {
-                LOGGER.info("TV shows progress: page {}/{}, collected={}, skipped={}",
+                log.info("TV shows progress: page {}/{}, collected={}, skipped={}",
                         page, Math.min(maxPages, response.totalPages()), collected, skipped);
             }
         }
 
-        LOGGER.info("Popular TV shows done: {} collected, {} skipped", collected, skipped);
+        log.info("Popular TV shows done: {} collected, {} skipped", collected, skipped);
     }
 
     // ===================== PRIVATE HELPERS =====================

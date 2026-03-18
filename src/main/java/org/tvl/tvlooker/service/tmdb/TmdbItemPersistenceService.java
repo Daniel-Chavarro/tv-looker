@@ -1,14 +1,19 @@
 package org.tvl.tvlooker.service.tmdb;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.tvl.tvlooker.domain.model.entity.Actor;
-import org.tvl.tvlooker.domain.model.entity.Director;
-import org.tvl.tvlooker.domain.model.entity.Genre;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.Actor;
+import org.tvl.tvlooker.domain.model.Director;
+import org.tvl.tvlooker.domain.model.Genre;
+import org.tvl.tvlooker.domain.model.entity.ActorEntity;
+import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
+import org.tvl.tvlooker.domain.model.entity.GenreEntity;
+import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
@@ -22,6 +27,7 @@ import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbPersonMapper;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,9 +50,8 @@ import java.util.Set;
  * @since 2026-03-15
  */
 @Service
+@Slf4j
 public class TmdbItemPersistenceService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TmdbItemPersistenceService.class);
 
     private final TmdbClient tmdbClient;
     private final ItemRepository itemRepository;
@@ -82,7 +87,7 @@ public class TmdbItemPersistenceService {
      */
     @Transactional
     public void persistMovie(TmdbMovieDto movieDto) {
-        Item item = TmdbItemMapper.fromMovie(movieDto);
+        ItemEntity item = TmdbItemMapper.fromMovie(movieDto);
 
         // Fetch full details for genre objects
         TmdbMovieDto details = tmdbClient.getMovieDetails(movieDto.id());
@@ -100,7 +105,7 @@ public class TmdbItemPersistenceService {
         }
 
         itemRepository.save(item);
-        LOGGER.debug("Persisted movie: '{}' (tmdbId={})", movieDto.title(), movieDto.id());
+        log.debug("Persisted movie: '{}' (tmdbId={})", movieDto.title(), movieDto.id());
     }
 
     /**
@@ -110,7 +115,7 @@ public class TmdbItemPersistenceService {
      */
     @Transactional
     public void persistTvShow(TmdbTvShowDto tvDto) {
-        Item item = TmdbItemMapper.fromTvShow(tvDto);
+        ItemEntity item = TmdbItemMapper.fromTvShow(tvDto);
 
         TmdbTvShowDto details = tmdbClient.getTvShowDetails(tvDto.id());
         throttle();
@@ -126,7 +131,7 @@ public class TmdbItemPersistenceService {
         }
 
         itemRepository.save(item);
-        LOGGER.debug("Persisted TV show: '{}' (tmdbId={})", tvDto.name(), tvDto.id());
+        log.debug("Persisted TV show: '{}' (tmdbId={})", tvDto.name(), tvDto.id());
     }
 
     // ===================== MAPPING METHODS =====================
@@ -138,8 +143,8 @@ public class TmdbItemPersistenceService {
      * @param genreDtos list of TMDB genre DTOs
      * @return set of Genre entities
      */
-    public Set<Genre> mapGenres(List<TmdbGenreDto> genreDtos) {
-        Set<Genre> genres = new HashSet<>();
+    public Set<GenreEntity> mapGenres(List<TmdbGenreDto> genreDtos) {
+        Set<GenreEntity> genres = new HashSet<>();
         for (TmdbGenreDto dto : genreDtos) {
             genres.add(TmdbGenreMapper.findOrCreate(dto, genreRepository));
         }
@@ -153,7 +158,7 @@ public class TmdbItemPersistenceService {
      * @param credits TMDB credits containing cast information
      * @return set of Actor entities
      */
-    public Set<Actor> mapActors(TmdbCreditsDto credits) {
+    public Set<ActorEntity> mapActors(TmdbCreditsDto credits) {
         Set<Actor> actors = new HashSet<>();
         if (credits.cast() != null) {
             credits.cast().stream()
@@ -172,7 +177,7 @@ public class TmdbItemPersistenceService {
      * @param credits TMDB credits containing crew information
      * @return set of Director entities
      */
-    public Set<Director> mapDirectors(TmdbCreditsDto credits) {
+    public Set<DirectorEntity> mapDirectors(TmdbCreditsDto credits) {
         Set<Director> directors = new HashSet<>();
         if (credits.crew() != null) {
             credits.crew().stream()
@@ -194,7 +199,7 @@ public class TmdbItemPersistenceService {
             Thread.sleep(requestDelayMs);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            LOGGER.warn("Throttle interrupted");
+            log.warn("Throttle interrupted");
         }
     }
 }
