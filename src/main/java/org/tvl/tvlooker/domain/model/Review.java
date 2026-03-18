@@ -15,7 +15,6 @@ public class Review {
     private final UUID userId;
     private final Long itemId;
     private final Integer score;
-    @Builder.Default
-    private final String reviewText = "";
+    private final String reviewText;
     private final Timestamp reviewDate;
 }
