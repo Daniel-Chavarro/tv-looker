@@ -14,6 +14,7 @@ import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -78,12 +79,13 @@ public class ReviewPersistenceTest {
 
         String username = "testuser";
         String password = "password123";
+        String email = "testemail@test.com";
         Timestamp createdAt = new Timestamp(System.currentTimeMillis());
 
 
         jdbcTemplate.update(
-                "INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                UUID.randomUUID(), username, password, createdAt
+                "INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, ?, ?)",
+                UUID.randomUUID(), username, password, createdAt, email
         );
 
 
@@ -97,13 +99,14 @@ public class ReviewPersistenceTest {
         assertEquals(1, count, "Must exist exactly one user with that username");
 
         Map<String, Object> user = jdbcTemplate.queryForMap(
-                "SELECT username, password, created_at FROM users WHERE username = ?",
+                "SELECT username, password, created_at, email FROM users WHERE username = ?",
                 username
         );
 
         assertEquals(username, user.get("username"));
         assertEquals(password, user.get("password"));
         assertNotNull(user.get("created_at"));
+        assertEquals(email, user.get("email"));
     }
 
     /**
@@ -162,11 +165,12 @@ public class ReviewPersistenceTest {
         UUID userId = UUID.randomUUID();
         String username = "reviewer123";
         String password = "securepass";
+        String email = "testemail@test.com";
         Timestamp userCreatedAt = new Timestamp(System.currentTimeMillis());
 
         jdbcTemplate.update(
-                "INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                userId, username, password, userCreatedAt
+                "INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, ?, ?)",
+                userId, username, password, userCreatedAt, email
         );
 
 
@@ -198,8 +202,8 @@ public class ReviewPersistenceTest {
 
         // Act - Insertar review
         jdbcTemplate.update(
-                "INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                reviewText, score, itemId, userId
+                "INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?, ?, ?, ?, ?)",
+                reviewText, score, itemId, userId, Timestamp.from(Instant.now())
         );
 
 
@@ -256,21 +260,31 @@ public class ReviewPersistenceTest {
         UUID userId1 = UUID.randomUUID();
         UUID userId2 = UUID.randomUUID();
         UUID userId3 = UUID.randomUUID();
+        String email1 = "testemail1@test.com";
+        String email2 = "testemail2@test.com";
+        String email3 = "testemail3@test.com";
+
         Timestamp userCreatedAt = new Timestamp(System.currentTimeMillis());
 
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                userId1, "user1", "pass1", userCreatedAt);
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                userId2, "user2", "pass2", userCreatedAt);
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                userId3, "user3", "pass3", userCreatedAt);
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
+                        "?, ?)",
+                userId1, "user1", "pass1", userCreatedAt, email1);
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
+                        "?, ?)",
+                userId2, "user2", "pass2", userCreatedAt, email2);
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
+                        "?, ?)",
+                userId3, "user3", "pass3", userCreatedAt, email3);
         
-        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                "Obra maestra del cine", 10, itemId, userId1);
-        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                "Muy buena pero no perfecta", 8, itemId, userId2);
-        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                "Excelente narrativa", 9, itemId, userId3);
+        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                        " ?, ?, ?, ?)",
+                "Obra maestra del cine", 10, itemId, userId1, Timestamp.from(Instant.now()));
+        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                        " ?, ?, ?, ?)",
+                "Muy buena pero no perfecta", 8, itemId, userId2,Timestamp.from(Instant.now()));
+        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                        " ?, ?, ?, ?)",
+                "Excelente narrativa", 9, itemId, userId3,Timestamp.from(Instant.now()));
         
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM reviews WHERE item_id_fk = ?",
@@ -299,8 +313,11 @@ public class ReviewPersistenceTest {
     void testPersistReviewWithoutText() {
         
         UUID userId = UUID.randomUUID();
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                userId, "quickrater", "pass", new Timestamp(System.currentTimeMillis()));
+        String email = "testemail@test.com";
+
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
+                        "?, ?)",
+                userId, "quickrater", "pass", new Timestamp(System.currentTimeMillis()), email);
 
         Long tmdbId = 155L;
         jdbcTemplate.update(
@@ -317,8 +334,9 @@ public class ReviewPersistenceTest {
                 tmdbId
         );
 
-        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                null, 10, itemId, userId);
+        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                        " ?, ?, ?, ?)",
+                null, 10, itemId, userId, Timestamp.from(Instant.now()));
 
         Map<String, Object> review = jdbcTemplate.queryForMap(
                 "SELECT review_text, score FROM reviews WHERE item_id_fk = ? AND user_id_fk = ?",
@@ -355,8 +373,9 @@ public class ReviewPersistenceTest {
 
 
         try {
-            jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                    "Esta review no debería insertarse", 5, itemId, fakeUserId);
+            jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                            " ?, ?, ?, ?)",
+                    "Esta review no debería insertarse", 5, itemId, fakeUserId, Timestamp.from(Instant.now()));
 
             fail("Should have thrown an exception due to foreign key constraint violation");
         } catch (Exception e) {
@@ -379,10 +398,12 @@ public class ReviewPersistenceTest {
         UUID userId2 = UUID.randomUUID();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                userId1, "critic1", "pass", timestamp);
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                userId2, "critic2", "pass", timestamp);
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
+                        "?, ?)",
+                userId1, "critic1", "pass", timestamp, "testemail1@test.com");
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
+                        "?, ?)",
+                userId2, "critic2", "pass", timestamp, "testemail2@test.com");
 
 
         jdbcTemplate.update(
@@ -401,12 +422,15 @@ public class ReviewPersistenceTest {
         Long itemId1 = jdbcTemplate.queryForObject("SELECT item_id_pk FROM items WHERE tmdb_id = ?", Long.class, 101L);
         Long itemId2 = jdbcTemplate.queryForObject("SELECT item_id_pk FROM items WHERE tmdb_id = ?", Long.class, 102L);
 
-        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                "Mind-bending", 9, itemId1, userId1);
-        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                "Best TV show ever", 10, itemId2, userId1);
-        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                "Great movie", 8, itemId1, userId2);
+        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                        " ?, ?, ?, ?)",
+                "Mind-bending", 9, itemId1, userId1, timestamp);
+        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                        " ?, ?, ?, ?)",
+                "Best TV show ever", 10, itemId2, userId1, timestamp);
+        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                        " ?, ?, ?, ?)",
+                "Great movie", 8, itemId1, userId2, timestamp);
 
         List<Map<String, Object>> results = jdbcTemplate.queryForList(
                 "SELECT u.username, i.title, i.tmdb_type, r.review_text, r.score " +
@@ -433,8 +457,10 @@ public class ReviewPersistenceTest {
     @DisplayName("Should update an existing review correctly")
     void testUpdateReview() {
         UUID userId = UUID.randomUUID();
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                userId, "updater", "pass", new Timestamp(System.currentTimeMillis()));
+        String email = "testemail@test.com";
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
+                        "?, ?)",
+                userId, "updater", "pass", new Timestamp(System.currentTimeMillis()), email);
 
         Long tmdbId = 999L;
         jdbcTemplate.update(
@@ -446,8 +472,9 @@ public class ReviewPersistenceTest {
 
         Long itemId = jdbcTemplate.queryForObject("SELECT item_id_pk FROM items WHERE tmdb_id = ?", Long.class, tmdbId);
 
-        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                "Original review", 7, itemId, userId);
+        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                        " ?, ?, ?, ?)",
+                "Original review", 7, itemId, userId, Timestamp.from(Instant.now()));
 
         Long reviewId = jdbcTemplate.queryForObject(
                 "SELECT review_id_pk FROM reviews WHERE item_id_fk = ? AND user_id_fk = ?",
@@ -480,8 +507,10 @@ public class ReviewPersistenceTest {
     void testDeleteReview() {
         
         UUID userId = UUID.randomUUID();
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at) VALUES (?, ?, ?, ?)",
-                userId, "deleter", "pass", new Timestamp(System.currentTimeMillis()));
+        String email = "testemail@test.com";
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
+                        "?, ?)",
+                userId, "deleter", "pass", new Timestamp(System.currentTimeMillis()),  email);
 
         Long tmdbId = 888L;
         jdbcTemplate.update(
@@ -493,8 +522,9 @@ public class ReviewPersistenceTest {
 
         Long itemId = jdbcTemplate.queryForObject("SELECT item_id_pk FROM items WHERE tmdb_id = ?", Long.class, tmdbId);
 
-        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk) VALUES (?, ?, ?, ?)",
-                "Review to be deleted", 6, itemId, userId);
+        jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
+                        " ?, ?, ?, ?)",
+                "Review to be deleted", 6, itemId, userId, Timestamp.from(Instant.now()));
 
         Long reviewId = jdbcTemplate.queryForObject(
                 "SELECT review_id_pk FROM reviews WHERE item_id_fk = ? AND user_id_fk = ?",

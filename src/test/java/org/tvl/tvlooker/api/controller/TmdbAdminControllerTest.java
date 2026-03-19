@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -73,9 +74,12 @@ class TmdbAdminControllerTest {
         mockMvc.perform(post("/api/v1/admin/tmdb/collect"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.status", is(409)))
-                .andExpect(jsonPath("$.error", is("Conflict")))
-                .andExpect(jsonPath("$.message", is("TMDB data collection is already in progress")));
+                .andExpect(jsonPath("$.body.status", is(409)))
+                .andExpect(jsonPath("$.body.title", is("TMDB Collection In Progress")))
+                .andExpect(jsonPath("$.body.detail", is("TMDB data collection is already in progress")))
+                .andExpect(jsonPath("$.body.instance", is("/api/v1/admin/tmdb/collect")))
+                .andExpect(jsonPath("$.body.type", is("/errors/tmdb-collection-in-progress")));
+
 
         verify(collectorService, times(1)).collectAllAsync();
     }
@@ -123,8 +127,8 @@ class TmdbAdminControllerTest {
         mockMvc.perform(post("/api/v1/admin/tmdb/collect/movies"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.status", is(409)))
-                .andExpect(jsonPath("$.error", is("Conflict")));
+                .andExpect(jsonPath("$.body.status", is(409)))
+                .andExpect(jsonPath("$.body.type", is("/errors/tmdb-collection-in-progress")));
 
         verify(collectorService, times(1)).collectPopularMoviesAsync();
     }
@@ -156,8 +160,8 @@ class TmdbAdminControllerTest {
         mockMvc.perform(post("/api/v1/admin/tmdb/collect/tvshows"))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.status", is(409)))
-                .andExpect(jsonPath("$.error", is("Conflict")));
+                .andExpect(jsonPath("$.body.status", is(409)))
+                .andExpect(jsonPath("$.body.type", is("/errors/tmdb-collection-in-progress")));
 
         verify(collectorService, times(1)).collectPopularTvShowsAsync();
     }
