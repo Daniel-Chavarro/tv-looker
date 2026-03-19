@@ -27,7 +27,7 @@ public class InteractionController {
     /**
      * Service for managing interactions.
      */
-    private final InteractionService INTERACTION_SERVICE;
+    private final InteractionService interactionService;
 
     /**
      * Retrieves all interactions.
@@ -35,7 +35,7 @@ public class InteractionController {
      */
     @GetMapping
     public ResponseEntity<List<InteractionResponse>> getAllInteractions(){
-        List<Interaction> interactions = INTERACTION_SERVICE.getAll();;
+        List<Interaction> interactions = interactionService.getAll();;
         List<InteractionResponse> response = interactions.stream()
                 .map(InteractionMapper::toResponse)
                 .toList();
@@ -45,30 +45,29 @@ public class InteractionController {
     @PostMapping
     public ResponseEntity<InteractionResponse> createInteraction(@RequestBody CreateInteractionRequest request) {
         Interaction interaction = InteractionMapper.fromCreateRequest(request);
-        Interaction created = INTERACTION_SERVICE.create(interaction);
+        Interaction created = interactionService.create(interaction);
         return ResponseEntity.ok(InteractionMapper.toResponse(created));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<InteractionResponse> getInteractionById(@PathVariable Long id) {
-        Interaction interaction = INTERACTION_SERVICE.getById(id);
+        Interaction interaction = interactionService.getById(id);
         return ResponseEntity.ok(InteractionMapper.toResponse(interaction));
     }
 
-    //TODO: REFACTOR update services to accept an id, old and new objects, then update only the fields that are not
-    // null in the new object
-//    @PutMapping("/{id}")
-//    public ResponseEntity<InteractionResponse> updateInteraction(
-//            @PathVariable Long id,
-//            @RequestBody UpdateInteractionRequest request) {
-//        Interaction interaction = InteractionMapper.fromUpdateRequest(id, request);
-//        Interaction updated = INTERACTION_SERVICE.update(id, interaction);
-//        return ResponseEntity.ok(InteractionMapper.toResponse(updated));
-//    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<InteractionResponse> updateInteraction(
+            @PathVariable Long id,
+            @RequestBody UpdateInteractionRequest request) {
+        Interaction interaction = InteractionMapper.fromUpdateRequest(request);
+        Interaction updated = interactionService.update(id, interaction);
+        return ResponseEntity.ok(InteractionMapper.toResponse(updated));
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInteraction(@PathVariable Long id) {
-        INTERACTION_SERVICE.delete(id);
+        interactionService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
