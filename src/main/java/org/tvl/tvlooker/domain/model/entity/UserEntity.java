@@ -53,7 +53,7 @@ public class UserEntity {
     /**
      * The full name of the user, stored as a string.
      */
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
 
     /**
