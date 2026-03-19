@@ -26,6 +26,7 @@ public class ListFavoriteEntityMapper {
                                 .collect(Collectors.toSet())
                         : null)
                 .name(entity.getName())
+                .description(entity.getDescription())
                 .build();
     }
 

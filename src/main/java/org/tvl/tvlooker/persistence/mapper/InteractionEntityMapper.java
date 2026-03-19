@@ -2,7 +2,9 @@ package org.tvl.tvlooker.persistence.mapper;
 
 import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.domain.model.Interaction;
+import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.model.Review;
+import org.tvl.tvlooker.domain.model.User;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.model.entity.InteractionEntity;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
@@ -14,21 +16,22 @@ public class InteractionEntityMapper {
     public static Interaction toDomain(InteractionEntity entity) {
         if (entity == null) return null;
         return Interaction.builder()
+                .id(entity.getId())
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
                 .itemId(entity.getItem() != null ? entity.getItem().getId() : null)
+                .reviewId(entity.getReview() != null ? entity.getReview().getId() : null)
                 .interactionType(entity.getInteractionType() != null ? entity.getInteractionType() : null)
                 .createdAt(entity.getCreatedAt())
                 .build();
     }
 
-    // Note: We only map the user ID to avoid loading the entire UserEntity, which can be expensive.
-    public static InteractionEntity toEntity(Interaction domain, Review review) {
+    public static InteractionEntity toEntity(Interaction domain, User user, Item item, Review review) {
         if (domain == null) return null;
         return InteractionEntity.builder()
-                .user(domain.getUserId() != null ? UserEntity.builder().id(domain.getUserId()).build() : null)
-                .item(domain.getItemId() != null ? ItemEntity.builder().id(domain.getItemId()).build() : null)
+                .user(user != null ? UserEntityMapper.toEntity(user) : null)
+                .item(item != null ? ItemEntityMapper.toEntity(item) : null)
                 .interactionType(domain.getInteractionType() != null ? domain.getInteractionType() : null)
-                .review(review != null ? ReviewEntityMapper.toEntity(review) : null)
+                .review(review != null ? ReviewEntityMapper.toEntity(review, user, item) : null)
                 .createdAt(domain.getCreatedAt())
                 .build();
     }

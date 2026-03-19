@@ -1,7 +1,9 @@
 package org.tvl.tvlooker.persistence.mapper;
 
 import org.springframework.stereotype.Component;
+import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.model.Review;
+import org.tvl.tvlooker.domain.model.User;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.entity.ReviewEntity;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
@@ -21,16 +23,16 @@ public class ReviewEntityMapper {
                 .build();
     }
 
-    // Note: We only map the user ID and item ID to avoid loading the entire UserEntity and ItemEntity, which can be expensive.
-    public static ReviewEntity toEntity(Review domain) {
+    public static ReviewEntity toEntity(Review domain, User user, Item item) {
         if (domain == null) return null;
         return ReviewEntity.builder()
                 .id(domain.getId())
+                .user(user != null ? UserEntityMapper.toEntity(user) : null)
+                .item(item != null ? ItemEntityMapper.toEntity(item) : null)
+                .score(domain.getScore())
                 .reviewText(domain.getReviewText())
-                .score(domain.getScore() != null ? domain.getScore() : 0)
                 .reviewDate(domain.getReviewDate())
-                .user(domain.getUserId() != null ? UserEntity.builder().id(domain.getUserId()).build() : null)
-                .item(domain.getItemId() != null ? ItemEntity.builder().id(domain.getItemId()).build() : null)
                 .build();
+
     }
 }
