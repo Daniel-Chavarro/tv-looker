@@ -231,7 +231,7 @@ DELETE /api/v1/reviews/{id}      → Delete review
 ```
 
 - **ID Type:** Long
-- **Validation:** Rating 1-10, comment max 1000 chars
+- **Validation:** Rating 1-5, comment max 1000 chars
 
 #### 6. ListFavorite CRUD
 
