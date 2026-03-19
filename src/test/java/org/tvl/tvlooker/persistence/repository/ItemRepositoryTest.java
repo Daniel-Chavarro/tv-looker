@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.tvl.tvlooker.domain.model.entity.Actor;
-import org.tvl.tvlooker.domain.model.entity.Director;
-import org.tvl.tvlooker.domain.model.entity.Genre;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.entity.ActorEntity;
+import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
+import org.tvl.tvlooker.domain.model.entity.GenreEntity;
+import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
 import java.math.BigDecimal;
@@ -61,7 +61,7 @@ class ItemRepositoryTest {
     @DisplayName("Should save a new movie item")
     void testSaveMovieItem() {
         // Given
-        Item item = Item.builder()
+        ItemEntity item = ItemEntity.builder()
                 .tmdbId(12345L)
                 .tmdbType(TmdbType.MOVIE)
                 .title("The Matrix")
@@ -75,7 +75,7 @@ class ItemRepositoryTest {
                 .build();
 
         // When
-        Item savedItem = itemRepository.saveAndFlush(item);
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // Then
         assertThat(savedItem).isNotNull();
@@ -90,7 +90,7 @@ class ItemRepositoryTest {
     @DisplayName("Should save a new TV show item")
     void testSaveTvShowItem() {
         // Given
-        Item item = Item.builder()
+        ItemEntity item = ItemEntity.builder()
                 .tmdbId(67890L)
                 .tmdbType(TmdbType.TV)
                 .title("Breaking Bad")
@@ -104,7 +104,7 @@ class ItemRepositoryTest {
                 .build();
 
         // When
-        Item savedItem = itemRepository.saveAndFlush(item);
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // Then
         assertThat(savedItem).isNotNull();
@@ -116,16 +116,16 @@ class ItemRepositoryTest {
     @DisplayName("Should save multiple items")
     void testSaveMultipleItems() {
         // Given
-        Item item1 = createItem(1L, "Movie 1", TmdbType.MOVIE);
-        Item item2 = createItem(2L, "Movie 2", TmdbType.MOVIE);
-        Item item3 = createItem(3L, "TV Show 1", TmdbType.TV);
+        ItemEntity item1 = createItemEntity(1L, "Movie 1", TmdbType.MOVIE);
+        ItemEntity item2 = createItemEntity(2L, "Movie 2", TmdbType.MOVIE);
+        ItemEntity item3 = createItemEntity(3L, "TV Show 1", TmdbType.TV);
 
         // When
-        List<Item> savedItems = itemRepository.saveAll(List.of(item1, item2, item3));
+        List<ItemEntity> savedItems = itemRepository.saveAll(List.of(item1, item2, item3));
 
         // Then
         assertThat(savedItems).hasSize(3);
-        assertThat(savedItems).extracting(Item::getTitle)
+        assertThat(savedItems).extracting(ItemEntity::getTitle)
                 .containsExactlyInAnyOrder("Movie 1", "Movie 2", "TV Show 1");
     }
 
@@ -135,11 +135,11 @@ class ItemRepositoryTest {
     @DisplayName("Should find item by ID")
     void testFindById() {
         // Given
-        Item item = createItem(100L, "Findable Movie", TmdbType.MOVIE);
-        Item savedItem = itemRepository.saveAndFlush(item);
+        ItemEntity item = createItemEntity(100L, "Findable Movie", TmdbType.MOVIE);
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // When
-        Optional<Item> foundItem = itemRepository.findById(savedItem.getId());
+        Optional<ItemEntity> foundItem = itemRepository.findById(savedItem.getId());
 
         // Then
         assertThat(foundItem).isPresent();
@@ -153,7 +153,7 @@ class ItemRepositoryTest {
         Long nonExistentId = 999999L;
 
         // When
-        Optional<Item> foundItem = itemRepository.findById(nonExistentId);
+        Optional<ItemEntity> foundItem = itemRepository.findById(nonExistentId);
 
         // Then
         assertThat(foundItem).isEmpty();
@@ -164,13 +164,13 @@ class ItemRepositoryTest {
     void testFindAll() {
         // Given
         itemRepository.saveAll(List.of(
-                createItem(1L, "Item 1", TmdbType.MOVIE),
-                createItem(2L, "Item 2", TmdbType.TV),
-                createItem(3L, "Item 3", TmdbType.MOVIE)
+                createItemEntity(1L, "ItemEntity 1", TmdbType.MOVIE),
+                createItemEntity(2L, "ItemEntity 2", TmdbType.TV),
+                createItemEntity(3L, "ItemEntity 3", TmdbType.MOVIE)
         ));
 
         // When
-        List<Item> allItems = itemRepository.findAll();
+        List<ItemEntity> allItems = itemRepository.findAll();
 
         // Then
         assertThat(allItems).hasSize(3);
@@ -180,8 +180,8 @@ class ItemRepositoryTest {
     @DisplayName("Should check if item exists by ID")
     void testExistsById() {
         // Given
-        Item item = createItem(200L, "Existing Item", TmdbType.MOVIE);
-        Item savedItem = itemRepository.saveAndFlush(item);
+        ItemEntity item = createItemEntity(200L, "Existing ItemEntity", TmdbType.MOVIE);
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // When
         boolean exists = itemRepository.existsById(savedItem.getId());
@@ -197,8 +197,8 @@ class ItemRepositoryTest {
     void testCount() {
         // Given
         itemRepository.saveAll(List.of(
-                createItem(1L, "Item 1", TmdbType.MOVIE),
-                createItem(2L, "Item 2", TmdbType.TV)
+                createItemEntity(1L, "ItemEntity 1", TmdbType.MOVIE),
+                createItemEntity(2L, "ItemEntity 2", TmdbType.TV)
         ));
 
         // When
@@ -214,13 +214,13 @@ class ItemRepositoryTest {
     @DisplayName("Should update existing item")
     void testUpdateItem() {
         // Given
-        Item item = createItem(300L, "Original Title", TmdbType.MOVIE);
-        Item savedItem = itemRepository.saveAndFlush(item);
+        ItemEntity item = createItemEntity(300L, "Original Title", TmdbType.MOVIE);
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // When
         savedItem.setTitle("Updated Title");
         savedItem.setPopularity(new BigDecimal("999.9999"));
-        Item updatedItem = itemRepository.saveAndFlush(savedItem);
+        ItemEntity updatedItem = itemRepository.saveAndFlush(savedItem);
 
         // Then
         assertThat(updatedItem.getId()).isEqualTo(savedItem.getId());
@@ -234,8 +234,8 @@ class ItemRepositoryTest {
     @DisplayName("Should delete item by ID")
     void testDeleteById() {
         // Given
-        Item item = createItem(400L, "Deletable Item", TmdbType.MOVIE);
-        Item savedItem = itemRepository.saveAndFlush(item);
+        ItemEntity item = createItemEntity(400L, "Deletable ItemEntity", TmdbType.MOVIE);
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // When
         itemRepository.deleteById(savedItem.getId());
@@ -248,8 +248,8 @@ class ItemRepositoryTest {
     @DisplayName("Should delete item entity")
     void testDelete() {
         // Given
-        Item item = createItem(500L, "Delete Me", TmdbType.MOVIE);
-        Item savedItem = itemRepository.saveAndFlush(item);
+        ItemEntity item = createItemEntity(500L, "Delete Me", TmdbType.MOVIE);
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // When
         itemRepository.delete(savedItem);
@@ -263,8 +263,8 @@ class ItemRepositoryTest {
     void testDeleteAll() {
         // Given
         itemRepository.saveAll(List.of(
-                createItem(1L, "Item 1", TmdbType.MOVIE),
-                createItem(2L, "Item 2", TmdbType.TV)
+                createItemEntity(1L, "ItemEntity 1", TmdbType.MOVIE),
+                createItemEntity(2L, "ItemEntity 2", TmdbType.TV)
         ));
 
         // When
@@ -282,14 +282,14 @@ class ItemRepositoryTest {
     @DisplayName("Should save item with genres using cascade persist")
     void testSaveItemWithGenres() {
         // Given - Create new genres (not persisted yet)
-        Genre action = new Genre();
+        GenreEntity action = new GenreEntity();
         action.setName("Action");
-        Genre sciFi = new Genre();
+        GenreEntity sciFi = new GenreEntity();
         sciFi.setName("Sci-Fi");
 
-        Set<Genre> genres = new HashSet<>(List.of(action, sciFi));
+        Set<GenreEntity> genres = new HashSet<>(List.of(action, sciFi));
 
-        Item item = Item.builder()
+        ItemEntity item = ItemEntity.builder()
                 .tmdbId(600L)
                 .tmdbType(TmdbType.MOVIE)
                 .title("Action Sci-Fi Movie")
@@ -298,12 +298,12 @@ class ItemRepositoryTest {
                 .actors(new HashSet<>())
                 .build();
 
-        // When - Item save will cascade to genres
-        Item savedItem = itemRepository.saveAndFlush(item);
+        // When - ItemEntity save will cascade to genres
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // Then
         assertThat(savedItem.getGenres()).hasSize(2);
-        assertThat(savedItem.getGenres()).extracting(Genre::getName)
+        assertThat(savedItem.getGenres()).extracting(GenreEntity::getName)
                 .containsExactlyInAnyOrder("Action", "Sci-Fi");
         // Verify genres were persisted
         assertThat(genreRepository.count()).isEqualTo(2);
@@ -313,16 +313,16 @@ class ItemRepositoryTest {
     @DisplayName("Should save item with directors using cascade persist")
     void testSaveItemWithDirectors() {
         // Given - Create new directors (not persisted yet)
-        Director director1 = new Director();
+        DirectorEntity director1 = new DirectorEntity();
         director1.setName("Christopher Nolan");
         director1.setTmdbId(1000L);
-        Director director2 = new Director();
+        DirectorEntity director2 = new DirectorEntity();
         director2.setName("Steven Spielberg");
         director2.setTmdbId(2000L);
 
-        Set<Director> directors = new HashSet<>(List.of(director1, director2));
+        Set<DirectorEntity> directors = new HashSet<>(List.of(director1, director2));
 
-        Item item = Item.builder()
+        ItemEntity item = ItemEntity.builder()
                 .tmdbId(700L)
                 .tmdbType(TmdbType.MOVIE)
                 .title("Epic Movie")
@@ -331,12 +331,12 @@ class ItemRepositoryTest {
                 .actors(new HashSet<>())
                 .build();
 
-        // When - Item save will cascade to directors
-        Item savedItem = itemRepository.saveAndFlush(item);
+        // When - ItemEntity save will cascade to directors
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // Then
         assertThat(savedItem.getDirectors()).hasSize(2);
-        assertThat(savedItem.getDirectors()).extracting(Director::getName)
+        assertThat(savedItem.getDirectors()).extracting(DirectorEntity::getName)
                 .containsExactlyInAnyOrder("Christopher Nolan", "Steven Spielberg");
         // Verify directors were persisted
         assertThat(directorRepository.count()).isEqualTo(2);
@@ -346,16 +346,16 @@ class ItemRepositoryTest {
     @DisplayName("Should save item with actors using cascade persist")
     void testSaveItemWithActors() {
         // Given - Create new actors (not persisted yet)
-        Actor actor1 = new Actor();
+        ActorEntity actor1 = new ActorEntity();
         actor1.setName("Leonardo DiCaprio");
         actor1.setTmdbId(3000L);
-        Actor actor2 = new Actor();
+        ActorEntity actor2 = new ActorEntity();
         actor2.setName("Tom Hanks");
         actor2.setTmdbId(4000L);
 
-        Set<Actor> actors = new HashSet<>(List.of(actor1, actor2));
+        Set<ActorEntity> actors = new HashSet<>(List.of(actor1, actor2));
 
-        Item item = Item.builder()
+        ItemEntity item = ItemEntity.builder()
                 .tmdbId(800L)
                 .tmdbType(TmdbType.MOVIE)
                 .title("Star-Studded Film")
@@ -364,12 +364,12 @@ class ItemRepositoryTest {
                 .directors(new HashSet<>())
                 .build();
 
-        // When - Item save will cascade to actors
-        Item savedItem = itemRepository.saveAndFlush(item);
+        // When - ItemEntity save will cascade to actors
+        ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // Then
         assertThat(savedItem.getActors()).hasSize(2);
-        assertThat(savedItem.getActors()).extracting(Actor::getName)
+        assertThat(savedItem.getActors()).extracting(ActorEntity::getName)
                 .containsExactlyInAnyOrder("Leonardo DiCaprio", "Tom Hanks");
         // Verify actors were persisted
         assertThat(actorRepository.count()).isEqualTo(2);
@@ -381,10 +381,10 @@ class ItemRepositoryTest {
     @DisplayName("Should enforce tmdbId uniqueness constraint")
     void testTmdbIdUniqueConstraint() {
         // Given
-        Item item1 = createItem(9999L, "First Movie", TmdbType.MOVIE);
+        ItemEntity item1 = createItemEntity(9999L, "First Movie", TmdbType.MOVIE);
         itemRepository.saveAndFlush(item1);
 
-        Item item2 = createItem(9999L, "Duplicate TMDB ID", TmdbType.MOVIE);
+        ItemEntity item2 = createItemEntity(9999L, "Duplicate TMDB ID", TmdbType.MOVIE);
 
         // When & Then
         try {
@@ -400,10 +400,10 @@ class ItemRepositoryTest {
     @DisplayName("Should not allow null tmdbId")
     void testNullTmdbId() {
         // Given
-        Item item = Item.builder()
+        ItemEntity item = ItemEntity.builder()
                 .tmdbId(null)
                 .tmdbType(TmdbType.MOVIE)
-                .title("Invalid Item")
+                .title("Invalid ItemEntity")
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
                 .actors(new HashSet<>())
@@ -423,10 +423,10 @@ class ItemRepositoryTest {
     @DisplayName("Should not allow null tmdbType")
     void testNullTmdbType() {
         // Given
-        Item item = Item.builder()
+        ItemEntity item = ItemEntity.builder()
                 .tmdbId(10000L)
                 .tmdbType(null)
-                .title("Invalid Type Item")
+                .title("Invalid Type ItemEntity")
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
                 .actors(new HashSet<>())
@@ -446,7 +446,7 @@ class ItemRepositoryTest {
     @DisplayName("Should not allow null title")
     void testNullTitle() {
         // Given
-        Item item = Item.builder()
+        ItemEntity item = ItemEntity.builder()
                 .tmdbId(10001L)
                 .tmdbType(TmdbType.MOVIE)
                 .title(null)
@@ -467,8 +467,8 @@ class ItemRepositoryTest {
 
     // ==================== HELPER METHODS ====================
 
-    private Item createItem(Long tmdbId, String title, TmdbType type) {
-        return Item.builder()
+    private ItemEntity createItemEntity(Long tmdbId, String title, TmdbType type) {
+        return ItemEntity.builder()
                 .tmdbId(tmdbId)
                 .tmdbType(type)
                 .title(title)

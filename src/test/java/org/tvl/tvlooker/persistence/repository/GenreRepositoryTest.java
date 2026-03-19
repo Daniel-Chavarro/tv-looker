@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.tvl.tvlooker.domain.model.entity.Genre;
+import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,27 +41,28 @@ class GenreRepositoryTest {
     @DisplayName("Should save a new genre")
     void testSaveGenre() {
         // Given
-        Genre genre = createGenre("Action");
+        GenreEntity genre = createGenreEntity("Action", 1L);
 
         // When
-        Genre savedGenre = genreRepository.saveAndFlush(genre);
+        GenreEntity savedGenre = genreRepository.saveAndFlush(genre);
 
         // Then
         assertThat(savedGenre).isNotNull();
         assertThat(savedGenre.getId()).isNotNull();
         assertThat(savedGenre.getName()).isEqualTo("Action");
+        assertThat(savedGenre.getTmdbId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("Should save multiple genres")
     void testSaveMultipleGenres() {
         // Given
-        Genre genre1 = createGenre("Action");
-        Genre genre2 = createGenre("Comedy");
-        Genre genre3 = createGenre("Drama");
+        GenreEntity genre1 = createGenreEntity("Action", 1L);
+        GenreEntity genre2 = createGenreEntity("Comedy", 2L);
+        GenreEntity genre3 = createGenreEntity("Drama", 3L);
 
         // When
-        List<Genre> savedGenres = genreRepository.saveAll(List.of(genre1, genre2, genre3));
+        List<GenreEntity> savedGenres = genreRepository.saveAll(List.of(genre1, genre2, genre3));
 
         // Then
         assertThat(savedGenres).hasSize(3);
@@ -74,11 +75,11 @@ class GenreRepositoryTest {
     @DisplayName("Should find genre by ID")
     void testFindById() {
         // Given
-        Genre genre = createGenre("Sci-Fi");
-        Genre savedGenre = genreRepository.saveAndFlush(genre);
+        GenreEntity genre = createGenreEntity("Sci-Fi", 1L);
+        GenreEntity savedGenre = genreRepository.saveAndFlush(genre);
 
         // When
-        Optional<Genre> foundGenre = genreRepository.findById(savedGenre.getId());
+        Optional<GenreEntity> foundGenre = genreRepository.findById(savedGenre.getId());
 
         // Then
         assertThat(foundGenre).isPresent();
@@ -90,13 +91,13 @@ class GenreRepositoryTest {
     void testFindAll() {
         // Given
         genreRepository.saveAll(List.of(
-                createGenre("Action"),
-                createGenre("Comedy"),
-                createGenre("Drama")
+                createGenreEntity("Action", 1L),
+                createGenreEntity("Comedy", 2L),
+                createGenreEntity("Drama", 3L)
         ));
 
         // When
-        List<Genre> allGenres = genreRepository.findAll();
+        List<GenreEntity> allGenres = genreRepository.findAll();
 
         // Then
         assertThat(allGenres).hasSize(3);
@@ -107,8 +108,8 @@ class GenreRepositoryTest {
     void testCount() {
         // Given
         genreRepository.saveAll(List.of(
-                createGenre("Action"),
-                createGenre("Comedy")
+                createGenreEntity("Action", 1L),
+                createGenreEntity("Comedy", 2L)
         ));
 
         // When
@@ -124,12 +125,12 @@ class GenreRepositoryTest {
     @DisplayName("Should update genre name")
     void testUpdateGenre() {
         // Given
-        Genre genre = createGenre("Old Name");
-        Genre savedGenre = genreRepository.saveAndFlush(genre);
+        GenreEntity genre = createGenreEntity("Old Name", 1L);
+        GenreEntity savedGenre = genreRepository.saveAndFlush(genre);
 
         // When
         savedGenre.setName("New Name");
-        Genre updatedGenre = genreRepository.saveAndFlush(savedGenre);
+        GenreEntity updatedGenre = genreRepository.saveAndFlush(savedGenre);
 
         // Then
         assertThat(updatedGenre.getId()).isEqualTo(savedGenre.getId());
@@ -142,8 +143,8 @@ class GenreRepositoryTest {
     @DisplayName("Should delete genre by ID")
     void testDeleteById() {
         // Given
-        Genre genre = createGenre("To Delete");
-        Genre savedGenre = genreRepository.saveAndFlush(genre);
+        GenreEntity genre = createGenreEntity("To Delete", 1L);
+        GenreEntity savedGenre = genreRepository.saveAndFlush(genre);
 
         // When
         genreRepository.deleteById(savedGenre.getId());
@@ -157,8 +158,8 @@ class GenreRepositoryTest {
     void testDeleteAll() {
         // Given
         genreRepository.saveAll(List.of(
-                createGenre("Action"),
-                createGenre("Comedy")
+                createGenreEntity("Action", 1L),
+                createGenreEntity("Comedy", 2L)
         ));
 
         // When
@@ -174,7 +175,7 @@ class GenreRepositoryTest {
     @DisplayName("Should not allow null name")
     void testNullName() {
         // Given
-        Genre genre = new Genre();
+        GenreEntity genre = new GenreEntity();
         genre.setName(null);
 
         // When & Then
@@ -188,9 +189,10 @@ class GenreRepositoryTest {
 
     // ==================== HELPER METHODS ====================
 
-    private Genre createGenre(String name) {
-        Genre genre = new Genre();
+    private GenreEntity createGenreEntity(String name, Long tmdbId) {
+        GenreEntity genre = new GenreEntity();
         genre.setName(name);
+        genre.setTmdbId(tmdbId);
         return genre;
     }
 }

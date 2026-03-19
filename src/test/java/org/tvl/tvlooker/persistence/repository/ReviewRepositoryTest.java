@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.tvl.tvlooker.domain.model.entity.Item;
-import org.tvl.tvlooker.domain.model.entity.Review;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.entity.ItemEntity;
+import org.tvl.tvlooker.domain.model.entity.ReviewEntity;
+import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
 import java.math.BigDecimal;
@@ -56,10 +56,10 @@ class ReviewRepositoryTest {
     @DisplayName("Should save a new review with user and item")
     void testSaveReview() {
         // Given - Create objects WITHOUT saving
-        User user = createUser("reviewer1");
-        Item item = createItem(12345L, "The Matrix");
+        UserEntity user = createUserEntity("reviewer1");
+        ItemEntity item = createItemEntity(12345L, "The Matrix");
 
-        Review review = Review.builder()
+        ReviewEntity review = ReviewEntity.builder()
                 .reviewText("Amazing movie!")
                 .score(9)
                 .item(item)
@@ -67,7 +67,7 @@ class ReviewRepositoryTest {
                 .build();
 
         // When - Save review (cascade will persist user and item)
-        Review savedReview = reviewRepository.saveAndFlush(review);
+        ReviewEntity savedReview = reviewRepository.saveAndFlush(review);
 
         // Then
         assertThat(savedReview).isNotNull();
@@ -82,10 +82,10 @@ class ReviewRepositoryTest {
     @DisplayName("Should save review without text (only score)")
     void testSaveReviewWithoutText() {
         // Given
-        User user = createUser("quickrater");
-        Item item = createItem(67890L, "Inception");
+        UserEntity user = createUserEntity("quickrater");
+        ItemEntity item = createItemEntity(67890L, "Inception");
 
-        Review review = Review.builder()
+        ReviewEntity review = ReviewEntity.builder()
                 .reviewText(null)
                 .score(10)
                 .item(item)
@@ -93,7 +93,7 @@ class ReviewRepositoryTest {
                 .build();
 
         // When
-        Review savedReview = reviewRepository.saveAndFlush(review);
+        ReviewEntity savedReview = reviewRepository.saveAndFlush(review);
 
         // Then
         assertThat(savedReview).isNotNull();
@@ -105,15 +105,15 @@ class ReviewRepositoryTest {
     @DisplayName("Should save multiple reviews for different items")
     void testSaveMultipleReviews() {
         // Given
-        User user = createUser("critic1");
-        Item item1 = createItem(1L, "Movie 1");
-        Item item2 = createItem(2L, "Movie 2");
+        UserEntity user = createUserEntity("critic1");
+        ItemEntity item1 = createItemEntity(1L, "Movie 1");
+        ItemEntity item2 = createItemEntity(2L, "Movie 2");
 
-        Review review1 = Review.builder().reviewText("Good").score(7).item(item1).user(user).build();
-        Review review2 = Review.builder().reviewText("Great").score(8).item(item2).user(user).build();
+        ReviewEntity review1 = ReviewEntity.builder().reviewText("Good").score(7).item(item1).user(user).build();
+        ReviewEntity review2 = ReviewEntity.builder().reviewText("Great").score(8).item(item2).user(user).build();
 
         // When
-        List<Review> savedReviews = reviewRepository.saveAll(List.of(review1, review2));
+        List<ReviewEntity> savedReviews = reviewRepository.saveAll(List.of(review1, review2));
 
         // Then
         assertThat(savedReviews).hasSize(2);
@@ -126,18 +126,18 @@ class ReviewRepositoryTest {
     @DisplayName("Should find review by ID")
     void testFindById() {
         // Given
-        User user = createUser("finduser");
-        Item item = createItem(100L, "Findable Movie");
-        Review review = Review.builder()
+        UserEntity user = createUserEntity("finduser");
+        ItemEntity item = createItemEntity(100L, "Findable Movie");
+        ReviewEntity review = ReviewEntity.builder()
                 .reviewText("Test review")
                 .score(8)
                 .item(item)
                 .user(user)
                 .build();
-        Review savedReview = reviewRepository.saveAndFlush(review);
+        ReviewEntity savedReview = reviewRepository.saveAndFlush(review);
 
         // When
-        Optional<Review> foundReview = reviewRepository.findById(savedReview.getId());
+        Optional<ReviewEntity> foundReview = reviewRepository.findById(savedReview.getId());
 
         // Then
         assertThat(foundReview).isPresent();
@@ -149,17 +149,17 @@ class ReviewRepositoryTest {
     @DisplayName("Should find all reviews")
     void testFindAll() {
         // Given
-        User user = createUser("user1");
-        Item item1 = createItem(1L, "Item 1");
-        Item item2 = createItem(2L, "Item 2");
+        UserEntity user = createUserEntity("user1");
+        ItemEntity item1 = createItemEntity(1L, "ItemEntity 1");
+        ItemEntity item2 = createItemEntity(2L, "ItemEntity 2");
 
         reviewRepository.saveAll(List.of(
-                Review.builder().reviewText("Review 1").score(7).item(item1).user(user).build(),
-                Review.builder().reviewText("Review 2").score(8).item(item2).user(user).build()
+                ReviewEntity.builder().reviewText("ReviewEntity 1").score(7).item(item1).user(user).build(),
+                ReviewEntity.builder().reviewText("ReviewEntity 2").score(8).item(item2).user(user).build()
         ));
 
         // When
-        List<Review> allReviews = reviewRepository.findAll();
+        List<ReviewEntity> allReviews = reviewRepository.findAll();
 
         // Then
         assertThat(allReviews).hasSize(2);
@@ -169,13 +169,13 @@ class ReviewRepositoryTest {
     @DisplayName("Should count all reviews")
     void testCount() {
         // Given
-        User user = createUser("counter");
-        Item item1 = createItem(1L, "Item 1");
-        Item item2 = createItem(2L, "Item 2");
+        UserEntity user = createUserEntity("counter");
+        ItemEntity item1 = createItemEntity(1L, "ItemEntity 1");
+        ItemEntity item2 = createItemEntity(2L, "ItemEntity 2");
 
         reviewRepository.saveAll(List.of(
-                Review.builder().reviewText("Review 1").score(7).item(item1).user(user).build(),
-                Review.builder().reviewText("Review 2").score(8).item(item2).user(user).build()
+                ReviewEntity.builder().reviewText("ReviewEntity 1").score(7).item(item1).user(user).build(),
+                ReviewEntity.builder().reviewText("ReviewEntity 2").score(8).item(item2).user(user).build()
         ));
 
         // When
@@ -191,40 +191,40 @@ class ReviewRepositoryTest {
     @DisplayName("Should find reviews by user ID")
     void testFindByUserId() {
         // Given
-        User user1 = createUser("user1");
-        User user2 = createUser("user2");
-        Item item1 = createItem(1L, "Item 1");
-        Item item2 = createItem(2L, "Item 2");
-        Item item3 = createItem(3L, "Item 3");
+        UserEntity user1 = createUserEntity("user1");
+        UserEntity user2 = createUserEntity("user2");
+        ItemEntity item1 = createItemEntity(1L, "ItemEntity 1");
+        ItemEntity item2 = createItemEntity(2L, "ItemEntity 2");
+        ItemEntity item3 = createItemEntity(3L, "ItemEntity 3");
 
-        Review review1 = Review.builder().reviewText("User1 Review 1").score(7).item(item1).user(user1).build();
-        Review review2 = Review.builder().reviewText("User1 Review 2").score(8).item(item2).user(user1).build();
-        Review review3 = Review.builder().reviewText("User2 Review").score(9).item(item3).user(user2).build();
+        ReviewEntity review1 = ReviewEntity.builder().reviewText("User1 ReviewEntity 1").score(7).item(item1).user(user1).build();
+        ReviewEntity review2 = ReviewEntity.builder().reviewText("User1 ReviewEntity 2").score(8).item(item2).user(user1).build();
+        ReviewEntity review3 = ReviewEntity.builder().reviewText("User2 ReviewEntity").score(9).item(item3).user(user2).build();
         
         reviewRepository.saveAll(List.of(review1, review2, review3));
 
         // When
-        List<Review> user1Reviews = reviewRepository.findByUserId(user1.getId());
-        List<Review> user2Reviews = reviewRepository.findByUserId(user2.getId());
+        List<ReviewEntity> user1Reviews = reviewRepository.findByUserId(user1.getId());
+        List<ReviewEntity> user2Reviews = reviewRepository.findByUserId(user2.getId());
 
         // Then
         assertThat(user1Reviews).hasSize(2);
-        assertThat(user1Reviews).extracting(Review::getReviewText)
-                .containsExactlyInAnyOrder("User1 Review 1", "User1 Review 2");
+        assertThat(user1Reviews).extracting(ReviewEntity::getReviewText)
+                .containsExactlyInAnyOrder("User1 ReviewEntity 1", "User1 ReviewEntity 2");
 
         assertThat(user2Reviews).hasSize(1);
-        assertThat(user2Reviews.get(0).getReviewText()).isEqualTo("User2 Review");
+        assertThat(user2Reviews.get(0).getReviewText()).isEqualTo("User2 ReviewEntity");
     }
 
     @Test
     @DisplayName("Should return empty list when user has no reviews")
     void testFindByUserIdNoReviews() {
         // Given
-        User user = createUser("noreviews");
+        UserEntity user = createUserEntity("noreviews");
         userRepository.saveAndFlush(user);
 
         // When
-        List<Review> reviews = reviewRepository.findByUserId(user.getId());
+        List<ReviewEntity> reviews = reviewRepository.findByUserId(user.getId());
 
         // Then
         assertThat(reviews).isEmpty();
@@ -237,7 +237,7 @@ class ReviewRepositoryTest {
         UUID nonExistentUserId = UUID.randomUUID();
 
         // When
-        List<Review> reviews = reviewRepository.findByUserId(nonExistentUserId);
+        List<ReviewEntity> reviews = reviewRepository.findByUserId(nonExistentUserId);
 
         // Then
         assertThat(reviews).isEmpty();
@@ -249,20 +249,20 @@ class ReviewRepositoryTest {
     @DisplayName("Should update review text and score")
     void testUpdateReview() {
         // Given
-        User user = createUser("updater");
-        Item item = createItem(300L, "Movie");
-        Review review = Review.builder()
+        UserEntity user = createUserEntity("updater");
+        ItemEntity item = createItemEntity(300L, "Movie");
+        ReviewEntity review = ReviewEntity.builder()
                 .reviewText("Original review")
                 .score(7)
                 .item(item)
                 .user(user)
                 .build();
-        Review savedReview = reviewRepository.saveAndFlush(review);
+        ReviewEntity savedReview = reviewRepository.saveAndFlush(review);
 
         // When
         savedReview.setReviewText("Updated review after second viewing");
         savedReview.setScore(9);
-        Review updatedReview = reviewRepository.saveAndFlush(savedReview);
+        ReviewEntity updatedReview = reviewRepository.saveAndFlush(savedReview);
 
         // Then
         assertThat(updatedReview.getId()).isEqualTo(savedReview.getId());
@@ -276,15 +276,15 @@ class ReviewRepositoryTest {
     @DisplayName("Should delete review by ID")
     void testDeleteById() {
         // Given
-        User user = createUser("deleter");
-        Item item = createItem(400L, "Movie");
-        Review review = Review.builder()
+        UserEntity user = createUserEntity("deleter");
+        ItemEntity item = createItemEntity(400L, "Movie");
+        ReviewEntity review = ReviewEntity.builder()
                 .reviewText("Delete me")
                 .score(5)
                 .item(item)
                 .user(user)
                 .build();
-        Review savedReview = reviewRepository.saveAndFlush(review);
+        ReviewEntity savedReview = reviewRepository.saveAndFlush(review);
 
         // When
         reviewRepository.deleteById(savedReview.getId());
@@ -297,13 +297,13 @@ class ReviewRepositoryTest {
     @DisplayName("Should delete all reviews")
     void testDeleteAll() {
         // Given
-        User user = createUser("user1");
-        Item item1 = createItem(1L, "Item 1");
-        Item item2 = createItem(2L, "Item 2");
+        UserEntity user = createUserEntity("user1");
+        ItemEntity item1 = createItemEntity(1L, "ItemEntity 1");
+        ItemEntity item2 = createItemEntity(2L, "ItemEntity 2");
 
         reviewRepository.saveAll(List.of(
-                Review.builder().reviewText("Review 1").score(7).item(item1).user(user).build(),
-                Review.builder().reviewText("Review 2").score(8).item(item2).user(user).build()
+                ReviewEntity.builder().reviewText("ReviewEntity 1").score(7).item(item1).user(user).build(),
+                ReviewEntity.builder().reviewText("ReviewEntity 2").score(8).item(item2).user(user).build()
         ));
 
         // When
@@ -319,8 +319,8 @@ class ReviewRepositoryTest {
     @DisplayName("Should not allow null item")
     void testNullItem() {
         // Given
-        User user = createUser("user");
-        Review review = Review.builder()
+        UserEntity user = createUserEntity("user");
+        ReviewEntity review = ReviewEntity.builder()
                 .reviewText("Test")
                 .score(8)
                 .item(null)
@@ -340,8 +340,8 @@ class ReviewRepositoryTest {
     @DisplayName("Should not allow null user")
     void testNullUser() {
         // Given
-        Item item = createItem(500L, "Movie");
-        Review review = Review.builder()
+        ItemEntity item = createItemEntity(500L, "Movie");
+        ReviewEntity review = ReviewEntity.builder()
                 .reviewText("Test")
                 .score(8)
                 .item(item)
@@ -361,9 +361,9 @@ class ReviewRepositoryTest {
     @DisplayName("Should not allow null score")
     void testNullScore() {
         // Given
-        User user = createUser("user");
-        Item item = createItem(600L, "Movie");
-        Review review = Review.builder()
+        UserEntity user = createUserEntity("user");
+        ItemEntity item = createItemEntity(600L, "Movie");
+        ReviewEntity review = ReviewEntity.builder()
                 .reviewText("Test")
                 .score(0) // Can't set to null due to primitive int
                 .item(item)
@@ -371,7 +371,7 @@ class ReviewRepositoryTest {
                 .build();
 
         // When
-        Review savedReview = reviewRepository.saveAndFlush(review);
+        ReviewEntity savedReview = reviewRepository.saveAndFlush(review);
 
         // Then
         assertThat(savedReview.getScore()).isEqualTo(0);
@@ -379,15 +379,16 @@ class ReviewRepositoryTest {
 
     // ==================== HELPER METHODS ====================
 
-    private User createUser(String username) {
-        return User.builder()
+    private UserEntity createUserEntity(String username) {
+        return UserEntity.builder()
                 .username(username)
                 .password("password123")
+                .email(username + "@example.com")
                 .build();
     }
 
-    private Item createItem(Long tmdbId, String title) {
-        return Item.builder()
+    private ItemEntity createItemEntity(Long tmdbId, String title) {
+        return ItemEntity.builder()
                 .tmdbId(tmdbId)
                 .tmdbType(TmdbType.MOVIE)
                 .title(title)
