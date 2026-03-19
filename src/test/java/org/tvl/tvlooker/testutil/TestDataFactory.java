@@ -1,6 +1,8 @@
 package org.tvl.tvlooker.testutil;
 
-import org.tvl.tvlooker.domain.model.entity.*;
+import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.*;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
@@ -69,7 +71,6 @@ public class TestDataFactory {
                 .releaseDate(LocalDate.now().minusYears(1))
                 .popularity(BigDecimal.valueOf(popularity))
                 .voteAverage(BigDecimal.valueOf(7.5))
-                .createdAt(new Timestamp(System.currentTimeMillis()))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
                 .actors(new HashSet<>())
@@ -89,7 +90,6 @@ public class TestDataFactory {
                 .releaseDate(LocalDate.now().minusYears(1))
                 .popularity(BigDecimal.valueOf(popularity))
                 .voteAverage(BigDecimal.valueOf(voteAverage))
-                .createdAt(new Timestamp(System.currentTimeMillis()))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
                 .actors(new HashSet<>())
@@ -109,7 +109,6 @@ public class TestDataFactory {
                 .releaseDate(LocalDate.now().minusYears(1))
                 .popularity(BigDecimal.valueOf(popularity))
                 .voteAverage(BigDecimal.valueOf(voteAverage))
-                .createdAt(new Timestamp(System.currentTimeMillis()))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
                 .actors(new HashSet<>())
@@ -145,11 +144,8 @@ public class TestDataFactory {
     /**
      * Creates a test genre.
      */
-    public static Genre createGenre(Long id, String name) {
-        Genre genre = new Genre();
-        genre.setId(id);
-        genre.setName(name);
-        return genre;
+    public static Genre createGenre(Long id, Long tmdbId , String name) {
+        return new Genre(id,tmdbId,name);
     }
 
     // ===================== Interaction Factory Methods =====================
@@ -157,11 +153,11 @@ public class TestDataFactory {
     /**
      * Creates a test interaction.
      */
-    public static Interaction createInteraction(Long id, User user, Item item, InteractionType type) {
+    public static Interaction createInteraction(Long id, UUID userId, Long itemId, InteractionType type) {
         return Interaction.builder()
                 .id(id)
-                .user(user)
-                .item(item)
+                .userId(userId)
+                .itemId(itemId)
                 .interactionType(type)
                 .createdAt(new Timestamp(System.currentTimeMillis()))
                 .build();
@@ -170,8 +166,8 @@ public class TestDataFactory {
     /**
      * Creates a watch interaction.
      */
-    public static Interaction createWatchInteraction(Long id, User user, Item item) {
-        return createInteraction(id, user, item, InteractionType.VIEW);
+    public static Interaction createWatchInteraction(Long id, UUID userId, Long itemId) {
+        return createInteraction(id, userId, itemId, InteractionType.VIEW);
     }
 
     /**
@@ -180,7 +176,7 @@ public class TestDataFactory {
     public static List<Interaction> createInteractionsForUser(User user, List<Item> items) {
         List<Interaction> interactions = new ArrayList<>();
         for (int i = 0; i < items.size(); i++) {
-            interactions.add(createWatchInteraction((long) i, user, items.get(i)));
+            interactions.add(createWatchInteraction((long) i, user.getId(), items.get(i).getId()));
         }
         return interactions;
     }
@@ -193,10 +189,9 @@ public class TestDataFactory {
         long interactionId = 1L;
         
         for (User user : users) {
-            // Each user watches a subset of items
             int itemsToWatch = Math.min(3, items.size());
             for (int i = 0; i < itemsToWatch; i++) {
-                interactions.add(createWatchInteraction(interactionId++, user, items.get(i)));
+                interactions.add(createWatchInteraction(interactionId++, user.getId(), items.get(i).getId()));
             }
         }
         return interactions;

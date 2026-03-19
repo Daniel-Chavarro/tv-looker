@@ -12,9 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.exception.InsufficientDataException;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
-import org.tvl.tvlooker.domain.model.entity.Interaction;
-import org.tvl.tvlooker.domain.model.entity.Item;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.Interaction;
+import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.User;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.motor.RecommendationEngine;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
@@ -29,10 +29,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for RecommendationService.
- * Tests orchestration logic, service composition, and exception handling.
- */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("RecommendationService Unit Tests")
 class RecommendationServiceTest {
@@ -66,22 +62,23 @@ class RecommendationServiceTest {
     void setUp() {
         testUserId = UUID.randomUUID();
         
-        // Create test user
         testUser = User.builder()
                 .id(testUserId)
                 .username("testuser")
                 .password("password123")
+                .email("test@test.com")
+                .name("Test User")
                 .build();
 
-        // Create test data - all users
         User user2 = User.builder()
                 .id(UUID.randomUUID())
                 .username("user2")
                 .password("password456")
+                .email("user2@test.com")
+                .name("User 2")
                 .build();
         allUsers = List.of(testUser, user2);
 
-        // Create test data - all items
         Item item1 = Item.builder()
                 .id(1L)
                 .title("Movie 1")
@@ -102,22 +99,20 @@ class RecommendationServiceTest {
                 .build();
         allItems = List.of(item1, item2, item3);
 
-        // Create test data - all interactions
         Interaction interaction1 = Interaction.builder()
                 .id(1L)
-                .user(testUser)
-                .item(item1)
+                .userId(testUserId)
+                .itemId(1L)
                 .interactionType(InteractionType.RATING)
                 .build();
         Interaction interaction2 = Interaction.builder()
                 .id(2L)
-                .user(user2)
-                .item(item2)
+                .userId(user2.getId())
+                .itemId(2L)
                 .interactionType(InteractionType.VIEW)
                 .build();
         allInteractions = List.of(interaction1, interaction2);
 
-        // Create scored recommendations
         scoredRecommendations = List.of(
                 ScoredItem.builder()
                         .item(item2)
@@ -137,12 +132,9 @@ class RecommendationServiceTest {
         );
     }
 
-    // ========== HAPPY PATH TESTS ==========
-
     @Test
     @DisplayName("getUserRecommendations - should return items when user exists and has interactions")
     void getUserRecommendations_shouldReturnItems_whenUserExistsAndHasInteractions() {
-        // Arrange
         int limit = 5;
         when(userService.getById(testUserId)).thenReturn(testUser);
         when(userService.getAll()).thenReturn(allUsers);
@@ -151,10 +143,8 @@ class RecommendationServiceTest {
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 
-        // Act
         List<Item> result = recommendationService.getUserRecommendations(testUserId, limit);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(3);
         assertThat(result.get(0).getTitle()).isEqualTo("Movie 2");
@@ -171,7 +161,6 @@ class RecommendationServiceTest {
     @Test
     @DisplayName("getUserRecommendations - should limit results based on limit parameter")
     void getUserRecommendations_shouldLimitResults_basedOnLimitParameter() {
-        // Arrange
         int limit = 2;
         when(userService.getById(testUserId)).thenReturn(testUser);
         when(userService.getAll()).thenReturn(allUsers);
@@ -180,12 +169,10 @@ class RecommendationServiceTest {
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 
-        // Act
         List<Item> result = recommendationService.getUserRecommendations(testUserId, limit);
 
-        // Assert
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(2); // Limited to 2 even though engine returned 3
+        assertThat(result).hasSize(2);
         assertThat(result.get(0).getTitle()).isEqualTo("Movie 2");
         assertThat(result.get(1).getTitle()).isEqualTo("Movie 3");
     }
@@ -193,7 +180,6 @@ class RecommendationServiceTest {
     @Test
     @DisplayName("getUserRecommendations - should return empty list when engine returns empty")
     void getUserRecommendations_shouldReturnEmptyList_whenEngineReturnsEmpty() {
-        // Arrange
         int limit = 5;
         when(userService.getById(testUserId)).thenReturn(testUser);
         when(userService.getAll()).thenReturn(allUsers);
@@ -202,10 +188,8 @@ class RecommendationServiceTest {
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(List.of());
 
-        // Act
         List<Item> result = recommendationService.getUserRecommendations(testUserId, limit);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
     }
@@ -213,7 +197,6 @@ class RecommendationServiceTest {
     @Test
     @DisplayName("getUserRecommendations - should load all system data for context")
     void getUserRecommendations_shouldLoadAllSystemData_forContext() {
-        // Arrange
         int limit = 5;
         when(userService.getById(testUserId)).thenReturn(testUser);
         when(userService.getAll()).thenReturn(allUsers);
@@ -222,10 +205,8 @@ class RecommendationServiceTest {
         when(recommendationEngine.recommend(eq(testUser), contextCaptor.capture()))
                 .thenReturn(scoredRecommendations);
 
-        // Act
         recommendationService.getUserRecommendations(testUserId, limit);
 
-        // Assert
         RecommendationContext capturedContext = contextCaptor.getValue();
         assertThat(capturedContext).isNotNull();
         assertThat(capturedContext.getUsers()).hasSize(2);
@@ -236,7 +217,6 @@ class RecommendationServiceTest {
     @Test
     @DisplayName("getUserRecommendations - should call all entity services")
     void getUserRecommendations_shouldCallAllEntityServices() {
-        // Arrange
         int limit = 5;
         when(userService.getById(testUserId)).thenReturn(testUser);
         when(userService.getAll()).thenReturn(allUsers);
@@ -245,25 +225,19 @@ class RecommendationServiceTest {
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 
-        // Act
         recommendationService.getUserRecommendations(testUserId, limit);
 
-        // Assert
         verify(userService, times(1)).getById(testUserId);
         verify(userService, times(1)).getAll();
         verify(itemService, times(1)).getAll();
         verify(interactionService, times(1)).getAll();
     }
 
-    // ========== VALIDATION TESTS ==========
-
     @Test
     @DisplayName("getUserRecommendations - should throw IllegalArgumentException when userId is null")
     void getUserRecommendations_shouldThrowIllegalArgumentException_whenUserIdIsNull() {
-        // Arrange
         int limit = 5;
 
-        // Act & Assert
         assertThatThrownBy(() -> recommendationService.getUserRecommendations(null, limit))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("User ID cannot be null");
@@ -275,10 +249,8 @@ class RecommendationServiceTest {
     @Test
     @DisplayName("getUserRecommendations - should throw IllegalArgumentException when limit is zero")
     void getUserRecommendations_shouldThrowIllegalArgumentException_whenLimitIsZero() {
-        // Arrange
         int limit = 0;
 
-        // Act & Assert
         assertThatThrownBy(() -> recommendationService.getUserRecommendations(testUserId, limit))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Limit must be greater than 0");
@@ -290,10 +262,8 @@ class RecommendationServiceTest {
     @Test
     @DisplayName("getUserRecommendations - should throw IllegalArgumentException when limit is negative")
     void getUserRecommendations_shouldThrowIllegalArgumentException_whenLimitIsNegative() {
-        // Arrange
         int limit = -5;
 
-        // Act & Assert
         assertThatThrownBy(() -> recommendationService.getUserRecommendations(testUserId, limit))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Limit must be greater than 0");
@@ -302,18 +272,14 @@ class RecommendationServiceTest {
         verify(recommendationEngine, never()).recommend(any(), any());
     }
 
-    // ========== EXCEPTION HANDLING TESTS ==========
-
     @Test
     @DisplayName("getUserRecommendations - should propagate UserNotFoundException when user not found")
     void getUserRecommendations_shouldPropagateUserNotFoundException_whenUserNotFound() {
-        // Arrange
         int limit = 5;
         UUID nonExistentUserId = UUID.randomUUID();
         when(userService.getById(nonExistentUserId))
                 .thenThrow(new UserNotFoundException("User not found with id: " + nonExistentUserId));
 
-        // Act & Assert
         assertThatThrownBy(() -> recommendationService.getUserRecommendations(nonExistentUserId, limit))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User not found with id: " + nonExistentUserId);
@@ -328,7 +294,6 @@ class RecommendationServiceTest {
     @Test
     @DisplayName("getUserRecommendations - should propagate InsufficientDataException from engine")
     void getUserRecommendations_shouldPropagateInsufficientDataException_fromEngine() {
-        // Arrange
         int limit = 5;
         when(userService.getById(testUserId)).thenReturn(testUser);
         when(userService.getAll()).thenReturn(allUsers);
@@ -337,7 +302,6 @@ class RecommendationServiceTest {
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenThrow(new InsufficientDataException("Insufficient data to generate recommendations"));
 
-        // Act & Assert
         assertThatThrownBy(() -> recommendationService.getUserRecommendations(testUserId, limit))
                 .isInstanceOf(InsufficientDataException.class)
                 .hasMessageContaining("Insufficient data to generate recommendations");
@@ -345,31 +309,28 @@ class RecommendationServiceTest {
         verify(recommendationEngine, times(1)).recommend(eq(testUser), any(RecommendationContext.class));
     }
 
-    // ========== EDGE CASES ==========
-
     @Test
     @DisplayName("getUserRecommendations - should work with new user (no interactions)")
     void getUserRecommendations_shouldWork_withNewUserNoInteractions() {
-        // Arrange
         int limit = 5;
         UUID newUserId = UUID.randomUUID();
         User newUser = User.builder()
                 .id(newUserId)
                 .username("newuser")
                 .password("password")
+                .email("new@test.com")
+                .name("New User")
                 .build();
         
         when(userService.getById(newUserId)).thenReturn(newUser);
         when(userService.getAll()).thenReturn(List.of(newUser));
         when(itemService.getAll()).thenReturn(allItems);
-        when(interactionService.getAll()).thenReturn(List.of()); // No interactions
+        when(interactionService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(newUser), any(RecommendationContext.class)))
-                .thenReturn(scoredRecommendations); // Popularity-based recommendations
+                .thenReturn(scoredRecommendations);
 
-        // Act
         List<Item> result = recommendationService.getUserRecommendations(newUserId, limit);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(3);
         verify(recommendationEngine, times(1)).recommend(eq(newUser), any(RecommendationContext.class));
@@ -378,19 +339,16 @@ class RecommendationServiceTest {
     @Test
     @DisplayName("getUserRecommendations - should work when no items in system")
     void getUserRecommendations_shouldWork_whenNoItemsInSystem() {
-        // Arrange
         int limit = 5;
         when(userService.getById(testUserId)).thenReturn(testUser);
         when(userService.getAll()).thenReturn(allUsers);
-        when(itemService.getAll()).thenReturn(List.of()); // No items
+        when(itemService.getAll()).thenReturn(List.of());
         when(interactionService.getAll()).thenReturn(allInteractions);
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
-                .thenReturn(List.of()); // No recommendations possible
+                .thenReturn(List.of());
 
-        // Act
         List<Item> result = recommendationService.getUserRecommendations(testUserId, limit);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
     }
@@ -398,27 +356,23 @@ class RecommendationServiceTest {
     @Test
     @DisplayName("getUserRecommendations - should handle limit larger than available recommendations")
     void getUserRecommendations_shouldHandleLimitLargerThanAvailable() {
-        // Arrange
-        int limit = 100; // Much larger than available recommendations
+        int limit = 100;
         when(userService.getById(testUserId)).thenReturn(testUser);
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(allInteractions);
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
-                .thenReturn(scoredRecommendations); // Only 3 items
+                .thenReturn(scoredRecommendations);
 
-        // Act
         List<Item> result = recommendationService.getUserRecommendations(testUserId, limit);
 
-        // Assert
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(3); // Returns all available, not more
+        assertThat(result).hasSize(3);
     }
 
     @Test
     @DisplayName("getUserRecommendations - should extract items correctly from ScoredItems")
     void getUserRecommendations_shouldExtractItemsCorrectly_fromScoredItems() {
-        // Arrange
         int limit = 5;
         when(userService.getById(testUserId)).thenReturn(testUser);
         when(userService.getAll()).thenReturn(allUsers);
@@ -427,13 +381,10 @@ class RecommendationServiceTest {
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 
-        // Act
         List<Item> result = recommendationService.getUserRecommendations(testUserId, limit);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(3);
-        // Verify items are extracted in order (scores not exposed)
         assertThat(result.get(0)).isEqualTo(scoredRecommendations.get(0).getItem());
         assertThat(result.get(1)).isEqualTo(scoredRecommendations.get(1).getItem());
         assertThat(result.get(2)).isEqualTo(scoredRecommendations.get(2).getItem());

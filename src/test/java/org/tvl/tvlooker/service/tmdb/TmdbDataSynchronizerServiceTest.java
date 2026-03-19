@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
@@ -74,11 +74,11 @@ class TmdbDataSynchronizerServiceTest {
         when(tmdbClient.getTvShowChanges(eq(startDate), any(LocalDate.class), eq(1)))
                 .thenReturn(tvChanges);
 
-        Item existingMovie = new Item();
+        ItemEntity existingMovie = new ItemEntity();
         existingMovie.setTmdbId(100L);
         existingMovie.setTmdbType(TmdbType.MOVIE);
         existingMovie.setTitle("Existing Movie");
-        Item existingTvShow = new Item();
+        ItemEntity existingTvShow = new ItemEntity();
         existingTvShow.setTmdbId(200L);
         existingTvShow.setTmdbType(TmdbType.TV);
         existingTvShow.setTitle("Existing TV");
