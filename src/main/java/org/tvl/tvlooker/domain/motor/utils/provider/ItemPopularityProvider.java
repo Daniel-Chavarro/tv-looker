@@ -1,7 +1,7 @@
 package org.tvl.tvlooker.domain.motor.utils.provider;
 
 import org.springframework.stereotype.Component;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.motor.utils.DataProvider;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 

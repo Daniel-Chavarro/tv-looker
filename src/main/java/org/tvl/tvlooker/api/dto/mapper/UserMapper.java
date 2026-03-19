@@ -4,12 +4,12 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.request.CreateUserRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateUserRequest;
 import org.tvl.tvlooker.api.dto.response.UserResponse;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.User;
 
 @Component
 public class UserMapper {
     // TODO: add name in User entity
-    public UserResponse toResponse(User user) {
+    public static UserResponse toResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -18,7 +18,7 @@ public class UserMapper {
     }
 
     // Possible need to add password in response
-    public User toModel(UserResponse userResponse) {
+    public static User toModel(UserResponse userResponse) {
         return User.builder()
                 .id(userResponse.getId())
                 .username(userResponse.getUsername())
@@ -26,14 +26,14 @@ public class UserMapper {
                 .build();
     }
 
-    public User fromCreateRequest(CreateUserRequest request) {
+    public static User fromCreateRequest(CreateUserRequest request) {
         return User.builder()
                 .username(request.getUsername())
                 .password(request.getPassword())
                 .build();
     }
 
-    public User fromUpdateRequest(UpdateUserRequest request) {
+    public static User fromUpdateRequest(UpdateUserRequest request) {
         return User.builder()
                 .username(request.getUsername())
                 .build();

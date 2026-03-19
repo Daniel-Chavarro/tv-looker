@@ -2,11 +2,11 @@ package org.tvl.tvlooker.api.dto.mapper;
 
 import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.response.ItemResponse;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.Item;
 
 @Component
 public class ItemMapper {
-    public ItemResponse toResponse(Item item) {
+    public static ItemResponse toResponse(Item item) {
         return ItemResponse.builder()
                 .id(item.getId())
                 .title(item.getTitle())
@@ -19,7 +19,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public Item toModel(ItemResponse itemResponse) {
+    public static Item toModel(ItemResponse itemResponse) {
         return Item.builder()
                 .id(itemResponse.getId())
                 .title(itemResponse.getTitle())

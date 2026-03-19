@@ -16,7 +16,7 @@ import org.tvl.tvlooker.api.dto.mapper.UserMapper;
 import org.tvl.tvlooker.api.dto.request.CreateUserRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateUserRequest;
 import org.tvl.tvlooker.api.dto.response.UserResponse;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.User;
 import org.tvl.tvlooker.service.UserService;
 
 import java.util.List;
@@ -30,7 +30,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final UserMapper USER_MAPPER;
 
     /**
      * Retrieves all users.
@@ -40,7 +39,7 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<User> users = userService.getAll();
         List<UserResponse> response = users.stream()
-                .map(USER_MAPPER::toResponse)
+                .map(UserMapper::toResponse)
                 .toList();
         return ResponseEntity.ok(response);
     }
@@ -48,27 +47,27 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         User user = userService.getById(id);
-        return ResponseEntity.ok(USER_MAPPER.toResponse(user));
+        return ResponseEntity.ok(UserMapper.toResponse(user));
     }
 
     @PostMapping
     public ResponseEntity<UserResponse> createUser(
             @Valid @RequestBody CreateUserRequest request) {
-        User user = USER_MAPPER.fromCreateRequest(request);
+        User user = UserMapper.fromCreateRequest(request);
         User created = userService.create(user);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header("Location", "/api/v1/users/" + created.getId())
-                .body(USER_MAPPER.toResponse(created));
+                .body(UserMapper.toResponse(created));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateUserRequest request) {
-        User user = USER_MAPPER.fromUpdateRequest(request);
+        User user = UserMapper.fromUpdateRequest(request);
         User updated = userService.update(id, user);
-        return ResponseEntity.ok(USER_MAPPER.toResponse(updated));
+        return ResponseEntity.ok(UserMapper.toResponse(updated));
     }
 
     @DeleteMapping("/{id}")

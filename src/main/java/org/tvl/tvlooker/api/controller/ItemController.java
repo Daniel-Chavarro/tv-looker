@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.mapper.ItemMapper;
 import org.tvl.tvlooker.api.dto.response.ItemResponse;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.service.ItemService;
 
 import java.util.List;
@@ -25,11 +25,6 @@ public class ItemController {
      * Service for managing items.
      */
     private final ItemService ITEM_SERVICE;
-
-    /**
-     * Mapper for converting between Item entities and ItemResponse DTOs.
-     */
-    private final ItemMapper ITEM_MAPPER;
     
     /**
      * Retrieves all items.
@@ -39,7 +34,7 @@ public class ItemController {
     public ResponseEntity<List<ItemResponse>> getAllItems() {
         List<Item> items = ITEM_SERVICE.getAll();
         List<ItemResponse> response = items.stream()
-                .map(ITEM_MAPPER::toResponse)
+                .map(ItemMapper::toResponse)
                 .toList();
         return ResponseEntity.ok(response);
     }
@@ -52,6 +47,6 @@ public class ItemController {
     @GetMapping("/{id}")
     public ResponseEntity<ItemResponse> getItemById(@PathVariable Long id) {
         Item item = ITEM_SERVICE.getById(id);
-        return ResponseEntity.ok(ITEM_MAPPER.toResponse(item));
+        return ResponseEntity.ok(ItemMapper.toResponse(item));
     }
 }
