@@ -20,4 +20,8 @@ public class CreateUserRequest {
     @NotBlank(message = "Name is required")
     @Size(max = 100)
     private String name;
+
+    @NotBlank(message = "Password is required")
+    @Size(max = 100)
+    private String password;
 }
