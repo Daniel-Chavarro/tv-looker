@@ -4,6 +4,9 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.response.ItemResponse;
 import org.tvl.tvlooker.domain.model.Item;
 
+/**
+ * Mapper for converting between Item DTOs and models.
+ */
 @Component
 public class ItemMapper {
     public static ItemResponse toResponse(Item item) {

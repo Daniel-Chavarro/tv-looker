@@ -9,6 +9,9 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+/**
+ * DTO for creating a review request.
+ */
 @Getter
 @Setter
 public class CreateReviewRequest {

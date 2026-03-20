@@ -20,12 +20,19 @@ import org.tvl.tvlooker.service.ReviewService;
 
 import java.util.List;
 
+/**
+ * REST controller for managing reviews.
+ */
 @RestController
 @RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
     private final ReviewService reviewService;
 
+    /**
+     * Retrieves all reviews.
+     * @return a list of review responses
+     */
     @GetMapping
     public ResponseEntity<List<ReviewResponse>> getAllReviews() {
         List<Review> reviews = reviewService.getAll();
@@ -34,6 +41,11 @@ public class ReviewController {
                 .toList());
     }
 
+    /**
+     * Creates a new review.
+     * @param request the request containing review details
+     * @return the created review response
+     */
     @PostMapping
     public ResponseEntity<ReviewResponse> createReview(
             @Valid @RequestBody CreateReviewRequest request) {
@@ -45,12 +57,23 @@ public class ReviewController {
                 .body(ReviewMapper.toResponse(created));
     }
 
+    /**
+     * Retrieves a review by its ID.
+     * @param id the review ID
+     * @return the review response
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ReviewResponse> getReviewById(@PathVariable Long id) {
         Review review = reviewService.getById(id);
         return ResponseEntity.ok(ReviewMapper.toResponse(review));
     }
 
+    /**
+     * Updates an existing review.
+     * @param id the review ID
+     * @param request the request containing updated review details
+     * @return the updated review response
+     */
     @PutMapping("/{id}")
     public ResponseEntity<ReviewResponse> updateReview(
             @PathVariable Long id,
@@ -60,6 +83,11 @@ public class ReviewController {
         return ResponseEntity.ok(ReviewMapper.toResponse(updated));
     }
 
+    /**
+     * Deletes a review by its ID.
+     * @param id the review ID
+     * @return empty response with status 204 No Content
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
         reviewService.deleteById(id);

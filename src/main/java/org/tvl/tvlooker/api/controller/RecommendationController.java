@@ -18,12 +18,21 @@ import org.tvl.tvlooker.service.RecommendationService;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * REST controller for managing recommendations.
+ */
 @RestController
 @RequestMapping("/api/v1/users/{userId}/recommendations")
 @RequiredArgsConstructor
 public class RecommendationController {
     private final RecommendationService recommendationService;
 
+    /**
+     * Retrieves recommendations for a specific user.
+     * @param userId the user ID
+     * @param limit the maximum number of recommendations to retrieve
+     * @return the recommendation response
+     */
     @GetMapping
     public ResponseEntity<RecommendationResponse> getRecommendations(
             @PathVariable UUID userId,

@@ -8,6 +8,9 @@ import org.tvl.tvlooker.domain.model.ListFavorite;
 
 import java.util.stream.Collectors;
 
+/**
+ * Mapper for converting between ListFavorite DTOs and models.
+ */
 @Component
 public class ListFavoriteMapper {
     public static ListFavoriteResponse toResponse(ListFavorite listFavorite) {

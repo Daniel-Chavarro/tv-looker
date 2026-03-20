@@ -6,6 +6,9 @@ import org.tvl.tvlooker.api.dto.request.UpdateReviewRequest;
 import org.tvl.tvlooker.api.dto.response.ReviewResponse;
 import org.tvl.tvlooker.domain.model.Review;
 
+/**
+ * Mapper for converting between Review DTOs and models.
+ */
 @Component
 public class ReviewMapper {
 

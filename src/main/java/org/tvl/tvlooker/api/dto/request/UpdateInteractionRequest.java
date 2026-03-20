@@ -7,6 +7,9 @@ import org.tvl.tvlooker.domain.model.enums.InteractionType;
 
 import java.util.UUID;
 
+/**
+ * DTO for updating an interaction request.
+ */
 @Getter
 @Setter
 public class UpdateInteractionRequest {

@@ -8,6 +8,9 @@ import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+/**
+ * DTO for interaction response.
+ */
 @Builder
 @Getter
 @AllArgsConstructor

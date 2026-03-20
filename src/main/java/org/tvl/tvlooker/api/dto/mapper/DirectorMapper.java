@@ -2,7 +2,9 @@ package org.tvl.tvlooker.api.dto.mapper;
 
 import org.tvl.tvlooker.api.dto.response.DirectorResponse;
 import org.tvl.tvlooker.domain.model.Director;
-
+/**
+ * Mapper for converting between Director DTOs and models.
+ */
 public class DirectorMapper {
     public static Director toModel(DirectorResponse response){
         return Director.builder()

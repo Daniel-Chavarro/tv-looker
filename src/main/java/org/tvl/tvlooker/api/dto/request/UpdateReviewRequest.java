@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO for updating a review request.
+ */
 @Getter
 @Setter
 public class UpdateReviewRequest {

@@ -59,6 +59,11 @@ public class InteractionController {
                 .body(InteractionMapper.toResponse(created));
     }
 
+    /**
+     * Retrieves an interaction by its ID.
+     * @param id the interaction ID
+     * @return the interaction response
+     */
     @GetMapping("/{id}")
     public ResponseEntity<InteractionResponse> getInteractionById(@PathVariable Long id) {
         Interaction interaction = interactionService.getById(id);
@@ -66,6 +71,12 @@ public class InteractionController {
     }
 
 
+    /**
+     * Updates an existing interaction.
+     * @param id the interaction ID
+     * @param request the request containing updated interaction details
+     * @return the updated interaction response
+     */
     @PutMapping("/{id}")
     public ResponseEntity<InteractionResponse> updateInteraction(
             @PathVariable Long id,
@@ -75,6 +86,11 @@ public class InteractionController {
         return ResponseEntity.ok(InteractionMapper.toResponse(updated));
     }
 
+    /**
+     * Deletes an interaction by its ID.
+     * @param id the interaction ID
+     * @return empty response with status 204 No Content
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInteraction(@PathVariable Long id) {
         interactionService.delete(id);

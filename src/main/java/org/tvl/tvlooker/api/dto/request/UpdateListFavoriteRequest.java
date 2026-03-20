@@ -4,6 +4,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO for updating a favorite list request.
+ */
 @Getter
 @Setter
 public class UpdateListFavoriteRequest {

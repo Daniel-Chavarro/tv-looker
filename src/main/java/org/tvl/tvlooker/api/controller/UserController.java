@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- *
+ * REST controller for managing users.
  */
 @RestController
 @RequestMapping("/api/v1/users")
@@ -44,12 +44,22 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Retrieves a user by their ID.
+     * @param id the user ID
+     * @return the user response
+     */
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         User user = userService.getById(id);
         return ResponseEntity.ok(UserMapper.toResponse(user));
     }
 
+    /**
+     * Creates a new user.
+     * @param request the request containing user details
+     * @return the created user response
+     */
     @PostMapping
     public ResponseEntity<UserResponse> createUser(
             @Valid @RequestBody CreateUserRequest request) {
@@ -61,6 +71,12 @@ public class UserController {
                 .body(UserMapper.toResponse(created));
     }
 
+    /**
+     * Updates an existing user.
+     * @param id the user ID
+     * @param request the request containing updated user details
+     * @return the updated user response
+     */
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable UUID id,
@@ -70,6 +86,11 @@ public class UserController {
         return ResponseEntity.ok(UserMapper.toResponse(updated));
     }
 
+    /**
+     * Deletes a user by their ID.
+     * @param id the user ID
+     * @return empty response with status 204 No Content
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.delete(id);

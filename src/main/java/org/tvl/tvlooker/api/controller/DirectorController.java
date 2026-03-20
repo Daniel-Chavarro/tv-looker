@@ -13,12 +13,19 @@ import org.tvl.tvlooker.service.DirectorService;
 
 import java.util.List;
 
+/**
+ * REST controller for managing directors.
+ */
 @RestController
 @RequestMapping("/api/v1/directors")
 @RequiredArgsConstructor
 public class DirectorController {
     private final DirectorService directorService;
 
+    /**
+     * Retrieves all directors.
+     * @return a list of director responses
+     */
     @GetMapping
     public ResponseEntity<List<DirectorResponse>> getAllDirectors() {
         List<Director> directors = directorService.getAll();
@@ -28,6 +35,11 @@ public class DirectorController {
         );
     }
 
+    /**
+     * Retrieves a director by its ID.
+     * @param id the director ID
+     * @return the director response
+     */
     @GetMapping("/{id}")
     public ResponseEntity<DirectorResponse> getDirectorById(@PathVariable Long id) {
         Director director = directorService.getById(id);

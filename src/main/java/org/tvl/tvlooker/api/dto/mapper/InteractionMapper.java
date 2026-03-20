@@ -8,6 +8,9 @@ import org.tvl.tvlooker.api.dto.response.InteractionResponse;
 import org.tvl.tvlooker.domain.model.Interaction;
 
 
+/**
+ * Mapper for converting between Interaction DTOs and models.
+ */
 @RequiredArgsConstructor
 @Component
 public class InteractionMapper {

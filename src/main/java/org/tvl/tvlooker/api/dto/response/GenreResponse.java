@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+/**
+ * DTO for genre response.
+ */
 @Builder
 @Getter
 @AllArgsConstructor

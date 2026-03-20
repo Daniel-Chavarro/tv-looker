@@ -6,6 +6,9 @@ import org.tvl.tvlooker.api.dto.request.UpdateUserRequest;
 import org.tvl.tvlooker.api.dto.response.UserResponse;
 import org.tvl.tvlooker.domain.model.User;
 
+/**
+ * Mapper for converting between User DTOs and models.
+ */
 @Component
 public class UserMapper {
     public static UserResponse toResponse(User user) {

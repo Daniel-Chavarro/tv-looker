@@ -15,12 +15,19 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * REST controller for managing genres.
+ */
 @RestController
 @RequestMapping("/api/v1/genres")
 @RequiredArgsConstructor
 public class GenreController {
     private final GenreService genreService;
 
+    /**
+     * Retrieves all genres.
+     * @return a list of genre responses
+     */
     @GetMapping
     public ResponseEntity<List<GenreResponse>> getAllGenres() {
         List<Genre> genres = genreService.getAll();
@@ -29,6 +36,11 @@ public class GenreController {
                 .collect(toList()));
     }
 
+    /**
+     * Retrieves a genre by its ID.
+     * @param id the genre ID
+     * @return the genre response
+     */
     @GetMapping("{id}")
     public ResponseEntity<GenreResponse> getGenreById(@PathVariable Long id) {
         Genre genre = genreService.getById(id);

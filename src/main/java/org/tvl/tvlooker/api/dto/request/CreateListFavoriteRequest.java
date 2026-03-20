@@ -8,6 +8,9 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+/**
+ * DTO for creating a favorite list request.
+ */
 @Getter
 @Setter
 public class CreateListFavoriteRequest {

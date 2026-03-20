@@ -7,6 +7,9 @@ import lombok.Getter;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * DTO for favorite list response.
+ */
 @Builder
 @Getter
 @AllArgsConstructor

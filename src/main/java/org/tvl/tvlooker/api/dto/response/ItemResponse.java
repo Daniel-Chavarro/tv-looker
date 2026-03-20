@@ -8,6 +8,9 @@ import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * DTO for item response.
+ */
 @Builder
 @Getter
 @AllArgsConstructor

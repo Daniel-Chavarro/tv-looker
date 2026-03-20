@@ -7,6 +7,9 @@ import lombok.Getter;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * DTO for recommendation response.
+ */
 @Builder
 @Getter
 @AllArgsConstructor

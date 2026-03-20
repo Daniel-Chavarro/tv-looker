@@ -7,6 +7,9 @@ import lombok.Getter;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+/**
+ * DTO for review response.
+ */
 @Builder
 @Getter
 @AllArgsConstructor
