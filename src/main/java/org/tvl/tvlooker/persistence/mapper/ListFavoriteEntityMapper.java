@@ -10,10 +10,19 @@ import org.tvl.tvlooker.domain.model.entity.UserEntity;
 
 import java.util.stream.Collectors;
 
+/**
+ * Mapper for converting between ListFavorite entities and domain models.
+ */
 @RequiredArgsConstructor
 @Component
 public class ListFavoriteEntityMapper {
 
+    /**
+     * Converts a ListFavoriteEntity to a ListFavorite domain model.
+     *
+     * @param entity the JPA entity
+     * @return the domain model
+     */
     public static ListFavorite toDomain(ListFavoriteEntity entity) {
         if (entity == null) return null;
         return ListFavorite.builder()
@@ -31,6 +40,12 @@ public class ListFavoriteEntityMapper {
     }
 
     // Note: We only map the user ID to avoid loading the entire UserEntity, which can be expensive.
+    /**
+     * Converts a ListFavorite domain model to a ListFavoriteEntity JPA entity.
+     *
+     * @param domain the domain model
+     * @return the JPA entity
+     */
     public static ListFavoriteEntity toEntity(ListFavorite domain) {
         if (domain == null) return null;
         return ListFavoriteEntity.builder()

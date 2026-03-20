@@ -7,10 +7,19 @@ import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 
 import java.util.stream.Collectors;
 
+/**
+ * Mapper for converting between Item entities and domain models.
+ */
 @Component
 @RequiredArgsConstructor
-public class ItemEntityMapper {
+public class    ItemEntityMapper {
 
+    /**
+     * Converts an ItemEntity to an Item domain model.
+     *
+     * @param entity the JPA entity
+     * @return the domain model
+     */
     public static Item toDomain(ItemEntity entity) {
         if (entity == null) return null;
         return Item.builder()
@@ -29,6 +38,12 @@ public class ItemEntityMapper {
     }
 
     // Note: We only map the user ID to avoid loading the entire UserEntity, which can be expensive.
+    /**
+     * Converts an Item domain model to an ItemEntity JPA entity.
+     *
+     * @param domain the domain model
+     * @return the JPA entity
+     */
     public static ItemEntity toEntity(Item domain) {
         if (domain == null) return null;
         return ItemEntity.builder()

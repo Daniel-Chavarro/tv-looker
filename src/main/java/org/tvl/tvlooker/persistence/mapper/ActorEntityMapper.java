@@ -4,8 +4,17 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.domain.model.Actor;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
 
+/**
+ * Mapper for converting between Actor entities and domain models.
+ */
 @Component
 public class ActorEntityMapper {
+    /**
+     * Converts an ActorEntity to an Actor domain model.
+     *
+     * @param entity the JPA entity
+     * @return the domain model
+     */
     public static Actor toDomain(ActorEntity entity) {
         if (entity == null) return null;
         return Actor.builder()
@@ -15,6 +24,12 @@ public class ActorEntityMapper {
                 .build();
     }
 
+    /**
+     * Converts an Actor domain model to an ActorEntity JPA entity.
+     *
+     * @param domain the domain model
+     * @return the JPA entity
+     */
     public static ActorEntity toEntity(Actor domain) {
         if (domain == null) return null;
         return ActorEntity.builder()

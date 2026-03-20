@@ -8,9 +8,18 @@ import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.entity.ReviewEntity;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
 
+/**
+ * Mapper for converting between Review entities and domain models.
+ */
 @Component
 public class ReviewEntityMapper {
 
+    /**
+     * Converts a ReviewEntity to a Review domain model.
+     *
+     * @param entity the JPA entity
+     * @return the domain model
+     */
     public static Review toDomain(ReviewEntity entity) {
         if (entity == null) return null;
         return Review.builder()
@@ -23,6 +32,14 @@ public class ReviewEntityMapper {
                 .build();
     }
 
+    /**
+     * Converts a Review domain model and associated entities to a ReviewEntity JPA entity.
+     *
+     * @param domain the domain model
+     * @param user the associated user model
+     * @param item the associated item model
+     * @return the JPA entity
+     */
     public static ReviewEntity toEntity(Review domain, User user, Item item) {
         if (domain == null) return null;
         return ReviewEntity.builder()
