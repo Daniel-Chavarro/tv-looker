@@ -2,6 +2,7 @@ package org.tvl.tvlooker.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +39,10 @@ public class ReviewController {
             @Valid @RequestBody CreateReviewRequest request) {
         Review review = ReviewMapper.fromCreateRequest(request);
         Review created = reviewService.create(review);
-        return ResponseEntity.ok(ReviewMapper.toResponse(created));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .header("Location", "/api/v1/users/" + created.getId())
+                .body(ReviewMapper.toResponse(created));
     }
 
     @GetMapping("/{id}")

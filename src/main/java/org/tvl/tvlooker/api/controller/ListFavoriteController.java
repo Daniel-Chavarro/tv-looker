@@ -2,6 +2,7 @@ package org.tvl.tvlooker.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +20,6 @@ import org.tvl.tvlooker.domain.model.ListFavorite;
 import org.tvl.tvlooker.service.ListFavoriteService;
 
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @RestController
 @RequestMapping("/api/v1/lists")
@@ -41,7 +40,10 @@ public class ListFavoriteController {
             @Valid @RequestBody CreateListFavoriteRequest request) {
         ListFavorite listFavorite = ListFavoriteMapper.fromCreateRequest(request);
         ListFavorite created = listFavoriteService.create(listFavorite);
-        return ResponseEntity.ok(ListFavoriteMapper.toResponse(created));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .header("Location", "/api/v1/users/" + created.getId())
+                .body(ListFavoriteMapper.toResponse(created));
     }
 
     @GetMapping("/{id}")

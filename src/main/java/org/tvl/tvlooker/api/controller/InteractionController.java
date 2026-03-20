@@ -1,6 +1,7 @@
 package org.tvl.tvlooker.api.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,11 +43,20 @@ public class InteractionController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Creates a new interaction.
+     * @param request the request body containing the details of the interaction to create
+     * @return the created interaction response with a 201 Created status, or a 400 Bad Request status if the request is
+     *         invalid
+     */
     @PostMapping
     public ResponseEntity<InteractionResponse> createInteraction(@RequestBody CreateInteractionRequest request) {
         Interaction interaction = InteractionMapper.fromCreateRequest(request);
         Interaction created = interactionService.create(interaction);
-        return ResponseEntity.ok(InteractionMapper.toResponse(created));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .header("Location", "/api/v1/users/" + created.getId())
+                .body(InteractionMapper.toResponse(created));
     }
 
     @GetMapping("/{id}")
