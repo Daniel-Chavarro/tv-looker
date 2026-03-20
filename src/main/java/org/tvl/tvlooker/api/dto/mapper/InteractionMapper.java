@@ -42,4 +42,11 @@ public class InteractionMapper {
                 .interactionType(request.getInteractionType())
                 .build();
     }
+
+    public static Interaction fromUpdateRequest(UpdateInteractionRequest request) {
+        return Interaction.builder()
+                .interactionType(request.getInteractionType())
+                .reviewId(request.getReviewId())
+                .build();
+    }
 }

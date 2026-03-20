@@ -119,11 +119,11 @@ public class ListFavoriteService {
      * @param list favorite list
      * @param itemId item to add
      */
-    public void addItemToFavorite(ListFavorite list, Long itemId) {
+    public ListFavorite addItemToFavorite(ListFavorite list, Long itemId) {
         ListFavoriteEntity entity = ListFavoriteEntityMapper.toEntity(list);
         ItemEntity item = ItemEntityMapper.toEntity(itemService.getById(itemId));
         entity.getItems().add(item);
-        listFavoriteRepository.save(entity);
+        return ListFavoriteEntityMapper.toDomain(listFavoriteRepository.save(entity));
     }
 
      /**
@@ -131,9 +131,10 @@ public class ListFavoriteService {
      * @param list favorite list
      * @param itemId item to remove
      */
-    public void removeItemFromFavorite(ListFavorite list, Long itemId) {
+    public ListFavorite removeItemFromFavorite(ListFavorite list, Long itemId) {
         ListFavoriteEntity entity = ListFavoriteEntityMapper.toEntity(list);
         ItemEntity item = ItemEntityMapper.toEntity(itemService.getById(itemId));
         entity.getItems().remove(item);
-        listFavoriteRepository.save(entity);}
+        return ListFavoriteEntityMapper.toDomain(listFavoriteRepository.save(entity));
+    }
 }
