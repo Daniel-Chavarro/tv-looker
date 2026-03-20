@@ -14,9 +14,9 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 public class ListFavoriteResponse {
-    private final Long id;
-    private final UUID userId;
-    private final String name;
-    private final String description;
-    private final Set<ItemResponse> items;
+    private Long id;
+    private UUID userId;
+    private String name;
+    private String description;
+    private Set<ItemResponse> items;
 }
