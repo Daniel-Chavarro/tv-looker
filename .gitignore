@@ -54,3 +54,6 @@ skills-lock.json
 .agent
 .claude
 
+# Test output files
+test-output.txt
+
