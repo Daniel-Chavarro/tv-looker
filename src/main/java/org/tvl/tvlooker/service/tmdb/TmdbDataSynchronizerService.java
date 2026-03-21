@@ -48,7 +48,6 @@ import java.util.Optional;
  */
 @Service
 @Slf4j
-@ConditionalOnProperty(name = "tmdb.sync.enabled", havingValue = "true", matchIfMissing = true)
 @Profile("!test")
 public class TmdbDataSynchronizerService {
 
@@ -75,6 +74,7 @@ public class TmdbDataSynchronizerService {
      * Main scheduled sync method.
      * Default: runs every 24 hours, first run 60 seconds after startup.
      */
+    @ConditionalOnProperty(name = "tmdb.sync.enabled", havingValue = "true", matchIfMissing = true)
     @Scheduled(
             fixedDelayString = "${tmdb.sync.interval-ms:86400000}",
             initialDelayString = "${tmdb.sync.initial-delay-ms:60000}")
