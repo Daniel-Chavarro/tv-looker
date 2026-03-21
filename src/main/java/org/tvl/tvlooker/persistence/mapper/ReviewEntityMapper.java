@@ -4,9 +4,7 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.model.Review;
 import org.tvl.tvlooker.domain.model.User;
-import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.entity.ReviewEntity;
-import org.tvl.tvlooker.domain.model.entity.UserEntity;
 
 /**
  * Mapper for converting between Review entities and domain models.
@@ -21,7 +19,7 @@ public class ReviewEntityMapper {
      * @return the domain model
      */
     public static Review toDomain(ReviewEntity entity) {
-        if (entity == null) return null;
+        if (entity == null) {return null;}
         return Review.builder()
                 .id(entity.getId())
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
@@ -41,7 +39,7 @@ public class ReviewEntityMapper {
      * @return the JPA entity
      */
     public static ReviewEntity toEntity(Review domain, User user, Item item) {
-        if (domain == null) return null;
+        if (domain == null) {return null;}
         return ReviewEntity.builder()
                 .id(domain.getId())
                 .user(user != null ? UserEntityMapper.toEntity(user) : null)

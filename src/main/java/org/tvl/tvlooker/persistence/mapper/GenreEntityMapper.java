@@ -16,7 +16,7 @@ public class GenreEntityMapper {
      * @return the domain model
      */
     public static Genre toDomain(GenreEntity entity) {
-        if (entity == null) return null;
+        if (entity == null) {return null;}
         return Genre.builder()
                 .id(entity.getId())
                 .tmdbId(entity.getTmdbId())
@@ -31,7 +31,7 @@ public class GenreEntityMapper {
      * @return the JPA entity
      */
     public static GenreEntity toEntity(Genre domain) {
-        if (domain == null) return null;
+        if (domain == null) {return null;}
         return GenreEntity.builder()
                 .id(domain.getId())
                 .tmdbId(domain.getTmdbId())

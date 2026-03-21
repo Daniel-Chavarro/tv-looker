@@ -1,18 +1,12 @@
 package org.tvl.tvlooker.service.tmdb;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.tvl.tvlooker.domain.model.Actor;
-import org.tvl.tvlooker.domain.model.Director;
-import org.tvl.tvlooker.domain.model.Genre;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 import org.tvl.tvlooker.domain.model.entity.GenreEntity;
-import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
@@ -27,7 +21,6 @@ import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbPersonMapper;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

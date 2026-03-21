@@ -16,7 +16,7 @@ public class ActorEntityMapper {
      * @return the domain model
      */
     public static Actor toDomain(ActorEntity entity) {
-        if (entity == null) return null;
+        if (entity == null) {return null;}
         return Actor.builder()
                 .id(entity.getId())
                 .tmdbId(entity.getTmdbId())
@@ -31,8 +31,7 @@ public class ActorEntityMapper {
      * @return the JPA entity
      */
     public static ActorEntity toEntity(Actor domain) {
-        if (domain == null) return null;
-        return ActorEntity.builder()
+        if (domain == null) {return null;}        return ActorEntity.builder()
                 .id(domain.getId())
                 .tmdbId(domain.getTmdbId())
                 .name(domain.getName())

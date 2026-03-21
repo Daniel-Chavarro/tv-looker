@@ -9,7 +9,19 @@ import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.tvl.tvlooker.domain.exception.*;
+import org.tvl.tvlooker.domain.exception.NoRecommendationsAvailableException;
+import org.tvl.tvlooker.domain.exception.NoDataProviderException;
+import org.tvl.tvlooker.domain.exception.InsufficientDataException;
+import org.tvl.tvlooker.domain.exception.InvalidEngineConfigurationException;
+import org.tvl.tvlooker.domain.exception.UserNotFoundException;
+import org.tvl.tvlooker.domain.exception.ItemNotFoundException;
+import org.tvl.tvlooker.domain.exception.ReviewNotFoundException;
+import org.tvl.tvlooker.domain.exception.ActorNotFoundException;
+import org.tvl.tvlooker.domain.exception.DirectorNotFoundException;
+import org.tvl.tvlooker.domain.exception.GenreNotFoundException;
+import org.tvl.tvlooker.domain.exception.InteractionNotFoundException;
+import org.tvl.tvlooker.domain.exception.ListFavoriteNotFoundException;
+import org.tvl.tvlooker.domain.exception.TmdbCollectionInProgressException;
 
 import java.net.URI;
 import java.util.stream.Collectors;
@@ -29,7 +41,9 @@ public class GlobalExceptionHandler {
      * @return 409 Conflict with error details
      */
     @ExceptionHandler(TmdbCollectionInProgressException.class)
-    public ResponseEntity<ErrorResponse> handleTmdbCollectionInProgress(TmdbCollectionInProgressException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleTmdbCollectionInProgress(
+            TmdbCollectionInProgressException ex,
+            HttpServletRequest request) {
         ErrorResponse error = buildErrorResponse(
                 ex,
                 "/errors/tmdb-collection-in-progress",

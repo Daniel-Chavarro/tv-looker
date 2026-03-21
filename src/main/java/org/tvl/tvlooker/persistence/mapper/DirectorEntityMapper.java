@@ -16,7 +16,7 @@ public class DirectorEntityMapper {
      * @return the domain model
      */
     public static Director toDomain(DirectorEntity entity) {
-        if (entity == null) return null;
+        if (entity == null) {return null;}
         return Director.builder()
                 .id(entity.getId())
                 .tmdbId(entity.getTmdbId())
@@ -31,7 +31,7 @@ public class DirectorEntityMapper {
      * @return the JPA entity
      */
     public static DirectorEntity toEntity(Director domain) {
-        if (domain == null) return null;
+        if (domain == null) {return null;}
         return DirectorEntity.builder()
                 .id(domain.getId())
                 .tmdbId(domain.getTmdbId())

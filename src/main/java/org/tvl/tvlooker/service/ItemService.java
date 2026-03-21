@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
 /**
  * Service for Item entity operations.
@@ -54,55 +55,37 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Update an item.
-     *
-     * @param id item id
-     * @param item item data to update
-     * @return updated item
-     * @throws ItemNotFoundException when the item does not exist
-     */
-    public Item update(Long id, Item item) {
-        if (!itemRepository.existsById(id)) {
-            throw new ItemNotFoundException("Item not found: " + id);
-        }
 
-        ItemEntity actual = itemRepository.getReferenceById(id);
-        ItemEntity update = ItemEntityMapper.toEntity(item);
+        /**
+         * Update an item.
+         *
+         * @param id item id
+         * @param item item data to update
+         * @return updated item
+         * @throws ItemNotFoundException when the item does not exist
+         */
+        public Item update(Long id, Item item) {
+            if (!itemRepository.existsById(id)) {
+                throw new ItemNotFoundException("Item not found: " + id);
+            }
 
-        if (update.getTitle() != null) {
-            actual.setTitle(update.getTitle());
-        }
-        if (update.getGenres() != null) {
-            actual.setGenres(update.getGenres());
-        }
-        if (update.getDirectors() != null) {
-            actual.setDirectors(update.getDirectors());
-        }
-        if (update.getActors() != null) {
-            actual.setActors(update.getActors());
-        }
-        if (update.getTmdbId() != null) {
-            actual.setTmdbId(update.getTmdbId());
-        }
-        if (update.getTmdbType() != null) {
-            actual.setTmdbType(update.getTmdbType());
-        }
-        if (update.getOverview() != null) {
-            actual.setOverview(update.getOverview());
-        }
-        if (update.getReleaseDate() != null) {
-            actual.setReleaseDate(update.getReleaseDate());
-        }
-        if (update.getVoteAverage() != null) {
-            actual.setVoteAverage(update.getVoteAverage());
-        }
-        if (update.getPopularity() != null) {
-            actual.setPopularity(update.getPopularity());
-        }
+            ItemEntity actual = itemRepository.getReferenceById(id);
+            ItemEntity update = ItemEntityMapper.toEntity(item);
 
-        return ItemEntityMapper.toDomain(itemRepository.save(actual));
-    }
+
+            updateField(update.getTitle(), actual::setTitle);
+            updateField(update.getGenres(), actual::setGenres);
+            updateField(update.getDirectors(), actual::setDirectors);
+            updateField(update.getActors(), actual::setActors);
+            updateField(update.getTmdbId(), actual::setTmdbId);
+            updateField(update.getTmdbType(), actual::setTmdbType);
+            updateField(update.getOverview(), actual::setOverview);
+            updateField(update.getReleaseDate(), actual::setReleaseDate);
+            updateField(update.getVoteAverage(), actual::setVoteAverage);
+            updateField(update.getPopularity(), actual::setPopularity);
+
+            return ItemEntityMapper.toDomain(itemRepository.save(actual));
+        }
 
     /**
      * Delete an item by id.
@@ -115,5 +98,18 @@ public class ItemService {
             throw new ItemNotFoundException("Item not found: " + id);
         }
         itemRepository.deleteById(id);
+    }
+
+    /**
+     * Helper method to update a field if the new value is not null.
+     *
+     * @param value the new value to set
+     * @param setter the setter method reference for the field
+     * @param <T> the type of the field
+     */
+    private <T> void updateField(T value, Consumer<T> setter) {
+        if (value != null) {
+            setter.accept(value);
+        }
     }
 }

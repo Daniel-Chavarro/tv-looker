@@ -5,10 +5,8 @@ import org.tvl.tvlooker.domain.model.Interaction;
 import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.model.Review;
 import org.tvl.tvlooker.domain.model.User;
-import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.model.entity.InteractionEntity;
-import org.tvl.tvlooker.domain.model.entity.ItemEntity;
-import org.tvl.tvlooker.domain.model.entity.UserEntity;
+
 
 /**
  * Mapper for converting between Interaction entities and domain models.
@@ -23,7 +21,7 @@ public class InteractionEntityMapper {
      * @return the domain model
      */
     public static Interaction toDomain(InteractionEntity entity) {
-        if (entity == null) return null;
+        if (entity == null) {return null;}
         return Interaction.builder()
                 .id(entity.getId())
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
@@ -44,7 +42,7 @@ public class InteractionEntityMapper {
      * @return the JPA entity
      */
     public static InteractionEntity toEntity(Interaction domain, User user, Item item, Review review) {
-        if (domain == null) return null;
+        if (domain == null) {return null;}
         return InteractionEntity.builder()
                 .user(user != null ? UserEntityMapper.toEntity(user) : null)
                 .item(item != null ? ItemEntityMapper.toEntity(item) : null)

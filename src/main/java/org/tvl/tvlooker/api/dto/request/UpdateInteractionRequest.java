@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 
-import java.util.UUID;
 
 /**
  * DTO for updating an interaction request.

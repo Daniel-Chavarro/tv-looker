@@ -8,7 +8,6 @@ import org.tvl.tvlooker.domain.model.Review;
 import org.tvl.tvlooker.domain.model.User;
 import org.tvl.tvlooker.domain.model.entity.ReviewEntity;
 import org.tvl.tvlooker.persistence.mapper.ReviewEntityMapper;
-import org.tvl.tvlooker.persistence.mapper.UserEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ReviewRepository;
 
 import java.util.List;
