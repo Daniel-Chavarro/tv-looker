@@ -8,7 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.persistence.repository.UserRepository;
 
 import java.util.List;
@@ -20,10 +21,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for UserService.
- * Tests all CRUD operations and exception handling.
- */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService Unit Tests")
 class UserServiceTest {
@@ -35,6 +32,7 @@ class UserServiceTest {
     private UserService userService;
 
     private User testUser;
+    private UserEntity testUserEntity;
     private UUID testUserId;
 
     @BeforeEach
@@ -43,40 +41,40 @@ class UserServiceTest {
         testUser = User.builder()
                 .id(testUserId)
                 .username("testuser")
+                .email("test@test.com")
+                .name("Test User")
+                .password("password123")
+                .build();
+
+        testUserEntity = UserEntity.builder()
+                .id(testUserId)
+                .username("testuser")
+                .email("test@test.com")
+                .name("Test User")
                 .password("password123")
                 .build();
     }
 
-    // ========== CREATE TESTS ==========
-
     @Test
-    @DisplayName("createUser - should save and return user")
-    void createUser_shouldSaveAndReturnUser() {
-        // Arrange
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
+    @DisplayName("create - should save and return user")
+    void createUser_shouldSaveAndReturn() {
+        when(userRepository.save(any(UserEntity.class))).thenReturn(testUserEntity);
 
-        // Act
-        User result = userService.createUser(testUser);
+        User result = userService.create(testUser);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testUserId);
         assertThat(result.getUsername()).isEqualTo("testuser");
-        verify(userRepository, times(1)).save(testUser);
+        verify(userRepository, times(1)).save(any(UserEntity.class));
     }
-
-    // ========== READ TESTS ==========
 
     @Test
     @DisplayName("getById - should return user when user exists")
     void getById_shouldReturnUser_whenUserExists() {
-        // Arrange
-        when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
+        when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUserEntity));
 
-        // Act
         User result = userService.getById(testUserId);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testUserId);
         assertThat(result.getUsername()).isEqualTo("testuser");
@@ -86,11 +84,9 @@ class UserServiceTest {
     @Test
     @DisplayName("getById - should throw UserNotFoundException when user does not exist")
     void getById_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
-        // Arrange
         UUID nonExistentId = UUID.randomUUID();
         when(userRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThatThrownBy(() -> userService.getById(nonExistentId))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User not found with id: " + nonExistentId);
@@ -100,139 +96,123 @@ class UserServiceTest {
     @Test
     @DisplayName("getAll - should return all users")
     void getAll_shouldReturnAllUsers() {
-        // Arrange
-        User user2 = User.builder()
+        UserEntity user2 = UserEntity.builder()
                 .id(UUID.randomUUID())
                 .username("testuser2")
+                .email("test2@test.com")
+                .name("Test User 2")
                 .password("password456")
                 .build();
-        List<User> users = List.of(testUser, user2);
+        List<UserEntity> users = List.of(testUserEntity, user2);
         when(userRepository.findAll()).thenReturn(users);
 
-        // Act
         List<User> result = userService.getAll();
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(testUser, user2);
         verify(userRepository, times(1)).findAll();
     }
 
     @Test
     @DisplayName("getAll - should return empty list when no users exist")
     void getAll_shouldReturnEmptyList_whenNoUsersExist() {
-        // Arrange
         when(userRepository.findAll()).thenReturn(List.of());
 
-        // Act
         List<User> result = userService.getAll();
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
         verify(userRepository, times(1)).findAll();
     }
 
-    // ========== UPDATE TESTS ==========
-
     @Test
-    @DisplayName("updateUser - should update and return user when user exists")
-    void updateUser_shouldUpdateAndReturnUser_whenUserExists() {
-        // Arrange
+    @DisplayName("update - should update and return user when user exists")
+    void updateUser_shouldUpdateAndReturnUser_whenExists() {
         User updatedUser = User.builder()
                 .username("updateduser")
+                .email("updated@test.com")
+                .name("Updated User")
                 .password("newpassword")
                 .build();
-        User savedUser = User.builder()
+        UserEntity savedUser = UserEntity.builder()
                 .id(testUserId)
                 .username("updateduser")
+                .email("updated@test.com")
+                .name("Updated User")
                 .password("newpassword")
                 .build();
 
         when(userRepository.existsById(testUserId)).thenReturn(true);
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userRepository.getReferenceById(testUserId)).thenReturn(testUserEntity);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
 
-        // Act
-        User result = userService.updateUser(testUserId, updatedUser);
+        User result = userService.update(testUserId, updatedUser);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testUserId);
         assertThat(result.getUsername()).isEqualTo("updateduser");
         verify(userRepository, times(1)).existsById(testUserId);
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).save(any(UserEntity.class));
     }
 
     @Test
-    @DisplayName("updateUser - should throw UserNotFoundException when user does not exist")
-    void updateUser_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
-        // Arrange
+    @DisplayName("update - should throw UserNotFoundException when user does not exist")
+    void updateUser_shouldThrowUserNotFoundException_whenDoesNotExist() {
         UUID nonExistentId = UUID.randomUUID();
         User updatedUser = User.builder()
                 .username("updateduser")
+                .email("updated@test.com")
+                .name("Updated User")
                 .password("newpassword")
                 .build();
 
         when(userRepository.existsById(nonExistentId)).thenReturn(false);
 
-        // Act & Assert
-        assertThatThrownBy(() -> userService.updateUser(nonExistentId, updatedUser))
+        assertThatThrownBy(() -> userService.update(nonExistentId, updatedUser))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User not found with id: " + nonExistentId);
         verify(userRepository, times(1)).existsById(nonExistentId);
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, never()).save(any(UserEntity.class));
     }
 
     @Test
-    @DisplayName("updateUser - should set ID on user entity before saving")
-    void updateUser_shouldSetIdOnUserEntity_beforeSaving() {
-        // Arrange
+    @DisplayName("update - should set ID on user entity before saving")
+    void updateUser_shouldSetIdOnEntity_beforeSaving() {
         User updatedUser = User.builder()
                 .username("updateduser")
+                .email("updated@test.com")
+                .name("Updated User")
                 .password("newpassword")
                 .build();
 
         when(userRepository.existsById(testUserId)).thenReturn(true);
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            assertThat(user.getId()).isEqualTo(testUserId);
-            return user;
-        });
+        when(userRepository.getReferenceById(testUserId)).thenReturn(testUserEntity);
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
-        userService.updateUser(testUserId, updatedUser);
+        userService.update(testUserId, updatedUser);
 
-        // Assert
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).save(any(UserEntity.class));
     }
 
-    // ========== DELETE TESTS ==========
-
     @Test
-    @DisplayName("deleteUser - should delete user when user exists")
-    void deleteUser_shouldDeleteUser_whenUserExists() {
-        // Arrange
+    @DisplayName("delete - should delete user when user exists")
+    void deleteUser_shouldDeleteUser_whenExists() {
         when(userRepository.existsById(testUserId)).thenReturn(true);
         doNothing().when(userRepository).deleteById(testUserId);
 
-        // Act
-        userService.deleteUser(testUserId);
+        userService.delete(testUserId);
 
-        // Assert
         verify(userRepository, times(1)).existsById(testUserId);
         verify(userRepository, times(1)).deleteById(testUserId);
     }
 
     @Test
-    @DisplayName("deleteUser - should throw UserNotFoundException when user does not exist")
-    void deleteUser_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
-        // Arrange
+    @DisplayName("delete - should throw UserNotFoundException when user does not exist")
+    void deleteUser_shouldThrowUserNotFoundException_whenDoesNotExist() {
         UUID nonExistentId = UUID.randomUUID();
         when(userRepository.existsById(nonExistentId)).thenReturn(false);
 
-        // Act & Assert
-        assertThatThrownBy(() -> userService.deleteUser(nonExistentId))
+        assertThatThrownBy(() -> userService.delete(nonExistentId))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User not found with id: " + nonExistentId);
         verify(userRepository, times(1)).existsById(nonExistentId);

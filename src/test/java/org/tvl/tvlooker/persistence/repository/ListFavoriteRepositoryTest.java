@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.tvl.tvlooker.domain.model.entity.Item;
-import org.tvl.tvlooker.domain.model.entity.ListFavorite;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.entity.ItemEntity;
+import org.tvl.tvlooker.domain.model.entity.ListFavoriteEntity;
+import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
 import java.math.BigDecimal;
@@ -56,15 +56,15 @@ class ListFavoriteRepositoryTest {
     @Test
     @DisplayName("Should save a new list favorite")
     void testSaveListFavorite() {
-        // Given - Create user and items WITHOUT saving (ListFavorite has cascade persist)
-        User user = createUser("user1");
-        Item item1 = createItem(1L, "Movie 1");
-        Item item2 = createItem(2L, "Movie 2");
-        Set<Item> items = new HashSet<>();
+        // Given - Create user and items WITHOUT saving (ListFavoriteEntity has cascade persist)
+        UserEntity user = createUserEntity("user1");
+        ItemEntity item1 = createItemEntity(1L, "Movie 1");
+        ItemEntity item2 = createItemEntity(2L, "Movie 2");
+        Set<ItemEntity> items = new HashSet<>();
         items.add(item1);
         items.add(item2);
 
-        ListFavorite listFavorite = ListFavorite.builder()
+        ListFavoriteEntity listFavorite = ListFavoriteEntity.builder()
                 .name("My Favorites")
                 .description("My favorite movies")
                 .user(user)
@@ -72,7 +72,7 @@ class ListFavoriteRepositoryTest {
                 .build();
 
         // When - Save list (cascade will persist user and items)
-        ListFavorite savedList = listFavoriteRepository.saveAndFlush(listFavorite);
+        ListFavoriteEntity savedList = listFavoriteRepository.saveAndFlush(listFavorite);
 
         // Then
         assertThat(savedList).isNotNull();
@@ -87,9 +87,9 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should save list without description")
     void testSaveListWithoutDescription() {
         // Given
-        User user = createUser("user1");
+        UserEntity user = createUserEntity("user1");
 
-        ListFavorite listFavorite = ListFavorite.builder()
+        ListFavoriteEntity listFavorite = ListFavoriteEntity.builder()
                 .name("Favorites List")
                 .description(null)
                 .user(user)
@@ -97,7 +97,7 @@ class ListFavoriteRepositoryTest {
                 .build();
 
         // When
-        ListFavorite savedList = listFavoriteRepository.saveAndFlush(listFavorite);
+        ListFavoriteEntity savedList = listFavoriteRepository.saveAndFlush(listFavorite);
 
         // Then
         assertThat(savedList).isNotNull();
@@ -108,23 +108,23 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should save multiple lists for different users")
     void testSaveMultipleLists() {
         // Given
-        User user1 = createUser("user1");
-        User user2 = createUser("user2");
+        UserEntity user1 = createUserEntity("user1");
+        UserEntity user2 = createUserEntity("user2");
 
-        ListFavorite list1 = ListFavorite.builder()
+        ListFavoriteEntity list1 = ListFavoriteEntity.builder()
                 .name("User1 Favorites")
                 .user(user1)
                 .items(new HashSet<>())
                 .build();
 
-        ListFavorite list2 = ListFavorite.builder()
+        ListFavoriteEntity list2 = ListFavoriteEntity.builder()
                 .name("User2 Favorites")
                 .user(user2)
                 .items(new HashSet<>())
                 .build();
 
         // When
-        List<ListFavorite> savedLists = listFavoriteRepository.saveAll(List.of(list1, list2));
+        List<ListFavoriteEntity> savedLists = listFavoriteRepository.saveAll(List.of(list1, list2));
 
         // Then
         assertThat(savedLists).hasSize(2);
@@ -137,20 +137,20 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should find list by ID")
     void testFindById() {
         // Given
-        User user = createUser("user1");
-        Item item = createItem(1L, "Movie 1");
-        Set<Item> items = new HashSet<>();
+        UserEntity user = createUserEntity("user1");
+        ItemEntity item = createItemEntity(1L, "Movie 1");
+        Set<ItemEntity> items = new HashSet<>();
         items.add(item);
 
-        ListFavorite listFavorite = ListFavorite.builder()
+        ListFavoriteEntity listFavorite = ListFavoriteEntity.builder()
                 .name("Findable List")
                 .user(user)
                 .items(items)
                 .build();
-        ListFavorite savedList = listFavoriteRepository.saveAndFlush(listFavorite);
+        ListFavoriteEntity savedList = listFavoriteRepository.saveAndFlush(listFavorite);
 
         // When
-        Optional<ListFavorite> foundList = listFavoriteRepository.findById(savedList.getId());
+        Optional<ListFavoriteEntity> foundList = listFavoriteRepository.findById(savedList.getId());
 
         // Then
         assertThat(foundList).isPresent();
@@ -161,15 +161,15 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should find all lists")
     void testFindAll() {
         // Given
-        User user = createUser("user1");
+        UserEntity user = createUserEntity("user1");
 
         listFavoriteRepository.saveAll(List.of(
-                ListFavorite.builder().name("List 1").user(user).items(new HashSet<>()).build(),
-                ListFavorite.builder().name("List 2").user(user).items(new HashSet<>()).build()
+                ListFavoriteEntity.builder().name("List 1").user(user).items(new HashSet<>()).build(),
+                ListFavoriteEntity.builder().name("List 2").user(user).items(new HashSet<>()).build()
         ));
 
         // When
-        List<ListFavorite> allLists = listFavoriteRepository.findAll();
+        List<ListFavoriteEntity> allLists = listFavoriteRepository.findAll();
 
         // Then
         assertThat(allLists).hasSize(2);
@@ -179,11 +179,11 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should count all lists")
     void testCount() {
         // Given
-        User user = createUser("user1");
+        UserEntity user = createUserEntity("user1");
 
         listFavoriteRepository.saveAll(List.of(
-                ListFavorite.builder().name("List 1").user(user).items(new HashSet<>()).build(),
-                ListFavorite.builder().name("List 2").user(user).items(new HashSet<>()).build()
+                ListFavoriteEntity.builder().name("List 1").user(user).items(new HashSet<>()).build(),
+                ListFavoriteEntity.builder().name("List 2").user(user).items(new HashSet<>()).build()
         ));
 
         // When
@@ -199,18 +199,18 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should find lists by user ID")
     void testFindByUserId() {
         // Given
-        User user1 = createUser("user1");
-        User user2 = createUser("user2");
+        UserEntity user1 = createUserEntity("user1");
+        UserEntity user2 = createUserEntity("user2");
 
         listFavoriteRepository.saveAll(List.of(
-                ListFavorite.builder().name("User1 List 1").user(user1).items(new HashSet<>()).build(),
-                ListFavorite.builder().name("User1 List 2").user(user1).items(new HashSet<>()).build(),
-                ListFavorite.builder().name("User2 List 1").user(user2).items(new HashSet<>()).build()
+                ListFavoriteEntity.builder().name("User1 List 1").user(user1).items(new HashSet<>()).build(),
+                ListFavoriteEntity.builder().name("User1 List 2").user(user1).items(new HashSet<>()).build(),
+                ListFavoriteEntity.builder().name("User2 List 1").user(user2).items(new HashSet<>()).build()
         ));
 
         // When
-        List<ListFavorite> user1Lists = listFavoriteRepository.findByUserId(user1.getId());
-        List<ListFavorite> user2Lists = listFavoriteRepository.findByUserId(user2.getId());
+        List<ListFavoriteEntity> user1Lists = listFavoriteRepository.findByUserId(user1.getId());
+        List<ListFavoriteEntity> user2Lists = listFavoriteRepository.findByUserId(user2.getId());
 
         // Then
         assertThat(user1Lists).hasSize(2);
@@ -221,11 +221,11 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should return empty list when user has no lists")
     void testFindByUserIdNoLists() {
         // Given
-        User user = createUser("user1");
+        UserEntity user = createUserEntity("user1");
         userRepository.saveAndFlush(user);
 
         // When
-        List<ListFavorite> lists = listFavoriteRepository.findByUserId(user.getId());
+        List<ListFavoriteEntity> lists = listFavoriteRepository.findByUserId(user.getId());
 
         // Then
         assertThat(lists).isEmpty();
@@ -238,7 +238,7 @@ class ListFavoriteRepositoryTest {
         UUID nonExistentUserId = UUID.randomUUID();
 
         // When
-        List<ListFavorite> lists = listFavoriteRepository.findByUserId(nonExistentUserId);
+        List<ListFavoriteEntity> lists = listFavoriteRepository.findByUserId(nonExistentUserId);
 
         // Then
         assertThat(lists).isEmpty();
@@ -250,20 +250,20 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should update list name and description")
     void testUpdateList() {
         // Given
-        User user = createUser("user1");
+        UserEntity user = createUserEntity("user1");
 
-        ListFavorite listFavorite = ListFavorite.builder()
+        ListFavoriteEntity listFavorite = ListFavoriteEntity.builder()
                 .name("Original Name")
                 .description("Original Description")
                 .user(user)
                 .items(new HashSet<>())
                 .build();
-        ListFavorite savedList = listFavoriteRepository.saveAndFlush(listFavorite);
+        ListFavoriteEntity savedList = listFavoriteRepository.saveAndFlush(listFavorite);
 
         // When
         savedList.setName("Updated Name");
         savedList.setDescription("Updated Description");
-        ListFavorite updatedList = listFavoriteRepository.saveAndFlush(savedList);
+        ListFavoriteEntity updatedList = listFavoriteRepository.saveAndFlush(savedList);
 
         // Then
         assertThat(updatedList.getId()).isEqualTo(savedList.getId());
@@ -277,14 +277,14 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should delete list by ID")
     void testDeleteById() {
         // Given
-        User user = createUser("user1");
+        UserEntity user = createUserEntity("user1");
 
-        ListFavorite listFavorite = ListFavorite.builder()
+        ListFavoriteEntity listFavorite = ListFavoriteEntity.builder()
                 .name("Delete Me")
                 .user(user)
                 .items(new HashSet<>())
                 .build();
-        ListFavorite savedList = listFavoriteRepository.saveAndFlush(listFavorite);
+        ListFavoriteEntity savedList = listFavoriteRepository.saveAndFlush(listFavorite);
 
         // When
         listFavoriteRepository.deleteById(savedList.getId());
@@ -297,11 +297,11 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should delete all lists")
     void testDeleteAll() {
         // Given
-        User user = createUser("user1");
+        UserEntity user = createUserEntity("user1");
 
         listFavoriteRepository.saveAll(List.of(
-                ListFavorite.builder().name("List 1").user(user).items(new HashSet<>()).build(),
-                ListFavorite.builder().name("List 2").user(user).items(new HashSet<>()).build()
+                ListFavoriteEntity.builder().name("List 1").user(user).items(new HashSet<>()).build(),
+                ListFavoriteEntity.builder().name("List 2").user(user).items(new HashSet<>()).build()
         ));
 
         // When
@@ -317,9 +317,9 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should not allow null name")
     void testNullName() {
         // Given
-        User user = createUser("user1");
+        UserEntity user = createUserEntity("user1");
 
-        ListFavorite listFavorite = ListFavorite.builder()
+        ListFavoriteEntity listFavorite = ListFavoriteEntity.builder()
                 .name(null)
                 .user(user)
                 .items(new HashSet<>())
@@ -338,7 +338,7 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should not allow null user")
     void testNullUser() {
         // Given
-        ListFavorite listFavorite = ListFavorite.builder()
+        ListFavoriteEntity listFavorite = ListFavoriteEntity.builder()
                 .name("Test List")
                 .user(null)
                 .items(new HashSet<>())
@@ -357,17 +357,17 @@ class ListFavoriteRepositoryTest {
     @DisplayName("Should enforce unique name constraint")
     void testUniqueName() {
         // Given
-        User user = createUser("user1");
+        UserEntity user = createUserEntity("user1");
 
-        ListFavorite list1 = ListFavorite.builder()
+        ListFavoriteEntity list1 = ListFavoriteEntity.builder()
                 .name("Unique Name")
                 .user(user)
                 .items(new HashSet<>())
                 .build();
         listFavoriteRepository.saveAndFlush(list1);
 
-        User user2 = createUser("user2");
-        ListFavorite list2 = ListFavorite.builder()
+        UserEntity user2 = createUserEntity("user2");
+        ListFavoriteEntity list2 = ListFavoriteEntity.builder()
                 .name("Unique Name")
                 .user(user2)
                 .items(new HashSet<>())
@@ -384,15 +384,16 @@ class ListFavoriteRepositoryTest {
 
     // ==================== HELPER METHODS ====================
 
-    private User createUser(String username) {
-        return User.builder()
+    private UserEntity createUserEntity(String username) {
+        return UserEntity.builder()
                 .username(username)
                 .password("password123")
+                .email(username + "@example.com")
                 .build();
     }
 
-    private Item createItem(Long tmdbId, String title) {
-        return Item.builder()
+    private ItemEntity createItemEntity(Long tmdbId, String title) {
+        return ItemEntity.builder()
                 .tmdbId(tmdbId)
                 .tmdbType(TmdbType.MOVIE)
                 .title(title)

@@ -7,8 +7,9 @@ import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.exception.InsufficientDataException;
 import org.tvl.tvlooker.domain.exception.InvalidEngineConfigurationException;
 import org.tvl.tvlooker.domain.exception.NoRecommendationsAvailableException;
-import org.tvl.tvlooker.domain.model.entity.Item;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.motor.utils.DataProvider;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 import org.tvl.tvlooker.domain.motor.utils.provider.ItemPopularityProvider;
 import org.tvl.tvlooker.domain.strategy.aggregation.AggregationStrategy;
@@ -42,7 +43,7 @@ class HybridRecommendationEngineTest {
     private User testUser;
     private List<RecommendationStrategy> strategies;
     private AggregationStrategy aggregationStrategy;
-    private List<org.tvl.tvlooker.domain.motor.utils.DataProvider<?>> dataProviders;
+    private List<DataProvider<?>> dataProviders;
 
     @BeforeEach
     void setUp() throws Exception {

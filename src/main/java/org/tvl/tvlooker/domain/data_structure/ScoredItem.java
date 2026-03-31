@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.Item;
 
 
 /**

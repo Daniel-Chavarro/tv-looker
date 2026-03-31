@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.tvl.tvlooker.domain.model.entity.Director;
+import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,10 +47,10 @@ class DirectorRepositoryTest {
     @DisplayName("Should save a new director")
     void testSaveDirector() {
         // Given
-        Director director = createDirector(1L, "Christopher Nolan");
+        DirectorEntity director = createDirectorEntity(1L, "Christopher Nolan");
 
         // When
-        Director savedDirector = directorRepository.saveAndFlush(director);
+        DirectorEntity savedDirector = directorRepository.saveAndFlush(director);
 
         // Then
         assertThat(savedDirector).isNotNull();
@@ -63,12 +63,12 @@ class DirectorRepositoryTest {
     @DisplayName("Should save multiple directors")
     void testSaveMultipleDirectors() {
         // Given
-        Director director1 = createDirector(1L, "Director One");
-        Director director2 = createDirector(2L, "Director Two");
-        Director director3 = createDirector(3L, "Director Three");
+        DirectorEntity director1 = createDirectorEntity(1L, "DirectorEntity One");
+        DirectorEntity director2 = createDirectorEntity(2L, "DirectorEntity Two");
+        DirectorEntity director3 = createDirectorEntity(3L, "DirectorEntity Three");
 
         // When
-        List<Director> savedDirectors = directorRepository.saveAll(List.of(director1, director2, director3));
+        List<DirectorEntity> savedDirectors = directorRepository.saveAll(List.of(director1, director2, director3));
 
         // Then
         assertThat(savedDirectors).hasSize(3);
@@ -81,11 +81,11 @@ class DirectorRepositoryTest {
     @DisplayName("Should find director by ID")
     void testFindById() {
         // Given
-        Director director = createDirector(100L, "Steven Spielberg");
-        Director savedDirector = directorRepository.saveAndFlush(director);
+        DirectorEntity director = createDirectorEntity(100L, "Steven Spielberg");
+        DirectorEntity savedDirector = directorRepository.saveAndFlush(director);
 
         // When
-        Optional<Director> foundDirector = directorRepository.findById(savedDirector.getId());
+        Optional<DirectorEntity> foundDirector = directorRepository.findById(savedDirector.getId());
 
         // Then
         assertThat(foundDirector).isPresent();
@@ -97,13 +97,13 @@ class DirectorRepositoryTest {
     void testFindAll() {
         // Given
         directorRepository.saveAll(List.of(
-                createDirector(1L, "Director One"),
-                createDirector(2L, "Director Two"),
-                createDirector(3L, "Director Three")
+                createDirectorEntity(1L, "DirectorEntity One"),
+                createDirectorEntity(2L, "DirectorEntity Two"),
+                createDirectorEntity(3L, "DirectorEntity Three")
         ));
 
         // When
-        List<Director> allDirectors = directorRepository.findAll();
+        List<DirectorEntity> allDirectors = directorRepository.findAll();
 
         // Then
         assertThat(allDirectors).hasSize(3);
@@ -114,8 +114,8 @@ class DirectorRepositoryTest {
     void testCount() {
         // Given
         directorRepository.saveAll(List.of(
-                createDirector(1L, "Director One"),
-                createDirector(2L, "Director Two")
+                createDirectorEntity(1L, "DirectorEntity One"),
+                createDirectorEntity(2L, "DirectorEntity Two")
         ));
 
         // When
@@ -131,12 +131,12 @@ class DirectorRepositoryTest {
     @DisplayName("Should update director name")
     void testUpdateDirector() {
         // Given
-        Director director = createDirector(1L, "Old Name");
-        Director savedDirector = directorRepository.saveAndFlush(director);
+        DirectorEntity director = createDirectorEntity(1L, "Old Name");
+        DirectorEntity savedDirector = directorRepository.saveAndFlush(director);
 
         // When
         savedDirector.setName("New Name");
-        Director updatedDirector = directorRepository.saveAndFlush(savedDirector);
+        DirectorEntity updatedDirector = directorRepository.saveAndFlush(savedDirector);
 
         // Then
         assertThat(updatedDirector.getId()).isEqualTo(savedDirector.getId());
@@ -149,8 +149,8 @@ class DirectorRepositoryTest {
     @DisplayName("Should delete director by ID")
     void testDeleteById() {
         // Given
-        Director director = createDirector(1L, "To Delete");
-        Director savedDirector = directorRepository.saveAndFlush(director);
+        DirectorEntity director = createDirectorEntity(1L, "To Delete");
+        DirectorEntity savedDirector = directorRepository.saveAndFlush(director);
 
         // When
         directorRepository.deleteById(savedDirector.getId());
@@ -164,8 +164,8 @@ class DirectorRepositoryTest {
     void testDeleteAll() {
         // Given
         directorRepository.saveAll(List.of(
-                createDirector(1L, "Director One"),
-                createDirector(2L, "Director Two")
+                createDirectorEntity(1L, "DirectorEntity One"),
+                createDirectorEntity(2L, "DirectorEntity Two")
         ));
 
         // When
@@ -181,7 +181,7 @@ class DirectorRepositoryTest {
     @DisplayName("Should not allow null name")
     void testNullName() {
         // Given
-        Director director = createDirector(1L, null);
+        DirectorEntity director = createDirectorEntity(1L, null);
 
         // When & Then
         try {
@@ -196,8 +196,8 @@ class DirectorRepositoryTest {
     @DisplayName("Should not allow null tmdbId")
     void testNullTmdbId() {
         // Given
-        Director director = new Director();
-        director.setName("Test Director");
+        DirectorEntity director = new DirectorEntity();
+        director.setName("Test DirectorEntity");
         director.setTmdbId(null);
 
         // When & Then
@@ -213,10 +213,10 @@ class DirectorRepositoryTest {
     @DisplayName("Should enforce unique tmdbId constraint")
     void testUniqueTmdbId() {
         // Given
-        Director director1 = createDirector(1L, "Director One");
+        DirectorEntity director1 = createDirectorEntity(1L, "DirectorEntity One");
         directorRepository.saveAndFlush(director1);
 
-        Director director2 = createDirector(1L, "Director Two");
+        DirectorEntity director2 = createDirectorEntity(1L, "DirectorEntity Two");
 
         // When & Then
         try {
@@ -229,8 +229,8 @@ class DirectorRepositoryTest {
 
     // ==================== HELPER METHODS ====================
 
-    private Director createDirector(Long tmdbId, String name) {
-        Director director = new Director();
+    private DirectorEntity createDirectorEntity(Long tmdbId, String name) {
+        DirectorEntity director = new DirectorEntity();
         director.setTmdbId(tmdbId);
         director.setName(name);
         return director;

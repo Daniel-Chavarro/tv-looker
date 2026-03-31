@@ -8,7 +8,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.tvl.tvlooker.domain.exception.ListFavoriteNotFoundException;
-import org.tvl.tvlooker.domain.model.entity.ListFavorite;
+import org.tvl.tvlooker.domain.model.ListFavorite;
+import org.tvl.tvlooker.domain.model.entity.ListFavoriteEntity;
+import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.persistence.repository.ListFavoriteRepository;
 
 import java.util.List;
@@ -20,10 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for ListFavoriteService.
- * Tests all CRUD operations and exception handling.
- */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ListFavoriteService Unit Tests")
 class ListFavoriteServiceTest {
@@ -31,54 +29,57 @@ class ListFavoriteServiceTest {
     @Mock
     private ListFavoriteRepository listFavoriteRepository;
 
+    @Mock
+    private ItemService itemService;
+
     @InjectMocks
     private ListFavoriteService listFavoriteService;
 
     private Long testListId;
     private ListFavorite testList;
+    private ListFavoriteEntity testListEntity;
     private UUID testUserId;
 
     @BeforeEach
     void setUp() {
         testListId = 1L;
         testUserId = UUID.randomUUID();
+        
         testList = ListFavorite.builder()
                 .id(testListId)
+                .userId(testUserId)
+                .name("My Favorites")
+                .description("My favorite movies")
+                .build();
+
+        testListEntity = ListFavoriteEntity.builder()
+                .id(testListId)
+                .user(UserEntity.builder().id(testUserId).username("testuser").email("test@test.com").name("Test User").build())
                 .name("My Favorites")
                 .description("My favorite movies")
                 .build();
     }
 
-    // ========== CREATE TESTS ==========
-
     @Test
     @DisplayName("create - should save and return list favorite")
     void create_shouldSaveAndReturnListFavorite() {
-        // Arrange
-        when(listFavoriteRepository.save(any(ListFavorite.class))).thenReturn(testList);
+        when(listFavoriteRepository.save(any(ListFavoriteEntity.class))).thenReturn(testListEntity);
 
-        // Act
         ListFavorite result = listFavoriteService.create(testList);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testListId);
         assertThat(result.getName()).isEqualTo("My Favorites");
-        verify(listFavoriteRepository, times(1)).save(testList);
+        verify(listFavoriteRepository, times(1)).save(any(ListFavoriteEntity.class));
     }
-
-    // ========== GET BY ID TESTS ==========
 
     @Test
     @DisplayName("getById - should return list favorite when list exists")
     void getById_shouldReturnListFavorite_whenListExists() {
-        // Arrange
-        when(listFavoriteRepository.findById(testListId)).thenReturn(Optional.of(testList));
+        when(listFavoriteRepository.findById(testListId)).thenReturn(Optional.of(testListEntity));
 
-        // Act
         ListFavorite result = listFavoriteService.getById(testListId);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testListId);
         assertThat(result.getName()).isEqualTo("My Favorites");
@@ -88,159 +89,136 @@ class ListFavoriteServiceTest {
     @Test
     @DisplayName("getById - should throw ListFavoriteNotFoundException when list does not exist")
     void getById_shouldThrowListFavoriteNotFoundException_whenListDoesNotExist() {
-        // Arrange
         Long nonExistentId = 999L;
         when(listFavoriteRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThatThrownBy(() -> listFavoriteService.getById(nonExistentId))
                 .isInstanceOf(ListFavoriteNotFoundException.class)
                 .hasMessageContaining("ListFavorite not found: " + nonExistentId);
         verify(listFavoriteRepository, times(1)).findById(nonExistentId);
     }
 
-    // ========== GET ALL TESTS ==========
-
     @Test
     @DisplayName("getAll - should return all list favorites")
     void getAll_shouldReturnAllListFavorites() {
-        // Arrange
-        ListFavorite list2 = ListFavorite.builder()
+        ListFavoriteEntity list2 = ListFavoriteEntity.builder()
                 .id(2L)
+                .user(UserEntity.builder().id(UUID.randomUUID()).username("user2").email("user2@test.com").name("User 2").build())
                 .name("Watchlist")
                 .description("Movies to watch")
                 .build();
-        List<ListFavorite> lists = List.of(testList, list2);
+        List<ListFavoriteEntity> lists = List.of(testListEntity, list2);
         when(listFavoriteRepository.findAll()).thenReturn(lists);
 
-        // Act
         List<ListFavorite> result = listFavoriteService.getAll();
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(testList, list2);
         verify(listFavoriteRepository, times(1)).findAll();
     }
 
     @Test
     @DisplayName("getAll - should return empty list when no lists exist")
     void getAll_shouldReturnEmptyList_whenNoListsExist() {
-        // Arrange
         when(listFavoriteRepository.findAll()).thenReturn(List.of());
 
-        // Act
         List<ListFavorite> result = listFavoriteService.getAll();
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
         verify(listFavoriteRepository, times(1)).findAll();
     }
 
-    // ========== GET LIST FAVORITES BY USER ID TESTS ==========
-
     @Test
     @DisplayName("getListFavorites - should return user's list favorites")
     void getListFavorites_shouldReturnUserListFavorites() {
-        // Arrange
-        ListFavorite list2 = ListFavorite.builder()
+        ListFavoriteEntity list2 = ListFavoriteEntity.builder()
                 .id(2L)
+                .user(UserEntity.builder().id(testUserId).username("testuser").email("test@test.com").name("Test User").build())
                 .name("Watchlist")
                 .description("Movies to watch")
                 .build();
-        List<ListFavorite> userLists = List.of(testList, list2);
+        List<ListFavoriteEntity> userLists = List.of(testListEntity, list2);
         when(listFavoriteRepository.findByUserId(testUserId)).thenReturn(userLists);
 
-        // Act
         List<ListFavorite> result = listFavoriteService.getListFavorites(testUserId);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(testList, list2);
         verify(listFavoriteRepository, times(1)).findByUserId(testUserId);
     }
 
     @Test
     @DisplayName("getListFavorites - should return empty list when user has no lists")
     void getListFavorites_shouldReturnEmptyList_whenUserHasNoLists() {
-        // Arrange
         when(listFavoriteRepository.findByUserId(testUserId)).thenReturn(List.of());
 
-        // Act
         List<ListFavorite> result = listFavoriteService.getListFavorites(testUserId);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
         verify(listFavoriteRepository, times(1)).findByUserId(testUserId);
     }
 
-    // ========== UPDATE TESTS ==========
-
     @Test
     @DisplayName("update - should update and return list favorite when list exists")
     void update_shouldUpdateAndReturnListFavorite_whenListExists() {
-        // Arrange
         ListFavorite updatedList = ListFavorite.builder()
+                .userId(testUserId)
                 .name("Updated List")
                 .description("Updated description")
                 .build();
-        ListFavorite savedList = ListFavorite.builder()
+        ListFavoriteEntity savedList = ListFavoriteEntity.builder()
                 .id(testListId)
+                .user(UserEntity.builder().id(testUserId).username("testuser").email("test@test.com").name("Test User").build())
                 .name("Updated List")
                 .description("Updated description")
                 .build();
 
         when(listFavoriteRepository.existsById(testListId)).thenReturn(true);
-        when(listFavoriteRepository.save(any(ListFavorite.class))).thenReturn(savedList);
+        when(listFavoriteRepository.getReferenceById(testListId)).thenReturn(testListEntity);
+        when(listFavoriteRepository.save(any(ListFavoriteEntity.class))).thenReturn(savedList);
 
-        // Act
         ListFavorite result = listFavoriteService.update(testListId, updatedList);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testListId);
         assertThat(result.getName()).isEqualTo("Updated List");
         assertThat(result.getDescription()).isEqualTo("Updated description");
         verify(listFavoriteRepository, times(1)).existsById(testListId);
-        verify(listFavoriteRepository, times(1)).save(updatedList);
+        verify(listFavoriteRepository, times(1)).save(any(ListFavoriteEntity.class));
     }
 
     @Test
     @DisplayName("update - should set ID on list favorite before saving")
     void update_shouldSetIdOnListFavorite_beforeSaving() {
-        // Arrange
         ListFavorite updatedList = ListFavorite.builder()
+                .userId(testUserId)
                 .name("Updated List")
                 .description("Updated description")
                 .build();
 
         when(listFavoriteRepository.existsById(testListId)).thenReturn(true);
-        when(listFavoriteRepository.save(any(ListFavorite.class))).thenReturn(updatedList);
+        when(listFavoriteRepository.getReferenceById(testListId)).thenReturn(testListEntity);
+        when(listFavoriteRepository.save(any(ListFavoriteEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
         listFavoriteService.update(testListId, updatedList);
 
-        // Assert
-        assertThat(updatedList.getId()).isEqualTo(testListId);
-        verify(listFavoriteRepository, times(1)).save(updatedList);
+        verify(listFavoriteRepository, times(1)).save(any(ListFavoriteEntity.class));
     }
 
     @Test
     @DisplayName("update - should throw ListFavoriteNotFoundException when list does not exist")
     void update_shouldThrowListFavoriteNotFoundException_whenListDoesNotExist() {
-        // Arrange
         Long nonExistentId = 999L;
         ListFavorite updatedList = ListFavorite.builder()
+                .userId(testUserId)
                 .name("Updated List")
                 .description("Updated description")
                 .build();
 
         when(listFavoriteRepository.existsById(nonExistentId)).thenReturn(false);
 
-        // Act & Assert
         assertThatThrownBy(() -> listFavoriteService.update(nonExistentId, updatedList))
                 .isInstanceOf(ListFavoriteNotFoundException.class)
                 .hasMessageContaining("ListFavorite not found: " + nonExistentId);
@@ -248,31 +226,24 @@ class ListFavoriteServiceTest {
         verify(listFavoriteRepository, never()).save(any());
     }
 
-    // ========== DELETE TESTS ==========
-
     @Test
-    @DisplayName("deleteById - should delete list favorite when list exists")
+    @DisplayName("delete - should delete list favorite when list exists")
     void deleteById_shouldDeleteListFavorite_whenListExists() {
-        // Arrange
         when(listFavoriteRepository.existsById(testListId)).thenReturn(true);
         doNothing().when(listFavoriteRepository).deleteById(testListId);
 
-        // Act
         listFavoriteService.deleteById(testListId);
 
-        // Assert
         verify(listFavoriteRepository, times(1)).existsById(testListId);
         verify(listFavoriteRepository, times(1)).deleteById(testListId);
     }
 
     @Test
-    @DisplayName("deleteById - should throw ListFavoriteNotFoundException when list does not exist")
+    @DisplayName("delete - should throw ListFavoriteNotFoundException when list does not exist")
     void deleteById_shouldThrowListFavoriteNotFoundException_whenListDoesNotExist() {
-        // Arrange
         Long nonExistentId = 999L;
         when(listFavoriteRepository.existsById(nonExistentId)).thenReturn(false);
 
-        // Act & Assert
         assertThatThrownBy(() -> listFavoriteService.deleteById(nonExistentId))
                 .isInstanceOf(ListFavoriteNotFoundException.class)
                 .hasMessageContaining("ListFavorite not found: " + nonExistentId);

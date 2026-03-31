@@ -1,0 +1,24 @@
+package org.tvl.tvlooker.api.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import org.tvl.tvlooker.domain.model.enums.InteractionType;
+
+import java.sql.Timestamp;
+import java.util.UUID;
+
+/**
+ * DTO for interaction response.
+ */
+@Builder
+@Getter
+@AllArgsConstructor
+public class InteractionResponse {
+    private Long id;
+    private UUID userId;
+    private Long itemId;
+    private Long reviewId;
+    private InteractionType interactionType;
+    private Timestamp createdAt;
+}

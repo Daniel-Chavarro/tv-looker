@@ -1,6 +1,6 @@
 package org.tvl.tvlooker.persistence.tmdb.mapper;
 
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
@@ -26,8 +26,8 @@ public final class TmdbItemMapper {
     /**
      * Creates a new Item entity from a TMDB movie DTO.
      */
-    public static Item fromMovie(TmdbMovieDto dto) {
-        return Item.builder()
+    public static ItemEntity fromMovie(TmdbMovieDto dto) {
+        return ItemEntity.builder()
                 .tmdbId(dto.id())
                 .tmdbType(TmdbType.MOVIE)
                 .title(dto.title())
@@ -41,8 +41,8 @@ public final class TmdbItemMapper {
     /**
      * Creates a new Item entity from a TMDB TV show DTO.
      */
-    public static Item fromTvShow(TmdbTvShowDto dto) {
-        return Item.builder()
+    public static ItemEntity fromTvShow(TmdbTvShowDto dto) {
+        return ItemEntity.builder()
                 .tmdbId(dto.id())
                 .tmdbType(TmdbType.TV)
                 .title(dto.name())
@@ -56,7 +56,7 @@ public final class TmdbItemMapper {
     /**
      * Updates mutable fields on an existing Item with fresh TMDB movie data.
      */
-    public static void updateFromMovie(Item existing, TmdbMovieDto dto) {
+    public static void updateFromMovie(ItemEntity existing, TmdbMovieDto dto) {
         existing.setTitle(dto.title());
         existing.setOverview(dto.overview());
         existing.setPopularity(BigDecimal.valueOf(dto.popularity()));
@@ -67,7 +67,7 @@ public final class TmdbItemMapper {
     /**
      * Updates mutable fields on an existing Item with fresh TMDB TV show data.
      */
-    public static void updateFromTvShow(Item existing, TmdbTvShowDto dto) {
+    public static void updateFromTvShow(ItemEntity existing, TmdbTvShowDto dto) {
         existing.setTitle(dto.name());
         existing.setOverview(dto.overview());
         existing.setPopularity(BigDecimal.valueOf(dto.popularity()));

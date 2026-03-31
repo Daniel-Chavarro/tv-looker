@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.tvl.tvlooker.domain.exception.TmdbCollectionInProgressException;
-import org.tvl.tvlooker.domain.model.entity.Genre;
+import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
@@ -69,7 +69,8 @@ class TmdbDataCollectorServiceTest {
         when(tmdbClient.getMovieGenres()).thenReturn(movieGenres);
         when(tmdbClient.getTvGenres()).thenReturn(tvGenres);
         when(genreRepository.findByTmdbId(anyLong())).thenReturn(Optional.empty());
-        when(genreRepository.save(any(Genre.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(genreRepository.save(any(GenreEntity.class))).thenAnswer(invocation ->
+                invocation.getArgument(0));
 
         // When
         collectorService.collectGenres();
@@ -77,7 +78,7 @@ class TmdbDataCollectorServiceTest {
         // Then
         verify(tmdbClient, times(1)).getMovieGenres();
         verify(tmdbClient, times(1)).getTvGenres();
-        verify(genreRepository, atLeast(2)).save(any(Genre.class));
+        verify(genreRepository, atLeast(2)).save(any(GenreEntity.class));
     }
 
     @Test
@@ -88,7 +89,7 @@ class TmdbDataCollectorServiceTest {
         TmdbGenreListDto movieGenres = new TmdbGenreListDto(List.of(actionGenre));
         TmdbGenreListDto tvGenres = new TmdbGenreListDto(List.of());
 
-        Genre existingGenre = new Genre(null, 28L, "Action");
+        GenreEntity existingGenre = new GenreEntity(null, 28L, "Action");
 
         when(tmdbClient.getMovieGenres()).thenReturn(movieGenres);
         when(tmdbClient.getTvGenres()).thenReturn(tvGenres);
@@ -100,7 +101,7 @@ class TmdbDataCollectorServiceTest {
         // Then
         verify(tmdbClient, times(1)).getMovieGenres();
         verify(tmdbClient, times(1)).getTvGenres();
-        verify(genreRepository, never()).save(any(Genre.class));
+        verify(genreRepository, never()).save(any(GenreEntity.class));
     }
 
     @Test

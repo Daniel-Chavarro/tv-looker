@@ -38,7 +38,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
-public class Item {
+public class ItemEntity {
 
     /**
      * The unique identifier for the item, generated as a Long.
@@ -111,7 +111,7 @@ public class Item {
             joinColumns = @JoinColumn(name = "item_id_fk"),
             inverseJoinColumns = @JoinColumn(name = "genre_id_fk")
     )
-    private Set<Genre> genres;
+    private Set<GenreEntity> genres;
 
     /**
      * The directors associated with the item, represented as a many-to-many relationship with the Director entity.
@@ -123,7 +123,7 @@ public class Item {
             joinColumns = @JoinColumn(name = "item_id_fk"),
             inverseJoinColumns = @JoinColumn(name = "director_id_fk")
     )
-    private Set<Director> directors;
+    private Set<DirectorEntity> directors;
 
     /**
      * The actors associated with the item, represented as a many-to-many relationship with the Actor entity.
@@ -135,5 +135,5 @@ public class Item {
             joinColumns = @JoinColumn(name = "item_id_fk"),
             inverseJoinColumns = @JoinColumn(name = "actor_id_fk")
     )
-    private Set<Actor> actors;
+    private Set<ActorEntity> actors;
 }

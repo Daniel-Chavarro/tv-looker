@@ -18,7 +18,7 @@ import java.util.UUID;
 
 
 /**
- * Represents a user in the system, with fields for username, password, and creation timestamp.
+ * Represents a user in the system, with fields for username, password, email, name, and creation timestamp.
  * The user is identified by a unique UUID which serves as the primary key in the database.
  */
 @Entity
@@ -28,7 +28,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-public class User {
+public class UserEntity {
     /**
      * The unique identifier for the user, generated as a UUID.
      * This field is the primary key of the "users" table and is not updatable or nullable.
@@ -43,6 +43,18 @@ public class User {
      */
     @Column(name = "username", nullable = false, unique = true)
     private String username;
+
+    /**
+     * The email of the user, stored as a string.
+     */
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    /**
+     * The full name of the user, stored as a string.
+     */
+    @Column(name = "name")
+    private String name;
 
     /**
      * The password of the user, stored as a string.

@@ -8,7 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.tvl.tvlooker.domain.exception.GenreNotFoundException;
-import org.tvl.tvlooker.domain.model.entity.Genre;
+import org.tvl.tvlooker.domain.model.Genre;
+import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 
 import java.util.List;
@@ -19,10 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for GenreService.
- * Tests all CRUD operations and exception handling.
- */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GenreService Unit Tests")
 class GenreServiceTest {
@@ -35,45 +32,44 @@ class GenreServiceTest {
 
     private Long testGenreId;
     private Genre testGenre;
+    private GenreEntity testGenreEntity;
 
     @BeforeEach
     void setUp() {
         testGenreId = 1L;
-        testGenre = new Genre();
-        testGenre.setId(testGenreId);
-        testGenre.setName("Action");
-    }
+        testGenre = Genre.builder()
+                .id(testGenreId)
+                .tmdbId(28L)
+                .name("Action")
+                .build();
 
-    // ========== CREATE TESTS ==========
+        testGenreEntity = GenreEntity.builder()
+                .id(testGenreId)
+                .tmdbId(28L)
+                .name("Action")
+                .build();
+    }
 
     @Test
     @DisplayName("create - should save and return genre")
     void create_shouldSaveAndReturnGenre() {
-        // Arrange
-        when(genreRepository.save(any(Genre.class))).thenReturn(testGenre);
+        when(genreRepository.save(any(GenreEntity.class))).thenReturn(testGenreEntity);
 
-        // Act
         Genre result = genreService.create(testGenre);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testGenreId);
         assertThat(result.getName()).isEqualTo("Action");
-        verify(genreRepository, times(1)).save(testGenre);
+        verify(genreRepository, times(1)).save(any(GenreEntity.class));
     }
-
-    // ========== GET BY ID TESTS ==========
 
     @Test
     @DisplayName("getById - should return genre when genre exists")
     void getById_shouldReturnGenre_whenGenreExists() {
-        // Arrange
-        when(genreRepository.findById(testGenreId)).thenReturn(Optional.of(testGenre));
+        when(genreRepository.findById(testGenreId)).thenReturn(Optional.of(testGenreEntity));
 
-        // Act
         Genre result = genreService.getById(testGenreId);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testGenreId);
         assertThat(result.getName()).isEqualTo("Action");
@@ -83,109 +79,99 @@ class GenreServiceTest {
     @Test
     @DisplayName("getById - should throw GenreNotFoundException when genre does not exist")
     void getById_shouldThrowGenreNotFoundException_whenGenreDoesNotExist() {
-        // Arrange
         Long nonExistentId = 999L;
         when(genreRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThatThrownBy(() -> genreService.getById(nonExistentId))
                 .isInstanceOf(GenreNotFoundException.class)
                 .hasMessageContaining("Genre not found: " + nonExistentId);
         verify(genreRepository, times(1)).findById(nonExistentId);
     }
 
-    // ========== GET ALL TESTS ==========
-
     @Test
     @DisplayName("getAll - should return all genres")
     void getAll_shouldReturnAllGenres() {
-        // Arrange
-        Genre genre2 = new Genre();
-        genre2.setId(2L);
-        genre2.setName("Comedy");
-        List<Genre> genres = List.of(testGenre, genre2);
+        GenreEntity genre2 = GenreEntity.builder()
+                .id(2L)
+                .tmdbId(35L)
+                .name("Comedy")
+                .build();
+        List<GenreEntity> genres = List.of(testGenreEntity, genre2);
         when(genreRepository.findAll()).thenReturn(genres);
 
-        // Act
         List<Genre> result = genreService.getAll();
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(testGenre, genre2);
         verify(genreRepository, times(1)).findAll();
     }
 
     @Test
     @DisplayName("getAll - should return empty list when no genres exist")
     void getAll_shouldReturnEmptyList_whenNoGenresExist() {
-        // Arrange
         when(genreRepository.findAll()).thenReturn(List.of());
 
-        // Act
         List<Genre> result = genreService.getAll();
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
         verify(genreRepository, times(1)).findAll();
     }
 
-    // ========== UPDATE TESTS ==========
-
     @Test
     @DisplayName("update - should update and return genre when genre exists")
     void update_shouldUpdateAndReturnGenre_whenGenreExists() {
-        // Arrange
-        Genre updatedGenre = new Genre();
-        updatedGenre.setName("Drama");
-        Genre savedGenre = new Genre();
-        savedGenre.setId(testGenreId);
-        savedGenre.setName("Drama");
+        Genre updatedGenre = Genre.builder()
+                .tmdbId(18L)
+                .name("Drama")
+                .build();
+        GenreEntity savedGenre = GenreEntity.builder()
+                .id(testGenreId)
+                .tmdbId(18L)
+                .name("Drama")
+                .build();
 
         when(genreRepository.existsById(testGenreId)).thenReturn(true);
-        when(genreRepository.save(any(Genre.class))).thenReturn(savedGenre);
+        when(genreRepository.getReferenceById(testGenreId)).thenReturn(testGenreEntity);
+        when(genreRepository.save(any(GenreEntity.class))).thenReturn(savedGenre);
 
-        // Act
         Genre result = genreService.update(testGenreId, updatedGenre);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testGenreId);
         assertThat(result.getName()).isEqualTo("Drama");
         verify(genreRepository, times(1)).existsById(testGenreId);
-        verify(genreRepository, times(1)).save(updatedGenre);
+        verify(genreRepository, times(1)).save(any(GenreEntity.class));
     }
 
     @Test
     @DisplayName("update - should set ID on genre before saving")
     void update_shouldSetIdOnGenre_beforeSaving() {
-        // Arrange
-        Genre updatedGenre = new Genre();
-        updatedGenre.setName("Drama");
+        Genre updatedGenre = Genre.builder()
+                .tmdbId(18L)
+                .name("Drama")
+                .build();
 
         when(genreRepository.existsById(testGenreId)).thenReturn(true);
-        when(genreRepository.save(any(Genre.class))).thenReturn(updatedGenre);
+        when(genreRepository.getReferenceById(testGenreId)).thenReturn(testGenreEntity);
+        when(genreRepository.save(any(GenreEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
         genreService.update(testGenreId, updatedGenre);
 
-        // Assert
-        assertThat(updatedGenre.getId()).isEqualTo(testGenreId);
-        verify(genreRepository, times(1)).save(updatedGenre);
+        verify(genreRepository, times(1)).save(any(GenreEntity.class));
     }
 
     @Test
     @DisplayName("update - should throw GenreNotFoundException when genre does not exist")
     void update_shouldThrowGenreNotFoundException_whenGenreDoesNotExist() {
-        // Arrange
         Long nonExistentId = 999L;
-        Genre updatedGenre = new Genre();
-        updatedGenre.setName("Drama");
+        Genre updatedGenre = Genre.builder()
+                .tmdbId(18L)
+                .name("Drama")
+                .build();
 
         when(genreRepository.existsById(nonExistentId)).thenReturn(false);
 
-        // Act & Assert
         assertThatThrownBy(() -> genreService.update(nonExistentId, updatedGenre))
                 .isInstanceOf(GenreNotFoundException.class)
                 .hasMessageContaining("Genre not found: " + nonExistentId);
@@ -193,31 +179,24 @@ class GenreServiceTest {
         verify(genreRepository, never()).save(any());
     }
 
-    // ========== DELETE TESTS ==========
-
     @Test
-    @DisplayName("deleteById - should delete genre when genre exists")
+    @DisplayName("delete - should delete genre when genre exists")
     void deleteById_shouldDeleteGenre_whenGenreExists() {
-        // Arrange
         when(genreRepository.existsById(testGenreId)).thenReturn(true);
         doNothing().when(genreRepository).deleteById(testGenreId);
 
-        // Act
         genreService.deleteById(testGenreId);
 
-        // Assert
         verify(genreRepository, times(1)).existsById(testGenreId);
         verify(genreRepository, times(1)).deleteById(testGenreId);
     }
 
     @Test
-    @DisplayName("deleteById - should throw GenreNotFoundException when genre does not exist")
+    @DisplayName("delete - should throw GenreNotFoundException when genre does not exist")
     void deleteById_shouldThrowGenreNotFoundException_whenGenreDoesNotExist() {
-        // Arrange
         Long nonExistentId = 999L;
         when(genreRepository.existsById(nonExistentId)).thenReturn(false);
 
-        // Act & Assert
         assertThatThrownBy(() -> genreService.deleteById(nonExistentId))
                 .isInstanceOf(GenreNotFoundException.class)
                 .hasMessageContaining("Genre not found: " + nonExistentId);

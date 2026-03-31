@@ -7,9 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.tvl.tvlooker.domain.exception.NoDataProviderException;
-import org.tvl.tvlooker.domain.model.entity.Interaction;
-import org.tvl.tvlooker.domain.model.entity.Item;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.Interaction;
+import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.User;
 
 import java.util.HashMap;
 import java.util.List;

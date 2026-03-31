@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +21,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Director {
+@Builder
+public class DirectorEntity {
     /**
      * The unique identifier for the director, generated as a Long.
      * This field is the primary key of the "directors" table and is not updatable or nullable.

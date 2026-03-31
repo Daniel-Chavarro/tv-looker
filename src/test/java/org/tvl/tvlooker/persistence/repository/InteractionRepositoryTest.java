@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.tvl.tvlooker.domain.model.entity.Interaction;
-import org.tvl.tvlooker.domain.model.entity.Item;
-import org.tvl.tvlooker.domain.model.entity.Review;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.entity.InteractionEntity;
+import org.tvl.tvlooker.domain.model.entity.ItemEntity;
+import org.tvl.tvlooker.domain.model.entity.ReviewEntity;
+import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
@@ -63,10 +63,10 @@ class InteractionRepositoryTest {
     @DisplayName("Should save a new interaction")
     void testSaveInteraction() {
         // Given
-        User user = createAndSaveUser("user1");
-        Item item = createAndSaveItem(1L, "Movie 1");
+        UserEntity user = createAndSaveUserEntity("user1");
+        ItemEntity item = createAndSaveItemEntity(1L, "Movie 1");
 
-        Interaction interaction = Interaction.builder()
+        InteractionEntity interaction = InteractionEntity.builder()
                 .id(1L)
                 .interactionType(InteractionType.VIEW)
                 .user(user)
@@ -74,7 +74,7 @@ class InteractionRepositoryTest {
                 .build();
 
         // When
-        Interaction savedInteraction = interactionRepository.save(interaction);
+        InteractionEntity savedInteraction = interactionRepository.save(interaction);
 
         // Then
         assertThat(savedInteraction).isNotNull();
@@ -85,24 +85,24 @@ class InteractionRepositoryTest {
     @Test
     @DisplayName("Should save interaction with review")
     void testSaveInteractionWithReview() {
-        // Given - Create user and item WITHOUT saving (Review has cascade persist on item)
-        User user = createUser("user1");
-        Item item = createItem(1L, "Movie 1");
+        // Given - Create user and item WITHOUT saving (ReviewEntity has cascade persist on item)
+        UserEntity user = createUserEntity("user1");
+        ItemEntity item = createItemEntity(1L, "Movie 1");
 
-        // Create and save Review - this will cascade persist user and item
-        Review review = Review.builder()
+        // Create and save ReviewEntity - this will cascade persist user and item
+        ReviewEntity review = ReviewEntity.builder()
                 .reviewText("Great movie!")
                 .score(8)
                 .item(item)
                 .user(user)
                 .build();
-        Review savedReview = reviewRepository.saveAndFlush(review);
+        ReviewEntity savedReview = reviewRepository.saveAndFlush(review);
 
         // Refresh to get managed entities
-        User savedUser = userRepository.findById(user.getId()).orElseThrow();
-        Item savedItem = itemRepository.findById(item.getId()).orElseThrow();
+        UserEntity savedUser = userRepository.findById(user.getId()).orElseThrow();
+        ItemEntity savedItem = itemRepository.findById(item.getId()).orElseThrow();
 
-        Interaction interaction = Interaction.builder()
+        InteractionEntity interaction = InteractionEntity.builder()
                 .id(2L)
                 .interactionType(InteractionType.REVIEW)
                 .user(savedUser)
@@ -111,7 +111,7 @@ class InteractionRepositoryTest {
                 .build();
 
         // When
-        Interaction savedInteraction = interactionRepository.save(interaction);
+        InteractionEntity savedInteraction = interactionRepository.save(interaction);
 
         // Then
         assertThat(savedInteraction).isNotNull();
@@ -123,18 +123,18 @@ class InteractionRepositoryTest {
     @DisplayName("Should save multiple interactions")
     void testSaveMultipleInteractions() {
         // Given
-        User user = createAndSaveUser("user1");
-        Item item1 = createAndSaveItem(1L, "Movie 1");
-        Item item2 = createAndSaveItem(2L, "Movie 2");
+        UserEntity user = createAndSaveUserEntity("user1");
+        ItemEntity item1 = createAndSaveItemEntity(1L, "Movie 1");
+        ItemEntity item2 = createAndSaveItemEntity(2L, "Movie 2");
 
-        Interaction interaction1 = Interaction.builder()
+        InteractionEntity interaction1 = InteractionEntity.builder()
                 .id(1L)
                 .interactionType(InteractionType.VIEW)
                 .user(user)
                 .item(item1)
                 .build();
 
-        Interaction interaction2 = Interaction.builder()
+        InteractionEntity interaction2 = InteractionEntity.builder()
                 .id(2L)
                 .interactionType(InteractionType.LIKE)
                 .user(user)
@@ -142,7 +142,7 @@ class InteractionRepositoryTest {
                 .build();
 
         // When
-        List<Interaction> savedInteractions = interactionRepository.saveAll(List.of(interaction1, interaction2));
+        List<InteractionEntity> savedInteractions = interactionRepository.saveAll(List.of(interaction1, interaction2));
 
         // Then
         assertThat(savedInteractions).hasSize(2);
@@ -155,19 +155,19 @@ class InteractionRepositoryTest {
     @DisplayName("Should find interaction by ID")
     void testFindById() {
         // Given
-        User user = createAndSaveUser("user1");
-        Item item = createAndSaveItem(1L, "Movie 1");
+        UserEntity user = createAndSaveUserEntity("user1");
+        ItemEntity item = createAndSaveItemEntity(1L, "Movie 1");
 
-        Interaction interaction = Interaction.builder()
+        InteractionEntity interaction = InteractionEntity.builder()
                 .id(1L)
                 .interactionType(InteractionType.CLICK)
                 .user(user)
                 .item(item)
                 .build();
-        Interaction savedInteraction = interactionRepository.save(interaction);
+        InteractionEntity savedInteraction = interactionRepository.save(interaction);
 
         // When
-        Optional<Interaction> foundInteraction = interactionRepository.findById(1L);
+        Optional<InteractionEntity> foundInteraction = interactionRepository.findById(1L);
 
         // Then
         assertThat(foundInteraction).isPresent();
@@ -178,17 +178,17 @@ class InteractionRepositoryTest {
     @DisplayName("Should find all interactions")
     void testFindAll() {
         // Given
-        User user = createAndSaveUser("user1");
-        Item item1 = createAndSaveItem(1L, "Movie 1");
-        Item item2 = createAndSaveItem(2L, "Movie 2");
+        UserEntity user = createAndSaveUserEntity("user1");
+        ItemEntity item1 = createAndSaveItemEntity(1L, "Movie 1");
+        ItemEntity item2 = createAndSaveItemEntity(2L, "Movie 2");
 
         interactionRepository.saveAll(List.of(
-                Interaction.builder().id(1L).interactionType(InteractionType.VIEW).user(user).item(item1).build(),
-                Interaction.builder().id(2L).interactionType(InteractionType.LIKE).user(user).item(item2).build()
+                InteractionEntity.builder().id(1L).interactionType(InteractionType.VIEW).user(user).item(item1).build(),
+                InteractionEntity.builder().id(2L).interactionType(InteractionType.LIKE).user(user).item(item2).build()
         ));
 
         // When
-        List<Interaction> allInteractions = interactionRepository.findAll();
+        List<InteractionEntity> allInteractions = interactionRepository.findAll();
 
         // Then
         assertThat(allInteractions).hasSize(2);
@@ -198,13 +198,13 @@ class InteractionRepositoryTest {
     @DisplayName("Should count all interactions")
     void testCount() {
         // Given
-        User user = createAndSaveUser("user1");
-        Item item1 = createAndSaveItem(1L, "Movie 1");
-        Item item2 = createAndSaveItem(2L, "Movie 2");
+        UserEntity user = createAndSaveUserEntity("user1");
+        ItemEntity item1 = createAndSaveItemEntity(1L, "Movie 1");
+        ItemEntity item2 = createAndSaveItemEntity(2L, "Movie 2");
 
         interactionRepository.saveAll(List.of(
-                Interaction.builder().id(1L).interactionType(InteractionType.VIEW).user(user).item(item1).build(),
-                Interaction.builder().id(2L).interactionType(InteractionType.RATING).user(user).item(item2).build()
+                InteractionEntity.builder().id(1L).interactionType(InteractionType.VIEW).user(user).item(item1).build(),
+                InteractionEntity.builder().id(2L).interactionType(InteractionType.RATING).user(user).item(item2).build()
         ));
 
         // When
@@ -220,21 +220,21 @@ class InteractionRepositoryTest {
     @DisplayName("Should find interactions by user ID")
     void testFindByUserId() {
         // Given
-        User user1 = createAndSaveUser("user1");
-        User user2 = createAndSaveUser("user2");
-        Item item1 = createAndSaveItem(1L, "Movie 1");
-        Item item2 = createAndSaveItem(2L, "Movie 2");
-        Item item3 = createAndSaveItem(3L, "Movie 3");
+        UserEntity user1 = createAndSaveUserEntity("user1");
+        UserEntity user2 = createAndSaveUserEntity("user2");
+        ItemEntity item1 = createAndSaveItemEntity(1L, "Movie 1");
+        ItemEntity item2 = createAndSaveItemEntity(2L, "Movie 2");
+        ItemEntity item3 = createAndSaveItemEntity(3L, "Movie 3");
 
         interactionRepository.saveAll(List.of(
-                Interaction.builder().id(1L).interactionType(InteractionType.VIEW).user(user1).item(item1).build(),
-                Interaction.builder().id(2L).interactionType(InteractionType.LIKE).user(user1).item(item2).build(),
-                Interaction.builder().id(3L).interactionType(InteractionType.CLICK).user(user2).item(item3).build()
+                InteractionEntity.builder().id(1L).interactionType(InteractionType.VIEW).user(user1).item(item1).build(),
+                InteractionEntity.builder().id(2L).interactionType(InteractionType.LIKE).user(user1).item(item2).build(),
+                InteractionEntity.builder().id(3L).interactionType(InteractionType.CLICK).user(user2).item(item3).build()
         ));
 
         // When
-        List<Interaction> user1Interactions = interactionRepository.findByUserId(user1.getId());
-        List<Interaction> user2Interactions = interactionRepository.findByUserId(user2.getId());
+        List<InteractionEntity> user1Interactions = interactionRepository.findByUserId(user1.getId());
+        List<InteractionEntity> user2Interactions = interactionRepository.findByUserId(user2.getId());
 
         // Then
         assertThat(user1Interactions).hasSize(2);
@@ -245,10 +245,10 @@ class InteractionRepositoryTest {
     @DisplayName("Should return empty list when user has no interactions")
     void testFindByUserIdNoInteractions() {
         // Given
-        User user = createAndSaveUser("user1");
+        UserEntity user = createAndSaveUserEntity("user1");
 
         // When
-        List<Interaction> interactions = interactionRepository.findByUserId(user.getId());
+        List<InteractionEntity> interactions = interactionRepository.findByUserId(user.getId());
 
         // Then
         assertThat(interactions).isEmpty();
@@ -261,7 +261,7 @@ class InteractionRepositoryTest {
         UUID nonExistentUserId = UUID.randomUUID();
 
         // When
-        List<Interaction> interactions = interactionRepository.findByUserId(nonExistentUserId);
+        List<InteractionEntity> interactions = interactionRepository.findByUserId(nonExistentUserId);
 
         // Then
         assertThat(interactions).isEmpty();
@@ -273,20 +273,20 @@ class InteractionRepositoryTest {
     @DisplayName("Should update interaction type")
     void testUpdateInteraction() {
         // Given
-        User user = createAndSaveUser("user1");
-        Item item = createAndSaveItem(1L, "Movie 1");
+        UserEntity user = createAndSaveUserEntity("user1");
+        ItemEntity item = createAndSaveItemEntity(1L, "Movie 1");
 
-        Interaction interaction = Interaction.builder()
+        InteractionEntity interaction = InteractionEntity.builder()
                 .id(1L)
                 .interactionType(InteractionType.VIEW)
                 .user(user)
                 .item(item)
                 .build();
-        Interaction savedInteraction = interactionRepository.save(interaction);
+        InteractionEntity savedInteraction = interactionRepository.save(interaction);
 
         // When
         savedInteraction.setInteractionType(InteractionType.RESEARCH);
-        Interaction updatedInteraction = interactionRepository.save(savedInteraction);
+        InteractionEntity updatedInteraction = interactionRepository.save(savedInteraction);
 
         // Then
         assertThat(updatedInteraction.getId()).isEqualTo(1L);
@@ -299,10 +299,10 @@ class InteractionRepositoryTest {
     @DisplayName("Should delete interaction by ID")
     void testDeleteById() {
         // Given
-        User user = createAndSaveUser("user1");
-        Item item = createAndSaveItem(1L, "Movie 1");
+        UserEntity user = createAndSaveUserEntity("user1");
+        ItemEntity item = createAndSaveItemEntity(1L, "Movie 1");
 
-        Interaction interaction = Interaction.builder()
+        InteractionEntity interaction = InteractionEntity.builder()
                 .id(1L)
                 .interactionType(InteractionType.VIEW)
                 .user(user)
@@ -321,13 +321,13 @@ class InteractionRepositoryTest {
     @DisplayName("Should delete all interactions")
     void testDeleteAll() {
         // Given
-        User user = createAndSaveUser("user1");
-        Item item1 = createAndSaveItem(1L, "Movie 1");
-        Item item2 = createAndSaveItem(2L, "Movie 2");
+        UserEntity user = createAndSaveUserEntity("user1");
+        ItemEntity item1 = createAndSaveItemEntity(1L, "Movie 1");
+        ItemEntity item2 = createAndSaveItemEntity(2L, "Movie 2");
 
         interactionRepository.saveAll(List.of(
-                Interaction.builder().id(1L).interactionType(InteractionType.VIEW).user(user).item(item1).build(),
-                Interaction.builder().id(2L).interactionType(InteractionType.LIKE).user(user).item(item2).build()
+                InteractionEntity.builder().id(1L).interactionType(InteractionType.VIEW).user(user).item(item1).build(),
+                InteractionEntity.builder().id(2L).interactionType(InteractionType.LIKE).user(user).item(item2).build()
         ));
 
         // When
@@ -343,9 +343,9 @@ class InteractionRepositoryTest {
     @DisplayName("Should not allow null user")
     void testNullUser() {
         // Given
-        Item item = createAndSaveItem(1L, "Movie 1");
+        ItemEntity item = createAndSaveItemEntity(1L, "Movie 1");
 
-        Interaction interaction = Interaction.builder()
+        InteractionEntity interaction = InteractionEntity.builder()
                 .id(1L)
                 .interactionType(InteractionType.VIEW)
                 .user(null)
@@ -365,9 +365,9 @@ class InteractionRepositoryTest {
     @DisplayName("Should not allow null item")
     void testNullItem() {
         // Given
-        User user = createAndSaveUser("user1");
+        UserEntity user = createAndSaveUserEntity("user1");
 
-        Interaction interaction = Interaction.builder()
+        InteractionEntity interaction = InteractionEntity.builder()
                 .id(1L)
                 .interactionType(InteractionType.VIEW)
                 .user(user)
@@ -387,10 +387,10 @@ class InteractionRepositoryTest {
     @DisplayName("Should not allow null interaction type")
     void testNullInteractionType() {
         // Given
-        User user = createAndSaveUser("user1");
-        Item item = createAndSaveItem(1L, "Movie 1");
+        UserEntity user = createAndSaveUserEntity("user1");
+        ItemEntity item = createAndSaveItemEntity(1L, "Movie 1");
 
-        Interaction interaction = Interaction.builder()
+        InteractionEntity interaction = InteractionEntity.builder()
                 .id(1L)
                 .interactionType(null)
                 .user(user)
@@ -408,16 +408,17 @@ class InteractionRepositoryTest {
 
     // ==================== HELPER METHODS ====================
 
-    private User createAndSaveUser(String username) {
-        User user = User.builder()
+    private UserEntity createAndSaveUserEntity(String username) {
+        UserEntity user = UserEntity.builder()
                 .username(username)
                 .password("password123")
+                .email(username + "@example.com")
                 .build();
         return userRepository.saveAndFlush(user);
     }
 
-    private Item createAndSaveItem(Long tmdbId, String title) {
-        Item item = Item.builder()
+    private ItemEntity createAndSaveItemEntity(Long tmdbId, String title) {
+        ItemEntity item = ItemEntity.builder()
                 .tmdbId(tmdbId)
                 .tmdbType(TmdbType.MOVIE)
                 .title(title)
@@ -432,15 +433,16 @@ class InteractionRepositoryTest {
         return itemRepository.saveAndFlush(item);
     }
 
-    private User createUser(String username) {
-        return User.builder()
+    private UserEntity createUserEntity(String username) {
+        return UserEntity.builder()
                 .username(username)
                 .password("password123")
+                .email(username + "@example.com")
                 .build();
     }
 
-    private Item createItem(Long tmdbId, String title) {
-        return Item.builder()
+    private ItemEntity createItemEntity(Long tmdbId, String title) {
+        return ItemEntity.builder()
                 .tmdbId(tmdbId)
                 .tmdbType(TmdbType.MOVIE)
                 .title(title)

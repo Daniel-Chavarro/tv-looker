@@ -1,5 +1,7 @@
 package org.tvl.tvlooker.domain.exception;
 
+import lombok.experimental.StandardException;
+
 /**
  * Thrown when attempting to start TMDB data collection while another collection is already in progress.
  * This exception ensures that only one collection operation runs at a time to prevent conflicts.
@@ -8,6 +10,7 @@ package org.tvl.tvlooker.domain.exception;
  * @version 1.0
  * @since 2026-03-15
  */
+@StandardException
 public class TmdbCollectionInProgressException extends RuntimeException {
     
     /**

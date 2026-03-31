@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 import org.tvl.tvlooker.testutil.TestDataFactory;
 

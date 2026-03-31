@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
-import org.tvl.tvlooker.domain.model.entity.User;
+import org.tvl.tvlooker.domain.model.User;
 
 /**
  * The RecommendationEngine interface defines the contract for a recommendation engine that generates item

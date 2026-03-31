@@ -1,7 +1,7 @@
 package org.tvl.tvlooker.domain.strategy.aggregation;
 
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
-import org.tvl.tvlooker.domain.model.entity.Item;
+import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 
 import java.util.ArrayList;

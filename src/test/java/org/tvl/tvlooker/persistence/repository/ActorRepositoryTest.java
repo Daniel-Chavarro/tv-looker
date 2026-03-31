@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.tvl.tvlooker.domain.model.entity.Actor;
+import org.tvl.tvlooker.domain.model.entity.ActorEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,10 +41,10 @@ class ActorRepositoryTest {
     @DisplayName("Should save a new actor")
     void testSaveActor() {
         // Given
-        Actor actor = createActor(1L, "John Doe");
+        ActorEntity actor = createActorEntity(1L, "John Doe");
 
         // When
-        Actor savedActor = actorRepository.saveAndFlush(actor);
+        ActorEntity savedActor = actorRepository.saveAndFlush(actor);
 
         // Then
         assertThat(savedActor).isNotNull();
@@ -57,12 +57,12 @@ class ActorRepositoryTest {
     @DisplayName("Should save multiple actors")
     void testSaveMultipleActors() {
         // Given
-        Actor actor1 = createActor(1L, "Actor One");
-        Actor actor2 = createActor(2L, "Actor Two");
-        Actor actor3 = createActor(3L, "Actor Three");
+        ActorEntity actor1 = createActorEntity(1L, "Actor One");
+        ActorEntity actor2 = createActorEntity(2L, "Actor Two");
+        ActorEntity actor3 = createActorEntity(3L, "Actor Three");
 
         // When
-        List<Actor> savedActors = actorRepository.saveAll(List.of(actor1, actor2, actor3));
+        List<ActorEntity> savedActors = actorRepository.saveAll(List.of(actor1, actor2, actor3));
 
         // Then
         assertThat(savedActors).hasSize(3);
@@ -75,11 +75,11 @@ class ActorRepositoryTest {
     @DisplayName("Should find actor by ID")
     void testFindById() {
         // Given
-        Actor actor = createActor(100L, "Jane Smith");
-        Actor savedActor = actorRepository.saveAndFlush(actor);
+        ActorEntity actor = createActorEntity(100L, "Jane Smith");
+        ActorEntity savedActor = actorRepository.saveAndFlush(actor);
 
         // When
-        Optional<Actor> foundActor = actorRepository.findById(savedActor.getId());
+        Optional<ActorEntity> foundActor = actorRepository.findById(savedActor.getId());
 
         // Then
         assertThat(foundActor).isPresent();
@@ -91,13 +91,13 @@ class ActorRepositoryTest {
     void testFindAll() {
         // Given
         actorRepository.saveAll(List.of(
-                createActor(1L, "Actor One"),
-                createActor(2L, "Actor Two"),
-                createActor(3L, "Actor Three")
+                createActorEntity(1L, "Actor One"),
+                createActorEntity(2L, "Actor Two"),
+                createActorEntity(3L, "Actor Three")
         ));
 
         // When
-        List<Actor> allActors = actorRepository.findAll();
+        List<ActorEntity> allActors = actorRepository.findAll();
 
         // Then
         assertThat(allActors).hasSize(3);
@@ -108,8 +108,8 @@ class ActorRepositoryTest {
     void testCount() {
         // Given
         actorRepository.saveAll(List.of(
-                createActor(1L, "Actor One"),
-                createActor(2L, "Actor Two")
+                createActorEntity(1L, "Actor One"),
+                createActorEntity(2L, "Actor Two")
         ));
 
         // When
@@ -125,12 +125,12 @@ class ActorRepositoryTest {
     @DisplayName("Should update actor name")
     void testUpdateActor() {
         // Given
-        Actor actor = createActor(1L, "Old Name");
-        Actor savedActor = actorRepository.saveAndFlush(actor);
+        ActorEntity actor = createActorEntity(1L, "Old Name");
+        ActorEntity savedActor = actorRepository.saveAndFlush(actor);
 
         // When
         savedActor.setName("New Name");
-        Actor updatedActor = actorRepository.saveAndFlush(savedActor);
+        ActorEntity updatedActor = actorRepository.saveAndFlush(savedActor);
 
         // Then
         assertThat(updatedActor.getId()).isEqualTo(savedActor.getId());
@@ -143,8 +143,8 @@ class ActorRepositoryTest {
     @DisplayName("Should delete actor by ID")
     void testDeleteById() {
         // Given
-        Actor actor = createActor(1L, "To Delete");
-        Actor savedActor = actorRepository.saveAndFlush(actor);
+        ActorEntity actor = createActorEntity(1L, "To Delete");
+        ActorEntity savedActor = actorRepository.saveAndFlush(actor);
 
         // When
         actorRepository.deleteById(savedActor.getId());
@@ -158,8 +158,8 @@ class ActorRepositoryTest {
     void testDeleteAll() {
         // Given
         actorRepository.saveAll(List.of(
-                createActor(1L, "Actor One"),
-                createActor(2L, "Actor Two")
+                createActorEntity(1L, "Actor One"),
+                createActorEntity(2L, "Actor Two")
         ));
 
         // When
@@ -175,7 +175,7 @@ class ActorRepositoryTest {
     @DisplayName("Should not allow null name")
     void testNullName() {
         // Given
-        Actor actor = createActor(1L, null);
+        ActorEntity actor = createActorEntity(1L, null);
 
         // When & Then
         try {
@@ -190,7 +190,7 @@ class ActorRepositoryTest {
     @DisplayName("Should not allow null tmdbId")
     void testNullTmdbId() {
         // Given
-        Actor actor = new Actor();
+        ActorEntity actor = new ActorEntity();
         actor.setName("Test Actor");
         actor.setTmdbId(null);
 
@@ -207,10 +207,10 @@ class ActorRepositoryTest {
     @DisplayName("Should enforce unique tmdbId constraint")
     void testUniqueTmdbId() {
         // Given
-        Actor actor1 = createActor(1L, "Actor One");
+        ActorEntity actor1 = createActorEntity(1L, "Actor One");
         actorRepository.saveAndFlush(actor1);
 
-        Actor actor2 = createActor(1L, "Actor Two");
+        ActorEntity actor2 = createActorEntity(1L, "Actor Two");
 
         // When & Then
         try {
@@ -223,8 +223,8 @@ class ActorRepositoryTest {
 
     // ==================== HELPER METHODS ====================
 
-    private Actor createActor(Long tmdbId, String name) {
-        Actor actor = new Actor();
+    private ActorEntity createActorEntity(Long tmdbId, String name) {
+        ActorEntity actor = new ActorEntity();
         actor.setTmdbId(tmdbId);
         actor.setName(name);
         return actor;

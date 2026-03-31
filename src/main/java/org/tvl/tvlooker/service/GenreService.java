@@ -3,18 +3,22 @@ package org.tvl.tvlooker.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.GenreNotFoundException;
-import org.tvl.tvlooker.domain.model.entity.Genre;
+import org.tvl.tvlooker.domain.model.Genre;
+import org.tvl.tvlooker.domain.model.entity.GenreEntity;
+import org.tvl.tvlooker.persistence.mapper.GenreEntityMapper;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service for Genre entity operations
  */
 @Service
 @RequiredArgsConstructor
-class GenreService {
-    private final GenreRepository genreRepository;
+public class GenreService {
+
+    private final GenreRepository genreRepository;;
 
     /**
      * Create a new genre.
@@ -23,7 +27,8 @@ class GenreService {
      * @return saved genre
      */
     public Genre create(Genre genre) {
-        return genreRepository.save(genre);
+        GenreEntity entity = GenreEntityMapper.toEntity(genre);
+        return GenreEntityMapper.toDomain(genreRepository.save(entity));
     }
 
     /**
@@ -35,6 +40,7 @@ class GenreService {
      */
     public Genre getById(Long id) {
         return genreRepository.findById(id)
+                .map(GenreEntityMapper::toDomain)
                 .orElseThrow(() -> new GenreNotFoundException("Genre not found: " + id));
     }
 
@@ -44,7 +50,9 @@ class GenreService {
      * @return list of genres
      */
     public List<Genre> getAll() {
-        return genreRepository.findAll();
+        return genreRepository.findAll().stream()
+                .map(GenreEntityMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -59,8 +67,19 @@ class GenreService {
         if (!genreRepository.existsById(id)) {
             throw new GenreNotFoundException("Genre not found: " + id);
         }
-        genre.setId(id);
-        return genreRepository.save(genre);
+
+        GenreEntity actual = genreRepository.getReferenceById(id);
+        GenreEntity update = GenreEntityMapper.toEntity(genre);
+
+        if (update.getName() != null) {
+            update.setName(actual.getName());
+        }
+
+        if (update.getTmdbId() != null) {
+            update.setTmdbId(actual.getTmdbId());
+        }
+
+        return GenreEntityMapper.toDomain(genreRepository.save(actual));
     }
 
     /**

@@ -2,15 +2,18 @@ package org.tvl.tvlooker.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.tvl.tvlooker.domain.model.entity.Actor;
+import org.tvl.tvlooker.domain.model.Actor;
 import org.tvl.tvlooker.domain.exception.ActorNotFoundException;
+import org.tvl.tvlooker.domain.model.entity.ActorEntity;
+import org.tvl.tvlooker.persistence.mapper.ActorEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-class ActorService {
+public class ActorService {
 
 	private final ActorRepository actorRepository;
 
@@ -21,7 +24,8 @@ class ActorService {
 	 * @return saved actor
 	 */
 	public Actor create(Actor actor) {
-		return actorRepository.save(actor);
+		ActorEntity entity = ActorEntityMapper.toEntity(actor);
+		return ActorEntityMapper.toDomain(actorRepository.save(entity));
 	}
 
 	/**
@@ -33,6 +37,7 @@ class ActorService {
 	 */
 	public Actor getById(Long id) {
 		return actorRepository.findById(id)
+				.map(ActorEntityMapper::toDomain)
 				.orElseThrow(() -> new ActorNotFoundException("Actor not found: " + id));
 	}
 
@@ -42,7 +47,9 @@ class ActorService {
 	 * @return list of actors
 	 */
 	public List<Actor> getAll() {
-		return actorRepository.findAll();
+		return actorRepository.findAll().stream()
+				.map(ActorEntityMapper::toDomain)
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -57,8 +64,16 @@ class ActorService {
 		if (!actorRepository.existsById(id)) {
 			throw new ActorNotFoundException("Actor not found: " + id);
 		}
-		actor.setId(id);
-		return actorRepository.save(actor);
+		ActorEntity actual = actorRepository.getReferenceById(id);
+		ActorEntity update = ActorEntityMapper.toEntity(actor);
+
+		// Only update fields that are not null in the input actor
+		if (update.getName() != null) {
+			actual.setName(update.getName());}
+		if (update.getTmdbId() != null) {
+			actual.setTmdbId(update.getTmdbId());}
+
+		return ActorEntityMapper.toDomain(actorRepository.save(actual));
 	}
 
 	/**
