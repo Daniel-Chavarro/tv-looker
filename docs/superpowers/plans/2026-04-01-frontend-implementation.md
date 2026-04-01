@@ -112,7 +112,7 @@ tv-looker/
 - Create: `frontend/.env.example`
 - Create: `frontend/Dockerfile`
 
-- [x] **Step 1: Create frontend/package.json with all dependencies**
+- [ ] **Step 1: Create frontend/package.json with all dependencies**
 
 ```json
 {
@@ -151,7 +151,7 @@ tv-looker/
 }
 ```
 
-- [x] **Step 2: Create frontend/vite.config.ts**
+- [ ] **Step 2: Create frontend/vite.config.ts**
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -170,7 +170,7 @@ export default defineConfig({
 })
 ```
 
-- [x] **Step 3: Create frontend/tsconfig.json**
+- [ ] **Step 3: Create frontend/tsconfig.json**
 
 ```json
 {
@@ -198,7 +198,7 @@ export default defineConfig({
 }
 ```
 
-- [x] **Step 4: Create frontend/tsconfig.app.json**
+- [ ] **Step 4: Create frontend/tsconfig.app.json**
 
 ```json
 {
@@ -213,7 +213,7 @@ export default defineConfig({
 }
 ```
 
-- [x] **Step 5: Create frontend/tailwind.config.js**
+- [ ] **Step 5: Create frontend/tailwind.config.js**
 
 ```javascript
 /** @type {import('tailwindcss').Config} */
@@ -234,7 +234,7 @@ export default {
 }
 ```
 
-- [x] **Step 6: Create frontend/postcss.config.js**
+- [ ] **Step 6: Create frontend/postcss.config.js**
 
 ```javascript
 export default {
@@ -245,7 +245,7 @@ export default {
 }
 ```
 
-- [x] **Step 7: Create frontend/index.html**
+- [ ] **Step 7: Create frontend/index.html**
 
 ```html
 <!doctype html>
@@ -263,13 +263,13 @@ export default {
 </html>
 ```
 
-- [x] **Step 8: add to .env.example:**
+- [ ] **Step 8: Create frontend/.env.example**
 
 ```bash
 VITE_API_URL=http://localhost:8080/api/v1
 ```
 
-- [x] **Step 9: Create frontend/Dockerfile** (modified using default vite builder)
+- [ ] **Step 9: Create frontend/Dockerfile**
 
 ```dockerfile
 # Development
@@ -297,7 +297,7 @@ EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-- [x] **Step 10: Commit project setup**
+- [ ] **Step 10: Commit project setup**
 
 ```bash
 git add frontend/package.json frontend/vite.config.ts frontend/tsconfig.json frontend/tsconfig.app.json frontend/tailwind.config.js frontend/postcss.config.js frontend/index.html frontend/.env.example frontend/Dockerfile
@@ -316,186 +316,169 @@ git commit -m "chore: setup frontend project structure and configuration"
 - Create: `frontend/src/types/list.ts`
 - Create: `frontend/src/types/user.ts`
 
-- [x] **Step 1: Create frontend/src/types/api.ts**
+- [ ] **Step 1: Create frontend/src/types/api.ts**
 
 ```typescript
-export type ApiError = {
+export interface ApiError {
   message: string;
   code?: string;
   statusCode: number;
 }
 
-// Generic type for paginated API responses (future use)
-export type PaginatedResponse<T> = {
+export interface PaginatedResponse<T> {
   data: T[];
   total: number;
   page: number;
   pageSize: number;
 }
-
 ```
 
-- [x] **Step 2: Create frontend/src/types/item.ts**
+- [ ] **Step 2: Create frontend/src/types/item.ts**
 
 ```typescript
-export type Genre = {
+export interface Genre {
   id: number;
-  tmdbId: number;
   name: string;
 }
 
-export type Actor = {
+export interface Actor {
   id: number;
-  tmdbId: number;
+  name: string;
+  character?: string;
+}
+
+export interface Director {
+  id: number;
   name: string;
 }
 
-export type ActorItem = {
-    id: number;
-    actorId: number;
-    actorName: string;
-    characterName: string;
-    billingOrder: number;
-}
-
-export type Director = {
-  id: number;
-  tmdbId: number;
-  name: string;
-}
-
-export type Item = {
+export interface Item {
   id: number;
   title: string;
-  type: "MOVIE" | "TV";
+  type: 'MOVIE' | 'SERIES';
   releaseDate: string;
-  overview: string;
+  synopsis: string;
   posterUrl?: string;
   backdropUrl?: string;
-  voteAverage: number;
-  popularity: number;
   tmdbId: number;
   genres: Genre[];
-  actors: ActorItem[];
+  actors: Actor[];
   directors: Director[];
+  averageRating?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export type ItemResponse = {
+export interface ItemResponse {
   data: Item;
 }
 
-export type ItemsListResponse = {
+export interface ItemsListResponse {
   data: Item[];
   count: number;
 }
-
 ```
 
-- [x] **Step 3: Create frontend/src/types/review.ts**
+- [ ] **Step 3: Create frontend/src/types/review.ts**
 
 ```typescript
-import type { UUID } from "crypto";
-
-export type Review = {
+export interface Review {
   id: number;
-  userId: UUID;
+  userId: string;
   itemId: number;
-  rating: number; // 1-5
+  rating: number; // 1-10
   content: string;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
   userName?: string;
 }
 
-export type CreateReviewRequest = {
-  userId: UUID;
+export interface CreateReviewRequest {
   itemId: number;
   rating: number;
   content: string;
 }
 
-export type UpdateReviewRequest = {
-  rating?: number;
-  content?: string;
+export interface UpdateReviewRequest {
+  rating: number;
+  content: string;
 }
 
-export type ReviewResponse = {
+export interface ReviewResponse {
   data: Review;
 }
 
-export type ReviewsListResponse = {
+export interface ReviewsListResponse {
   data: Review[];
   count: number;
 }
-
-
 ```
 
-- [x] **Step 4: Create frontend/src/types/list.ts**
+- [ ] **Step 4: Create frontend/src/types/list.ts**
 
 ```typescript
-import type { UUID } from "crypto";
-import type { Item } from "./item";
+import { Item } from './item';
 
-export type FavoriteList = {
+export interface FavoriteList {
   id: number;
   userId: string;
   name: string;
   description?: string;
   items: Item[];
-}
-
-export type CreateListRequest = {
-  userId: UUID;
-  name: string;
-  description?: string;
-}
-
-export type UpdateListRequest = {
-  name?: string;
-  description?: string;
-}
-
-export type ListResponse = {
-  data: FavoriteList;
-}
-
-export type ListsListResponse = {
-  data: FavoriteList[];
-  count: number;
-}
-
-```
-
-- [x] **Step 5: Create frontend/src/types/user.ts**
-
-```typescript
-export type User = {
-  id: string;
-  username: string;
-  email: string;
-  name?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export type CreateUserRequest = {
+export interface CreateListRequest {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateListRequest {
+  name: string;
+  description?: string;
+}
+
+export interface ListResponse {
+  data: FavoriteList;
+}
+
+export interface ListsListResponse {
+  data: FavoriteList[];
+  count: number;
+}
+```
+
+- [ ] **Step 5: Create frontend/src/types/user.ts**
+
+```typescript
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateUserRequest {
   username: string;
   email: string;
   password: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
-export type UpdateUserRequest = {
-  password?: string;
-  name?: string;
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
   email?: string;
 }
 
-export type UserResponse = {
+export interface UserResponse {
   data: User;
 }
-
 ```
 
 - [ ] **Step 6: Create frontend/src/types/index.ts**
@@ -1533,7 +1516,7 @@ export function ItemCard({ item }: ItemCardProps) {
           </h3>
           <p className="text-sm text-gray-500 mb-2">{item.type}</p>
           <div className="flex items-center justify-between">
-            <Rating value={item.voteAverage} />
+            <Rating value={item.averageRating} />
             <span className="text-xs text-gray-400">
               {new Date(item.releaseDate).getFullYear()}
             </span>
@@ -2177,13 +2160,13 @@ export default function ItemDetail() {
             <div className="flex items-center gap-4 text-gray-600">
               <span>{item.type}</span>
               <span>{new Date(item.releaseDate).getFullYear()}</span>
-              <Rating value={item.voteAverage} />
+              <Rating value={item.averageRating} />
             </div>
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Overview</h2>
-            <p className="text-gray-700 leading-relaxed">{item.overview}</p>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Synopsis</h2>
+            <p className="text-gray-700 leading-relaxed">{item.synopsis}</p>
           </div>
 
           <div>
@@ -2216,9 +2199,9 @@ export default function ItemDetail() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {item.actors.map((actor) => (
               <Card key={actor.id} className="p-4 text-center">
-                <p className="font-semibold text-gray-900">{actor.actorName}</p>
-                {actor.characterName && (
-                  <p className="text-sm text-gray-600">as {actor.characterName}</p>
+                <p className="font-semibold text-gray-900">{actor.name}</p>
+                {actor.character && (
+                  <p className="text-sm text-gray-600">as {actor.character}</p>
                 )}
               </Card>
             ))}
@@ -2539,7 +2522,8 @@ export default function Profile() {
   const { mutate: updateUser, isPending } = useUpdateUser();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
   });
 
   if (!user) return <Loader />;
@@ -2581,9 +2565,14 @@ export default function Profile() {
           {isEditing ? (
             <div className="space-y-4">
               <Input
-                label="Name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                label="First Name"
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              />
+              <Input
+                label="Last Name"
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
               />
               <div className="flex gap-2">
                 <Button variant="primary" onClick={handleSave} isLoading={isPending}>
@@ -2597,8 +2586,12 @@ export default function Profile() {
           ) : (
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Name</label>
-                <p className="text-gray-900">{user.name || '-'}</p>
+                <label className="block text-sm text-gray-600 mb-1">First Name</label>
+                <p className="text-gray-900">{user.firstName || '-'}</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Last Name</label>
+                <p className="text-gray-900">{user.lastName || '-'}</p>
               </div>
               <Button variant="secondary" onClick={() => setIsEditing(true)}>
                 Edit
