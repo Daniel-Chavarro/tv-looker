@@ -6,6 +6,7 @@ import org.tvl.tvlooker.api.dto.request.UpdateUserRequest;
 import org.tvl.tvlooker.api.dto.response.UserResponse;
 import org.tvl.tvlooker.domain.model.dto.User;
 
+
 /**
  * Mapper for converting between User DTOs and models.
  */
@@ -16,6 +17,7 @@ public class UserMapper {
                 .id(user.getId())
                 .username(user.getUsername())
                 .createdAt(user.getCreatedAt())
+
                 .authority(user.getAuthority())
                 .email(user.getEmail())
                 .name(user.getName())
@@ -33,6 +35,7 @@ public class UserMapper {
 
     public static User fromUpdateRequest(UpdateUserRequest request) {
         return User.builder()
+                .username(request.getUsername())
                 .password(request.getPassword())
                 .email(request.getEmail())
                 .name(request.getName())
