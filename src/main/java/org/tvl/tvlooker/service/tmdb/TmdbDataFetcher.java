@@ -40,6 +40,11 @@ public class TmdbDataFetcher {
             TmdbClient tmdbClient,
             @Qualifier("taskExecutor") Executor tmdbTaskExecutor,
             @Value("${tmdb.api.rate-limit:35}") double requestsPerSecond) {
+
+        if (requestsPerSecond <= 0 || requestsPerSecond > 40) {
+            throw new IllegalArgumentException("requestsPerSecond must be between 0 and 40.");
+        }
+
         this.tmdbClient = tmdbClient;
         this.tmdbTaskExecutor = tmdbTaskExecutor;
         // Set to 35 req/s for safety margin (TMDB hard limit is 40)
@@ -90,16 +95,13 @@ public class TmdbDataFetcher {
     public List<TmdbMovieDetailsDto> fetchMoviesBatch(List<Long> tmdbIds) {
         log.debug("Fetching {} movies in parallel batch", tmdbIds.size());
 
-        // Create async futures for each ID
         List<CompletableFuture<TmdbMovieDetailsDto>> futures = tmdbIds.stream()
                 .map(this::fetchMovieDetailsAsync)
                 .toList();
 
-        // Wait for all futures to complete
         CompletableFuture<Void> allOf = CompletableFuture.allOf(
                 futures.toArray(new CompletableFuture[0]));
 
-        // Join results and filter out nulls
         return allOf.thenApply(v -> futures.stream()
                         .map(CompletableFuture::join)
                         .filter(Objects::nonNull)
