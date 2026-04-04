@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,7 @@ import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -126,14 +128,16 @@ public class ItemEntity {
     private Set<DirectorEntity> directors;
 
     /**
-     * The actors associated with the item, represented as a many-to-many relationship with the Actor entity.
-     * This field is lazily loaded and uses a join table named "actors_items" to link items and actors.
+     * The actors associated with this item, including character names and billing order.
+     * This replaces the simple @ManyToMany relationship to capture additional metadata.
+     * <p>
+     * Uses @OneToMany with orphanRemoval to ensure ActorItems are deleted when removed from the set.
      */
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "actors_items",
-            joinColumns = @JoinColumn(name = "item_id_fk"),
-            inverseJoinColumns = @JoinColumn(name = "actor_id_fk")
+    @OneToMany(
+            mappedBy = "item",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
-    private Set<ActorEntity> actors;
+    private Set<ActorItemEntity> actorItems = new HashSet<>();
 }
