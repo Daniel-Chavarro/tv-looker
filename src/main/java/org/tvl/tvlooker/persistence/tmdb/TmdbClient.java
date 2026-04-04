@@ -9,8 +9,10 @@ import org.springframework.web.client.RestClient;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 
 
@@ -106,6 +108,22 @@ public class TmdbClient {
                 .body(new ParameterizedTypeReference<>() {});
     }
 
+    /**
+     * GET /movie/{id}?append_to_response=credits
+     * Fetches movie details with credits in a single API call.
+     *
+     * @param movieId the TMDB movie ID
+     * @return movie details DTO with appended credits
+     */
+    public TmdbMovieDetailsDto getMovieDetailsWithCredits(long movieId) {
+        LOGGER.debug("Fetching movie details + credits for ID {}", movieId);
+        return restClient.get()
+                .uri("/movie/{id}?language={lang}&append_to_response=credits",
+                        movieId, language)
+                .retrieve()
+                .body(TmdbMovieDetailsDto.class);
+    }
+
     // ===================== TV SHOWS =====================
 
     /**
@@ -166,6 +184,22 @@ public class TmdbClient {
                         startDate, endDate, page)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
+    }
+
+    /**
+     * GET /tv/{id}?append_to_response=credits
+     * Fetches TV show details with credits in a single API call.
+     *
+     * @param tvShowId the TMDB TV show ID
+     * @return TV show details DTO with appended credits
+     */
+    public TmdbTvShowDetailsDto getTvShowDetailsWithCredits(long tvShowId) {
+        LOGGER.debug("Fetching TV show details + credits for ID {}", tvShowId);
+        return restClient.get()
+                .uri("/tv/{id}?language={lang}&append_to_response=credits",
+                        tvShowId, language)
+                .retrieve()
+                .body(TmdbTvShowDetailsDto.class);
     }
 
     // ===================== GENRES =====================
