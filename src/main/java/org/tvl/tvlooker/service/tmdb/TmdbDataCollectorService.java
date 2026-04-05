@@ -14,7 +14,6 @@ import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
-import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
@@ -62,7 +61,6 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class TmdbDataCollectorService {
-    private final TmdbClient tmdbClient;
     private final ItemRepository itemRepository;
     private final GenreRepository genreRepository;
     private final TmdbDataFetcher dataFetcher;
@@ -78,12 +76,10 @@ public class TmdbDataCollectorService {
     private int batchSize;
 
     public TmdbDataCollectorService(
-            TmdbClient tmdbClient,
             ItemRepository itemRepository,
             GenreRepository genreRepository,
             TmdbDataFetcher dataFetcher,
             EntityCacheService entityCacheService) {
-        this.tmdbClient = tmdbClient;
         this.itemRepository = itemRepository;
         this.genreRepository = genreRepository;
         this.dataFetcher = dataFetcher;
@@ -181,8 +177,11 @@ public class TmdbDataCollectorService {
     public void collectGenres() {
         log.info("Collecting genres...");
 
-        TmdbGenreListDto movieGenres = tmdbClient.getGenres(TmdbMediaType.MOVIE);
-        TmdbGenreListDto tvGenres = tmdbClient.getGenres(TmdbMediaType.TV);
+        CompletableFuture<TmdbGenreListDto> movieGenresFuture = dataFetcher.fetchGenresAsync(TmdbMediaType.MOVIE);
+        CompletableFuture<TmdbGenreListDto> tvGenresFuture = dataFetcher.fetchGenresAsync(TmdbMediaType.TV);
+
+        TmdbGenreListDto movieGenres = movieGenresFuture.join();
+        TmdbGenreListDto tvGenres = tvGenresFuture.join();
 
         Set<Integer> seen = new HashSet<>();
         int count = 0;
@@ -211,7 +210,7 @@ public class TmdbDataCollectorService {
         int skipped = 0;
 
         for (int page = 1; page <= maxPages; page++) {
-            TmdbPagedResponseDto<TmdbMovieDto> response = tmdbClient.getPopular(TmdbMediaType.MOVIE, page);
+            TmdbPagedResponseDto<TmdbMovieDto> response = dataFetcher.fetchPopularMoviesAsync(page).join();
 
             if (response == null || response.results() == null || response.results().isEmpty()) {
                 break;
@@ -238,7 +237,7 @@ public class TmdbDataCollectorService {
         log.info("Fetched {} movie IDs (skipped {}), now batch fetching details...", movieIds.size(), skipped);
 
         // Batch fetch all movie details with credits in parallel
-        List<TmdbMovieDetailsDto> movieDetails = dataFetcher.fetchMoviesBatch(movieIds);
+        List<TmdbMovieDetailsDto> movieDetails = dataFetcher.fetchMoviesDetailsBatch(movieIds);
         log.info("Fetched details for {} movies, now building and persisting...", movieDetails.size());
 
         // Batch persist in chunks
@@ -259,7 +258,7 @@ public class TmdbDataCollectorService {
         int skipped = 0;
 
         for (int page = 1; page <= maxPages; page++) {
-            TmdbPagedResponseDto<TmdbTvShowDto> response = tmdbClient.getPopular(TmdbMediaType.TV, page);
+            TmdbPagedResponseDto<TmdbTvShowDto> response = dataFetcher.fetchPopularTvShowsAsync(page).join();
 
             if (response == null || response.results() == null || response.results().isEmpty()) {
                 break;
@@ -286,7 +285,7 @@ public class TmdbDataCollectorService {
         log.info("Fetched {} TV show IDs (skipped {}), now batch fetching details...", tvShowIds.size(), skipped);
 
         // Batch fetch all TV show details with credits in parallel
-        List<TmdbTvShowDetailsDto> tvShowDetails = dataFetcher.fetchTvShowsBatch(tvShowIds);
+        List<TmdbTvShowDetailsDto> tvShowDetails = dataFetcher.fetchTvShowsDetailsBatch(tvShowIds);
         log.info("Fetched details for {} TV shows, now building and persisting...", tvShowDetails.size());
 
         // Batch persist in chunks
