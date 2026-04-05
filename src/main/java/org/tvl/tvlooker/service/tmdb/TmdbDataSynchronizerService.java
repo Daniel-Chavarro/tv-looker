@@ -144,7 +144,7 @@ public class TmdbDataSynchronizerService {
                         TmdbMediaDetails details = futures.get(i).join();
                         Optional<ItemEntity> existing = itemRepository.findByTmdbIdAndTmdbType(tmdbId, type);
                         if (existing.isPresent() && details != null) {
-                            updateExistingItem(existing.get(), details);
+                            persistenceService.updateItem(existing.get(), details);
                             updatedCount++;
                         }
                     } catch (Exception e) {
@@ -188,72 +188,23 @@ public class TmdbDataSynchronizerService {
     }
 
     private int discoverNewMovies(int page) {
-        int count = 0;
         TmdbPagedResponseDto<TmdbMovieDto> response = fetcher.fetchPopularMoviesAsync(page).join();
 
-        if (response != null && response.results() != null) {
-            for (TmdbMovieDto movie : response.results()) {
-                if (!itemRepository.existsByTmdbIdAndTmdbType(movie.id(), TmdbType.MOVIE)) {
-                    try {
-                        persistenceService.persistMovie(movie);
-                        count++;
-                    } catch (Exception e) {
-                        log.warn("Failed to add new movie '{}': {}", movie.title(), e.getMessage());
-                    }
-                }
-            }
+        if (response == null || response.results() == null) {
+            return 0;
         }
-        return count;
+
+        return persistenceService.discoverAndPersistNewMovies(response.results());
     }
 
     private int discoverNewTvShows(int page) {
-        int count = 0;
         TmdbPagedResponseDto<TmdbTvShowDto> response = fetcher.fetchPopularTvShowsAsync(page).join();
 
-        if (response != null && response.results() != null) {
-            for (TmdbTvShowDto tvShow : response.results()) {
-                if (!itemRepository.existsByTmdbIdAndTmdbType(tvShow.id(), TmdbType.TV)) {
-                    try {
-                        persistenceService.persistTvShow(tvShow);
-                        count++;
-                    } catch (Exception e) {
-                        log.warn("Failed to add new TV show '{}': {}", tvShow.name(), e.getMessage());
-                    }
-                }
-            }
-        }
-        return count;
-    }
-
-    // ===================== UPDATE / PERSIST HELPERS =====================
-
-    /**
-     * Re-fetches details and credits from TMDB and updates an existing item.
-     */
-    @Transactional
-    protected void updateExistingItem(ItemEntity item, Object details) {
-        if (details instanceof TmdbMovieDetailsDto movieDetails) {
-            TmdbItemMapper.updateFromMovie(item, movieDetails);
-            if (movieDetails.genres() != null) {
-                item.setGenres(persistenceService.mapGenres(movieDetails.genres()));
-            }
-            if (movieDetails.credits() != null) {
-                item.setActorItems(persistenceService.mapActors(movieDetails.credits()));
-                item.setDirectors(persistenceService.mapDirectors(movieDetails.credits()));
-            }
-        } else if (details instanceof TmdbTvShowDetailsDto tvDetails) {
-            TmdbItemMapper.updateFromTvShow(item, tvDetails);
-            if (tvDetails.genres() != null) {
-                item.setGenres(persistenceService.mapGenres(tvDetails.genres()));
-            }
-            if (tvDetails.credits() != null) {
-                item.setActorItems(persistenceService.mapActors(tvDetails.credits()));
-                item.setDirectors(persistenceService.mapDirectors(tvDetails.credits()));
-            }
+        if (response == null || response.results() == null) {
+            return 0;
         }
 
-        itemRepository.save(item);
-        log.debug("Updated item '{}' (tmdbId={})", item.getTitle(), item.getTmdbId());
+        return persistenceService.discoverAndPersistNewTvShows(response.results());
     }
 }
 
