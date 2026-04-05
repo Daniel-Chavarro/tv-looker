@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.model.Actor;
 import org.tvl.tvlooker.domain.exception.ActorNotFoundException;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
-import org.tvl.tvlooker.persistence.mapper.ActorEntityMapper;
+import org.tvl.tvlooker.domain.model.mapper.ActorEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 
 import java.util.List;

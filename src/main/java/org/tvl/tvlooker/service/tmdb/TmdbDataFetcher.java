@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 
@@ -17,10 +19,10 @@ import java.util.concurrent.Executor;
 
 /**
  * Handles fetching TMDB data in parallel while respecting rate limits.
- *
+ * <p>
  * Uses Google's RateLimiter to ensure we never exceed TMDB's 40 req/s limit.
  * All API calls are made asynchronously in a thread pool.
- *
+ * <p>
  * Key Innovation: Leverages append_to_response parameter to combine multiple
  * API calls (details + credits) into a single request.
  *

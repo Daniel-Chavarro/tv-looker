@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.GenreNotFoundException;
 import org.tvl.tvlooker.domain.model.Genre;
 import org.tvl.tvlooker.domain.model.entity.GenreEntity;
-import org.tvl.tvlooker.persistence.mapper.GenreEntityMapper;
+import org.tvl.tvlooker.domain.model.mapper.GenreEntityMapper;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 
 import java.util.List;

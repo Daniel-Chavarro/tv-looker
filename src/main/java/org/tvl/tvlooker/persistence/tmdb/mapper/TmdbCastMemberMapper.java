@@ -14,9 +14,9 @@ import org.tvl.tvlooker.persistence.repository.DirectorRepository;
  * @version 1.0
  * @since 2026-03-10
  */
-public final class TmdbPersonMapper {
+public final class TmdbCastMemberMapper {
 
-    private TmdbPersonMapper() {
+    private TmdbCastMemberMapper() {
         // Utility class
     }
 
@@ -27,14 +27,13 @@ public final class TmdbPersonMapper {
      * @param repository the actor repository
      * @return the existing or newly created Actor entity
      */
+    @Deprecated(forRemoval = true)
     public static ActorEntity findOrCreateActor(
             TmdbCreditsDto.CastMember castMember,
             ActorRepository repository) {
         return repository.findByTmdbId(castMember.id())
                 .orElseGet(() -> {
-                    ActorEntity actor = new ActorEntity();
-                    actor.setTmdbId(castMember.id());
-                    actor.setName(castMember.name());
+                    ActorEntity actor = toEntity(castMember);
                     return repository.save(actor);
                 });
     }
@@ -47,16 +46,39 @@ public final class TmdbPersonMapper {
      * @param repository the director repository
      * @return the existing or newly created Director entity
      */
+    @Deprecated(forRemoval = true)
     public static DirectorEntity findOrCreateDirector(
             TmdbCreditsDto.CrewMember crewMember,
             DirectorRepository repository) {
         return repository.findByTmdbId(crewMember.id())
                 .orElseGet(() -> {
-                    DirectorEntity director = new DirectorEntity();
-                    director.setTmdbId(crewMember.id());
-                    director.setName(crewMember.name());
+                    DirectorEntity director = toEntity(crewMember);
                     return repository.save(director);
                 });
+    }
+
+    /**
+     * Converts a TMDB cast member DTO to an Actor JPA entity.
+     * @param castMember the TMDB cast member DTO
+     * @return the Actor entity
+     */
+    public static ActorEntity toEntity(TmdbCreditsDto.CastMember castMember) {
+        ActorEntity actor = new ActorEntity();
+        actor.setTmdbId(castMember.id());
+        actor.setName(castMember.name());
+        return actor;
+    }
+
+    /**
+     * Converts a TMDB crew member DTO to a Director JPA entity.
+     * @param crewMember the TMDB crew member DTO (should have job="Director")
+     * @return the Director entity
+     */
+    public static DirectorEntity toEntity(TmdbCreditsDto.CrewMember crewMember) {
+        DirectorEntity director = new DirectorEntity();
+        director.setTmdbId(crewMember.id());
+        director.setName(crewMember.name());
+        return director;
     }
 }
 

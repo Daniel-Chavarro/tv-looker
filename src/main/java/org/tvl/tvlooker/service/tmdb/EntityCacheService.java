@@ -11,6 +11,8 @@ import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
+import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbCastMemberMapper;
+import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
 
 
 import java.util.List;
@@ -89,10 +91,7 @@ public class EntityCacheService {
         if (!missingIds.isEmpty()) {
             List<ActorEntity> newActors = castMembers.stream()
                     .filter(cast -> missingIds.contains(cast.id()))
-                    .map(cast -> ActorEntity.builder()
-                            .tmdbId(cast.id())
-                            .name(cast.name())
-                            .build())
+                    .map(TmdbCastMemberMapper::toEntity)
                     .toList();
 
             List<ActorEntity> saved = actorRepository.saveAll(newActors);
@@ -144,10 +143,7 @@ public class EntityCacheService {
         if (!missingIds.isEmpty()) {
             List<DirectorEntity> newDirectors = directors.stream()
                     .filter(crew -> missingIds.contains(crew.id()))
-                    .map(crew -> DirectorEntity.builder()
-                            .tmdbId(crew.id())
-                            .name(crew.name())
-                            .build())
+                    .map(TmdbCastMemberMapper::toEntity)
                     .toList();
 
             List<DirectorEntity> saved = directorRepository.saveAll(newDirectors);
@@ -190,10 +186,7 @@ public class EntityCacheService {
         if (!missingIds.isEmpty()) {
             List<GenreEntity> newGenres = genreDtos.stream()
                     .filter(g -> missingIds.contains((long) g.id()))
-                    .map(g -> GenreEntity.builder()
-                            .tmdbId((long) g.id())
-                            .name(g.name())
-                            .build())
+                    .map(TmdbGenreMapper::toEntity)
                     .toList();
 
             List<GenreEntity> saved = genreRepository.saveAll(newGenres);

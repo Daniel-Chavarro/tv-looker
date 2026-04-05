@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.DirectorNotFoundException;
 import org.tvl.tvlooker.domain.model.Director;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
-import org.tvl.tvlooker.persistence.mapper.DirectorEntityMapper;
+import org.tvl.tvlooker.domain.model.mapper.DirectorEntityMapper;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 
 import java.util.List;

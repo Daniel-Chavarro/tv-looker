@@ -3,7 +3,7 @@ package org.tvl.tvlooker.service;
 import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.exception.ItemNotFoundException;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
-import org.tvl.tvlooker.persistence.mapper.ItemEntityMapper;
+import org.tvl.tvlooker.domain.model.mapper.ItemEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -76,7 +76,7 @@ public class ItemService {
             updateField(update.getTitle(), actual::setTitle);
             updateField(update.getGenres(), actual::setGenres);
             updateField(update.getDirectors(), actual::setDirectors);
-            updateField(update.getActors(), actual::setActors);
+            updateField(update.getActorItems(), actual::setActorItems);
             updateField(update.getTmdbId(), actual::setTmdbId);
             updateField(update.getTmdbType(), actual::setTmdbType);
             updateField(update.getOverview(), actual::setOverview);

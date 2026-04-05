@@ -14,9 +14,6 @@ import org.tvl.tvlooker.domain.model.Item;
 import org.tvl.tvlooker.domain.model.entity.ReviewEntity;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
-import org.tvl.tvlooker.persistence.mapper.ReviewEntityMapper;
-import org.tvl.tvlooker.persistence.mapper.UserEntityMapper;
-import org.tvl.tvlooker.persistence.mapper.ItemEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ReviewRepository;
 
 import java.util.List;

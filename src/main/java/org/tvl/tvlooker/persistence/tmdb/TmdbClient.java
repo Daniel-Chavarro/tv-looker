@@ -82,6 +82,7 @@ public class TmdbClient {
      * @param movieId the TMDB movie ID
      * @return credits DTO with cast and crew lists
      */
+    @Deprecated
     public TmdbCreditsDto getMovieCredits(long movieId) {
         LOGGER.debug("Fetching movie credits for ID {}", movieId);
         return restClient.get()
@@ -160,6 +161,7 @@ public class TmdbClient {
      * @param tvShowId the TMDB TV show ID
      * @return credits DTO with cast and crew lists
      */
+    @Deprecated
     public TmdbCreditsDto getTvShowCredits(long tvShowId) {
         LOGGER.debug("Fetching TV show credits for ID {}", tvShowId);
         return restClient.get()

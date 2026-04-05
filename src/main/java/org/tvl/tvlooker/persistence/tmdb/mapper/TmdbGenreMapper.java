@@ -24,14 +24,26 @@ public final class TmdbGenreMapper {
      * @param repository the genre repository
      * @return the existing or newly created Genre entity
      */
+    @Deprecated
     public static GenreEntity findOrCreate(TmdbGenreDto dto, GenreRepository repository) {
         return repository.findByTmdbId((long) dto.id())
                 .orElseGet(() -> {
-                    GenreEntity genre = new GenreEntity();
-                    genre.setTmdbId((long) dto.id());
-                    genre.setName(dto.name());
+                    GenreEntity genre = toEntity(dto);
                     return repository.save(genre);
                 });
+    }
+
+    /**
+     * Converts a TMDB genre DTO to a Genre JPA entity.
+     *
+     * @param dto the TMDB genre DTO
+     * @return the Genre entity
+     */
+    public static GenreEntity toEntity(TmdbGenreDto dto) {
+        GenreEntity genre = new GenreEntity();
+        genre.setTmdbId((long) dto.id());
+        genre.setName(dto.name());
+        return genre;
     }
 }
 

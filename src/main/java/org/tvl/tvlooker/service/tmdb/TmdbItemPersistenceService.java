@@ -19,7 +19,7 @@ import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemMapper;
-import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbPersonMapper;
+import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbCastMemberMapper;
 
 import java.util.HashSet;
 import java.util.List;
@@ -75,10 +75,14 @@ public class TmdbItemPersistenceService {
 
     /**
      * Persists a new movie with its genres, actors, and directors.
+     * WARNING: This uses the OLD single-item persistence approach.
+     * New code should use TmdbDataCollectorService.persistMoviesBatch() instead.
      *
      * @param movieDto the TMDB movie data transfer object
+     * @deprecated Use persistMoviesBatch() for better performance
      */
     @Transactional
+    @Deprecated(forRemoval = true)
     public void persistMovie(TmdbMovieDto movieDto) {
         ItemEntity item = TmdbItemMapper.fromMovie(movieDto);
 
@@ -93,7 +97,9 @@ public class TmdbItemPersistenceService {
         TmdbCreditsDto credits = tmdbClient.getMovieCredits(movieDto.id());
         throttle();
         if (credits != null) {
-            item.setActors(mapActors(credits));
+            // Note: OLD approach - now we use actorItems instead of a simple actors set
+            // For backward compatibility, we'll create ActorItemEntity objects
+            mapActorsToActorItems(item, credits);
             item.setDirectors(mapDirectors(credits));
         }
 
@@ -103,10 +109,14 @@ public class TmdbItemPersistenceService {
 
     /**
      * Persists a new TV show with its genres, actors, and directors.
+     * WARNING: This uses the OLD single-item persistence approach.
+     * New code should use TmdbDataCollectorService.persistTvShowsBatch() instead.
      *
      * @param tvDto the TMDB TV show data transfer object
+     * @deprecated Use persistTvShowsBatch() for better performance
      */
     @Transactional
+    @Deprecated(forRemoval = true)
     public void persistTvShow(TmdbTvShowDto tvDto) {
         ItemEntity item = TmdbItemMapper.fromTvShow(tvDto);
 
@@ -119,7 +129,8 @@ public class TmdbItemPersistenceService {
         TmdbCreditsDto credits = tmdbClient.getTvShowCredits(tvDto.id());
         throttle();
         if (credits != null) {
-            item.setActors(mapActors(credits));
+            // Note: OLD approach - now we use actorItems instead of a simple actors set
+            mapActorsToActorItems(item, credits);
             item.setDirectors(mapDirectors(credits));
         }
 
@@ -158,7 +169,7 @@ public class TmdbItemPersistenceService {
                     .sorted((a, b) -> Integer.compare(a.order(), b.order()))
                     .limit(MAX_ACTORS_PER_ITEM)
                     .forEach(c -> actors.add(
-                            TmdbPersonMapper.findOrCreateActor(c, actorRepository)));
+                            TmdbCastMemberMapper.findOrCreateActor(c, actorRepository)));
         }
         return actors;
     }
@@ -176,7 +187,7 @@ public class TmdbItemPersistenceService {
             credits.crew().stream()
                     .filter(c -> "Director".equalsIgnoreCase(c.job()))
                     .forEach(c -> directors.add(
-                            TmdbPersonMapper.findOrCreateDirector(c, directorRepository)));
+                            TmdbCastMemberMapper.findOrCreateDirector(c, directorRepository)));
         }
         return directors;
     }

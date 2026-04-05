@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
 import org.tvl.tvlooker.domain.model.User;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
-import org.tvl.tvlooker.persistence.mapper.UserEntityMapper;
+import org.tvl.tvlooker.domain.model.mapper.UserEntityMapper;
 import org.tvl.tvlooker.persistence.repository.UserRepository;
 
 import java.util.List;

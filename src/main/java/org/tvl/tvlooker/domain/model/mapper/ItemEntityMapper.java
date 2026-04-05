@@ -1,4 +1,4 @@
-package org.tvl.tvlooker.persistence.mapper;
+package org.tvl.tvlooker.domain.model.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -41,9 +41,9 @@ public class    ItemEntityMapper {
                         .map(DirectorEntityMapper::toDomain)
                         .collect(Collectors.toSet()) :
                         null)
-                .actors(entity.getActors() != null
-                        ? entity.getActors().stream()
-                        .map(ActorEntityMapper::toDomain)
+                .actors(entity.getActorItems() != null
+                        ? entity.getActorItems().stream()
+                        .map(ai -> ActorEntityMapper.toDomain(ai.getActor()))
                         .collect(Collectors.toSet())
                         : null)
                 .build();
@@ -52,6 +52,7 @@ public class    ItemEntityMapper {
     // Note: We only map the user ID to avoid loading the entire UserEntity, which can be expensive.
     /**
      * Converts an Item domain model to an ItemEntity JPA entity.
+     * NOTE: The 'actors' field is now stored in 'actorItems' join entity and is handled separately.
      *
      * @param domain the domain model
      * @return the JPA entity
@@ -77,11 +78,7 @@ public class    ItemEntityMapper {
                         .map(DirectorEntityMapper::toEntity)
                         .collect(Collectors.toSet())
                         : null)
-                .actors(domain.getActors() != null
-                        ? domain.getActors().stream()
-                        .map(ActorEntityMapper::toEntity)
-                        .collect(Collectors.toSet())
-                        : null)
+                // Note: actors are now in actorItems, not set here
                 .build();
     }
 }
