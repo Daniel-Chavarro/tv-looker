@@ -11,17 +11,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
-import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaDetails;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemMapper;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Periodically synchronizes TMDB data with the local database.
@@ -47,7 +51,7 @@ import java.util.Optional;
 @Profile("!test")
 public class TmdbDataSynchronizerService {
 
-    private final TmdbClient tmdbClient;
+    private final TmdbDataFetcher fetcher;
     private final ItemRepository itemRepository;
     private final TmdbItemPersistenceService persistenceService;
 
@@ -58,10 +62,10 @@ public class TmdbDataSynchronizerService {
     private LocalDate lastSyncDate = LocalDate.now().minusDays(1);
 
     public TmdbDataSynchronizerService(
-            TmdbClient tmdbClient,
+            TmdbDataFetcher fetcher,
             ItemRepository itemRepository,
             TmdbItemPersistenceService persistenceService) {
-        this.tmdbClient = tmdbClient;
+        this.fetcher = fetcher;
         this.itemRepository = itemRepository;
         this.persistenceService = persistenceService;
     }
@@ -110,12 +114,11 @@ public class TmdbDataSynchronizerService {
         int updatedCount = 0;
         int page = 1;
         int totalPages = 1;
+        TmdbMediaType mediaType = type == TmdbType.MOVIE ? TmdbMediaType.MOVIE : TmdbMediaType.TV;
 
         while (page <= totalPages) {
-            TmdbPagedResponseDto<TmdbChangesDto> changes = tmdbClient.getChanges(
-                    type == TmdbType.MOVIE ? TmdbMediaType.MOVIE : TmdbMediaType.TV,
-                    startDate, endDate, page);
-            persistenceService.throttle();
+            TmdbPagedResponseDto<TmdbChangesDto> changes = fetcher.fetchChangesAsync(
+                    mediaType, startDate, endDate, page).join();
             
             if (changes == null || changes.results() == null) {
                 break;
@@ -123,18 +126,30 @@ public class TmdbDataSynchronizerService {
 
             totalPages = changes.totalPages();
 
-            for (TmdbChangesDto change : changes.results()) {
-                try {
-                    Optional<ItemEntity> existing = itemRepository.findByTmdbIdAndTmdbType(
-                            change.id(), type);
+            List<Long> existingIds = changes.results().stream()
+                .filter(change -> itemRepository.findByTmdbIdAndTmdbType(change.id(), type).isPresent())
+                .map(TmdbChangesDto::id)
+                .toList();
 
-                    if (existing.isPresent()) {
-                        updateExistingItem(existing.get(), type);
-                        updatedCount++;
+            if (!existingIds.isEmpty()) {
+                List<CompletableFuture<TmdbMediaDetails>> futures = existingIds.stream()
+                    .map(id -> fetcher.fetchDetailsWithCreditsAsync(mediaType, id))
+                    .toList();
+
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+                for (int i = 0; i < existingIds.size(); i++) {
+                    long tmdbId = existingIds.get(i);
+                    try {
+                        TmdbMediaDetails details = futures.get(i).join();
+                        Optional<ItemEntity> existing = itemRepository.findByTmdbIdAndTmdbType(tmdbId, type);
+                        if (existing.isPresent() && details != null) {
+                            updateExistingItem(existing.get(), details);
+                            updatedCount++;
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to sync {} (tmdbId={}): {}", type, tmdbId, e.getMessage());
                     }
-                } catch (Exception e) {
-                    log.warn("Failed to sync {} (tmdbId={}): {}",
-                            type, change.id(), e.getMessage());
                 }
             }
 
@@ -174,8 +189,7 @@ public class TmdbDataSynchronizerService {
 
     private int discoverNewMovies(int page) {
         int count = 0;
-        TmdbPagedResponseDto<TmdbMovieDto> response = tmdbClient.getPopular(TmdbMediaType.MOVIE, page);
-        persistenceService.throttle();
+        TmdbPagedResponseDto<TmdbMovieDto> response = fetcher.fetchPopularMoviesAsync(page).join();
 
         if (response != null && response.results() != null) {
             for (TmdbMovieDto movie : response.results()) {
@@ -194,8 +208,7 @@ public class TmdbDataSynchronizerService {
 
     private int discoverNewTvShows(int page) {
         int count = 0;
-        TmdbPagedResponseDto<TmdbTvShowDto> response = tmdbClient.getPopular(TmdbMediaType.TV, page);
-        persistenceService.throttle();
+        TmdbPagedResponseDto<TmdbTvShowDto> response = fetcher.fetchPopularTvShowsAsync(page).join();
 
         if (response != null && response.results() != null) {
             for (TmdbTvShowDto tvShow : response.results()) {
@@ -218,43 +231,29 @@ public class TmdbDataSynchronizerService {
      * Re-fetches details and credits from TMDB and updates an existing item.
      */
     @Transactional
-    protected void updateExistingItem(ItemEntity item, TmdbType type) {
-        if (type == TmdbType.MOVIE) {
-            TmdbMovieDto details = tmdbClient.getMovieDetails(item.getTmdbId());
-            persistenceService.throttle();
-            if (details != null) {
-                TmdbItemMapper.updateFromMovie(item, details);
-                if (details.genres() != null) {
-                    item.setGenres(persistenceService.mapGenres(details.genres()));
-                }
+    protected void updateExistingItem(ItemEntity item, Object details) {
+        if (details instanceof TmdbMovieDetailsDto movieDetails) {
+            TmdbItemMapper.updateFromMovie(item, movieDetails);
+            if (movieDetails.genres() != null) {
+                item.setGenres(persistenceService.mapGenres(movieDetails.genres()));
             }
-
-            TmdbCreditsDto credits = tmdbClient.getMovieCredits(item.getTmdbId());
-            persistenceService.throttle();
-            if (credits != null) {
-                item.setActorItems(persistenceService.mapActors(credits));
-                item.setDirectors(persistenceService.mapDirectors(credits));
+            if (movieDetails.credits() != null) {
+                item.setActorItems(persistenceService.mapActors(movieDetails.credits()));
+                item.setDirectors(persistenceService.mapDirectors(movieDetails.credits()));
             }
-        } else {
-            TmdbTvShowDto details = tmdbClient.getTvShowDetails(item.getTmdbId());
-            persistenceService.throttle();
-            if (details != null) {
-                TmdbItemMapper.updateFromTvShow(item, details);
-                if (details.genres() != null) {
-                    item.setGenres(persistenceService.mapGenres(details.genres()));
-                }
+        } else if (details instanceof TmdbTvShowDetailsDto tvDetails) {
+            TmdbItemMapper.updateFromTvShow(item, tvDetails);
+            if (tvDetails.genres() != null) {
+                item.setGenres(persistenceService.mapGenres(tvDetails.genres()));
             }
-
-            TmdbCreditsDto credits = tmdbClient.getTvShowCredits(item.getTmdbId());
-            persistenceService.throttle();
-            if (credits != null) {
-                item.setActorItems(persistenceService.mapActors(credits));
-                item.setDirectors(persistenceService.mapDirectors(credits));
+            if (tvDetails.credits() != null) {
+                item.setActorItems(persistenceService.mapActors(tvDetails.credits()));
+                item.setDirectors(persistenceService.mapDirectors(tvDetails.credits()));
             }
         }
 
         itemRepository.save(item);
-        log.debug("Updated {} '{}' (tmdbId={})", type, item.getTitle(), item.getTmdbId());
+        log.debug("Updated item '{}' (tmdbId={})", item.getTitle(), item.getTmdbId());
     }
 }
 
