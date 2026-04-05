@@ -11,7 +11,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
-import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
@@ -21,6 +20,7 @@ import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.*;
 class TmdbDataSynchronizerServiceTest {
 
     @Mock
-    private TmdbClient tmdbClient;
+    private TmdbDataFetcher fetcher;
 
     @Mock
     private ItemRepository itemRepository;
@@ -70,10 +70,10 @@ class TmdbDataSynchronizerServiceTest {
                 1
         );
 
-        when(tmdbClient.getChanges(eq(TmdbMediaType.MOVIE), eq(startDate), any(LocalDate.class), eq(1)))
-                .thenReturn(movieChanges);
-        when(tmdbClient.getChanges(eq(TmdbMediaType.TV), eq(startDate), any(LocalDate.class), eq(1)))
-                .thenReturn(tvChanges);
+        when(fetcher.fetchChangesAsync(eq(TmdbMediaType.MOVIE), eq(startDate), any(LocalDate.class), eq(1)))
+                .thenReturn(CompletableFuture.completedFuture(movieChanges));
+        when(fetcher.fetchChangesAsync(eq(TmdbMediaType.TV), eq(startDate), any(LocalDate.class), eq(1)))
+                .thenReturn(CompletableFuture.completedFuture(tvChanges));
 
         ItemEntity existingMovie = new ItemEntity();
         existingMovie.setTmdbId(100L);
@@ -88,11 +88,6 @@ class TmdbDataSynchronizerServiceTest {
                 .thenReturn(Optional.of(existingMovie));
         when(itemRepository.findByTmdbIdAndTmdbType(200L, TmdbType.TV))
                 .thenReturn(Optional.of(existingTvShow));
-
-        when(tmdbClient.getMovieDetails(100L)).thenReturn(null);
-        when(tmdbClient.getMovieCredits(100L)).thenReturn(null);
-        when(tmdbClient.getTvShowDetails(200L)).thenReturn(null);
-        when(tmdbClient.getTvShowCredits(200L)).thenReturn(null);
 
         TmdbMovieDto newMovie = new TmdbMovieDto(
                 300L,
@@ -132,8 +127,8 @@ class TmdbDataSynchronizerServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopular(TmdbMediaType.MOVIE, 1)).thenReturn(popularMovies);
-        when(tmdbClient.getPopular(TmdbMediaType.TV, 1)).thenReturn(popularTvShows);
+        when(fetcher.fetchPopularMoviesAsync(1)).thenReturn(CompletableFuture.completedFuture(popularMovies));
+        when(fetcher.fetchPopularTvShowsAsync(1)).thenReturn(CompletableFuture.completedFuture(popularTvShows));
         when(itemRepository.existsByTmdbIdAndTmdbType(300L, TmdbType.MOVIE)).thenReturn(false);
         when(itemRepository.existsByTmdbIdAndTmdbType(400L, TmdbType.TV)).thenReturn(false);
 
@@ -142,7 +137,7 @@ class TmdbDataSynchronizerServiceTest {
 
         // Then
         ArgumentCaptor<LocalDate> endDateCaptor = ArgumentCaptor.forClass(LocalDate.class);
-        verify(tmdbClient).getChanges(eq(TmdbMediaType.MOVIE), eq(startDate), endDateCaptor.capture(), eq(1));
+        verify(fetcher).fetchChangesAsync(eq(TmdbMediaType.MOVIE), eq(startDate), endDateCaptor.capture(), eq(1));
         LocalDate endDate = endDateCaptor.getValue();
 
         assertEquals(endDate, synchronizerService.getLastSyncDate());

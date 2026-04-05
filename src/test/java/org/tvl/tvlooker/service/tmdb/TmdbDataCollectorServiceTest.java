@@ -12,7 +12,6 @@ import org.tvl.tvlooker.domain.exception.TmdbCollectionInProgressException;
 import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
-import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
@@ -20,10 +19,12 @@ import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
+import org.tvl.tvlooker.service.tmdb.EntityCacheService;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.*;
 class TmdbDataCollectorServiceTest {
 
     @Mock
-    private TmdbClient tmdbClient;
+    private TmdbDataFetcher dataFetcher;
 
     @Mock
     private ItemRepository itemRepository;
@@ -67,8 +68,8 @@ class TmdbDataCollectorServiceTest {
         TmdbGenreListDto movieGenres = new TmdbGenreListDto(List.of(actionGenre, dramaGenre));
         TmdbGenreListDto tvGenres = new TmdbGenreListDto(List.of(dramaGenre));
 
-        when(tmdbClient.getGenres(TmdbMediaType.MOVIE)).thenReturn(movieGenres);
-        when(tmdbClient.getGenres(TmdbMediaType.TV)).thenReturn(tvGenres);
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.MOVIE)).thenReturn(CompletableFuture.completedFuture(movieGenres));
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.TV)).thenReturn(CompletableFuture.completedFuture(tvGenres));
         when(genreRepository.findByTmdbId(anyLong())).thenReturn(Optional.empty());
         when(genreRepository.save(any(GenreEntity.class))).thenAnswer(invocation ->
                 invocation.getArgument(0));
@@ -77,8 +78,8 @@ class TmdbDataCollectorServiceTest {
         collectorService.collectGenres();
 
         // Then
-        verify(tmdbClient, times(1)).getGenres(TmdbMediaType.MOVIE);
-        verify(tmdbClient, times(1)).getGenres(TmdbMediaType.TV);
+        verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.MOVIE);
+        verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.TV);
         verify(genreRepository, atLeast(2)).save(any(GenreEntity.class));
     }
 
@@ -90,18 +91,21 @@ class TmdbDataCollectorServiceTest {
         TmdbGenreListDto movieGenres = new TmdbGenreListDto(List.of(actionGenre));
         TmdbGenreListDto tvGenres = new TmdbGenreListDto(List.of());
 
-        GenreEntity existingGenre = new GenreEntity(null, 28L, "Action");
+        GenreEntity existingGenre = GenreEntity.builder()
+                .tmdbId(28L)
+                .name("Action")
+                .build();
 
-        when(tmdbClient.getGenres(TmdbMediaType.MOVIE)).thenReturn(movieGenres);
-        when(tmdbClient.getGenres(TmdbMediaType.TV)).thenReturn(tvGenres);
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.MOVIE)).thenReturn(CompletableFuture.completedFuture(movieGenres));
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.TV)).thenReturn(CompletableFuture.completedFuture(tvGenres));
         when(genreRepository.findByTmdbId(28L)).thenReturn(Optional.of(existingGenre));
 
         // When
         collectorService.collectGenres();
 
         // Then
-        verify(tmdbClient, times(1)).getGenres(TmdbMediaType.MOVIE);
-        verify(tmdbClient, times(1)).getGenres(TmdbMediaType.TV);
+        verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.MOVIE);
+        verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.TV);
         verify(genreRepository, never()).save(any(GenreEntity.class));
     }
 
@@ -129,14 +133,14 @@ class TmdbDataCollectorServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopular(TmdbMediaType.MOVIE, 1)).thenReturn(response);
+        when(dataFetcher.fetchPopularMoviesAsync(1)).thenReturn(CompletableFuture.completedFuture(response));
         when(itemRepository.existsByTmdbIdAndTmdbType(123L, TmdbType.MOVIE)).thenReturn(false);
 
         // When
         collectorService.collectPopularMovies();
 
         // Then
-        verify(tmdbClient, times(1)).getPopular(TmdbMediaType.MOVIE, 1);
+        verify(dataFetcher, times(1)).fetchPopularMoviesAsync(1);
         verify(persistenceService, times(1)).persistMovie(movie);
     }
 
@@ -164,14 +168,14 @@ class TmdbDataCollectorServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopular(TmdbMediaType.TV, 1)).thenReturn(response);
+        when(dataFetcher.fetchPopularTvShowsAsync(1)).thenReturn(CompletableFuture.completedFuture(response));
         when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(false);
 
         // When
         collectorService.collectPopularTvShows();
 
         // Then
-        verify(tmdbClient, times(1)).getPopular(TmdbMediaType.TV, 1);
+        verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
         verify(persistenceService, times(1)).persistTvShow(tvShow);
     }
 
@@ -218,14 +222,14 @@ class TmdbDataCollectorServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopular(TmdbMediaType.MOVIE, 1)).thenReturn(response);
+        when(dataFetcher.fetchPopularMoviesAsync(1)).thenReturn(CompletableFuture.completedFuture(response));
         when(itemRepository.existsByTmdbIdAndTmdbType(123L, TmdbType.MOVIE)).thenReturn(true); // Already exists
 
         // When
         collectorService.collectPopularMovies();
 
         // Then
-        verify(tmdbClient, times(1)).getPopular(TmdbMediaType.MOVIE, 1);
+        verify(dataFetcher, times(1)).fetchPopularMoviesAsync(1);
         verify(persistenceService, never()).persistMovie(any());
     }
 
@@ -253,14 +257,14 @@ class TmdbDataCollectorServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopular(TmdbMediaType.TV, 1)).thenReturn(response);
+        when(dataFetcher.fetchPopularTvShowsAsync(1)).thenReturn(CompletableFuture.completedFuture(response));
         when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(true); // Already exists
 
         // When
         collectorService.collectPopularTvShows();
 
         // Then
-        verify(tmdbClient, times(1)).getPopular(TmdbMediaType.TV, 1);
+        verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
         verify(persistenceService, never()).persistTvShow(any());
     }
 
@@ -275,7 +279,7 @@ class TmdbDataCollectorServiceTest {
                 0
         );
 
-        when(tmdbClient.getPopular(TmdbMediaType.MOVIE, 1)).thenReturn(emptyResponse);
+        when(dataFetcher.fetchPopularMoviesAsync(1)).thenReturn(CompletableFuture.completedFuture(emptyResponse));
 
         // When/Then - should not throw exception
         assertDoesNotThrow(() -> collectorService.collectPopularMovies());
@@ -288,8 +292,8 @@ class TmdbDataCollectorServiceTest {
         // Given
         TmdbGenreListDto emptyGenres = new TmdbGenreListDto(List.of());
 
-        when(tmdbClient.getMovieGenres()).thenReturn(emptyGenres);
-        when(tmdbClient.getTvGenres()).thenReturn(emptyGenres);
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.MOVIE)).thenReturn(CompletableFuture.completedFuture(emptyGenres));
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.TV)).thenReturn(CompletableFuture.completedFuture(emptyGenres));
 
         // When/Then - should not throw exception
         assertDoesNotThrow(() -> collectorService.collectGenres());
