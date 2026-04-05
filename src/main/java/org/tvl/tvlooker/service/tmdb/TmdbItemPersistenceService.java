@@ -17,15 +17,23 @@ import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbCastMemberMapper;
+import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemBuilder;
+import org.tvl.tvlooker.service.EntityCacheService;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Shared service containing common TMDB item persistence and mapping operations.
@@ -53,6 +61,7 @@ public class TmdbItemPersistenceService {
     private final GenreRepository genreRepository;
     private final ActorRepository actorRepository;
     private final DirectorRepository directorRepository;
+    private final EntityCacheService entityCacheService;
 
     @Value("${tmdb.collector.request-delay-ms:40}")
     private long requestDelayMs;
@@ -65,12 +74,14 @@ public class TmdbItemPersistenceService {
             ItemRepository itemRepository,
             GenreRepository genreRepository,
             ActorRepository actorRepository,
-            DirectorRepository directorRepository) {
+            DirectorRepository directorRepository,
+            EntityCacheService entityCacheService) {
         this.tmdbClient = tmdbClient;
         this.itemRepository = itemRepository;
         this.genreRepository = genreRepository;
         this.actorRepository = actorRepository;
         this.directorRepository = directorRepository;
+        this.entityCacheService = entityCacheService;
     }
 
     // ===================== PERSISTENCE METHODS =====================
@@ -236,5 +247,91 @@ public class TmdbItemPersistenceService {
             Thread.currentThread().interrupt();
             log.warn("Throttle interrupted");
         }
+    }
+
+    @Transactional
+    public void persistMovies(List<TmdbMovieDetailsDto> movieDetails) {
+        if (movieDetails == null || movieDetails.isEmpty()) {
+            return;
+        }
+
+        Set<TmdbGenreDto> allGenres = new HashSet<>();
+        List<TmdbCreditsDto.CastMember> allCast = new ArrayList<>();
+        List<TmdbCreditsDto.CrewMember> allCrew = new ArrayList<>();
+
+        for (TmdbMovieDetailsDto movie : movieDetails) {
+            if (movie.genres() != null) {
+                allGenres.addAll(movie.genres());
+            }
+            if (movie.credits() != null) {
+                if (movie.credits().cast() != null) {
+                    allCast.addAll(movie.credits().cast());
+                }
+                if (movie.credits().crew() != null) {
+                    allCrew.addAll(movie.credits().crew());
+                }
+            }
+        }
+
+        Map<Long, GenreEntity> genreCache = entityCacheService.findOrCreateGenres(new ArrayList<>(allGenres));
+        Map<Long, ActorEntity> actorCache = entityCacheService.findOrCreateActors(allCast);
+        Map<Long, DirectorEntity> directorCache = entityCacheService.findOrCreateDirectors(allCrew);
+
+        List<ItemEntity> items = movieDetails.stream()
+                .map(details -> TmdbItemBuilder.buildFromMovieDetails(details, genreCache, actorCache, directorCache))
+                .collect(Collectors.toList());
+
+        itemRepository.saveAll(items);
+        log.info("Persisted {} movies in batch", items.size());
+    }
+
+    @Transactional
+    public void persistTvShows(List<TmdbTvShowDetailsDto> tvShowDetails) {
+        if (tvShowDetails == null || tvShowDetails.isEmpty()) {
+            return;
+        }
+
+        Set<TmdbGenreDto> allGenres = new HashSet<>();
+        List<TmdbCreditsDto.CastMember> allCast = new ArrayList<>();
+        List<TmdbCreditsDto.CrewMember> allCrew = new ArrayList<>();
+
+        for (TmdbTvShowDetailsDto tvShow : tvShowDetails) {
+            if (tvShow.genres() != null) {
+                allGenres.addAll(tvShow.genres());
+            }
+            if (tvShow.credits() != null) {
+                if (tvShow.credits().cast() != null) {
+                    allCast.addAll(tvShow.credits().cast());
+                }
+                if (tvShow.credits().crew() != null) {
+                    allCrew.addAll(tvShow.credits().crew());
+                }
+            }
+        }
+
+        Map<Long, GenreEntity> genreCache = entityCacheService.findOrCreateGenres(new ArrayList<>(allGenres));
+        Map<Long, ActorEntity> actorCache = entityCacheService.findOrCreateActors(allCast);
+        Map<Long, DirectorEntity> directorCache = entityCacheService.findOrCreateDirectors(allCrew);
+
+        List<ItemEntity> items = tvShowDetails.stream()
+                .map(details -> TmdbItemBuilder.buildFromTvShowDetails(details, genreCache, actorCache, directorCache))
+                .collect(Collectors.toList());
+
+        itemRepository.saveAll(items);
+        log.info("Persisted {} TV shows in batch", items.size());
+    }
+
+    @Transactional
+    public void persistGenres(TmdbGenreListDto genreList, Set<Integer> seen) {
+        int count = 0;
+        if (genreList != null && genreList.genres() != null) {
+            for (TmdbGenreDto dto : genreList.genres()) {
+                if (seen.add(dto.id())) {
+                    TmdbGenreMapper.findOrCreate(dto, genreRepository);
+                    count++;
+                }
+            }
+        }
+        log.info("Persisted {} genres", count);
     }
 }
