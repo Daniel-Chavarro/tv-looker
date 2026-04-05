@@ -9,6 +9,7 @@ import org.tvl.tvlooker.domain.model.entity.ActorItemEntity;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
+import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.ActorRepository;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
@@ -62,6 +63,7 @@ public class TmdbItemPersistenceService {
     private final ActorRepository actorRepository;
     private final DirectorRepository directorRepository;
     private final EntityCacheService entityCacheService;
+    private final TmdbDataFetcher fetcher;
 
     @Value("${tmdb.collector.request-delay-ms:40}")
     private long requestDelayMs;
@@ -75,13 +77,15 @@ public class TmdbItemPersistenceService {
             GenreRepository genreRepository,
             ActorRepository actorRepository,
             DirectorRepository directorRepository,
-            EntityCacheService entityCacheService) {
+            EntityCacheService entityCacheService,
+            TmdbDataFetcher fetcher) {
         this.tmdbClient = tmdbClient;
         this.itemRepository = itemRepository;
         this.genreRepository = genreRepository;
         this.actorRepository = actorRepository;
         this.directorRepository = directorRepository;
         this.entityCacheService = entityCacheService;
+        this.fetcher = fetcher;
     }
 
     // ===================== PERSISTENCE METHODS =====================
@@ -333,5 +337,75 @@ public class TmdbItemPersistenceService {
             }
         }
         log.info("Persisted {} genres", count);
+    }
+
+    @Transactional
+    public int discoverAndPersistNewMovies(List<TmdbMovieDto> movies) {
+        if (movies == null || movies.isEmpty()) {
+            return 0;
+        }
+
+        List<TmdbMovieDto> newMovies = movies.stream()
+            .filter(movie -> !itemRepository.existsByTmdbIdAndTmdbType(movie.id(), TmdbType.MOVIE))
+            .toList();
+
+        if (newMovies.isEmpty()) {
+            return 0;
+        }
+
+        List<Long> ids = newMovies.stream().map(TmdbMovieDto::id).toList();
+        List<TmdbMovieDetailsDto> details = fetcher.fetchMoviesDetailsBatch(ids);
+        
+        persistMovies(details);
+        
+        return details.size();
+    }
+
+    @Transactional
+    public int discoverAndPersistNewTvShows(List<TmdbTvShowDto> tvShows) {
+        if (tvShows == null || tvShows.isEmpty()) {
+            return 0;
+        }
+
+        List<TmdbTvShowDto> newTvShows = tvShows.stream()
+            .filter(tvShow -> !itemRepository.existsByTmdbIdAndTmdbType(tvShow.id(), TmdbType.TV))
+            .toList();
+
+        if (newTvShows.isEmpty()) {
+            return 0;
+        }
+
+        List<Long> ids = newTvShows.stream().map(TmdbTvShowDto::id).toList();
+        List<TmdbTvShowDetailsDto> details = fetcher.fetchTvShowsDetailsBatch(ids);
+        
+        persistTvShows(details);
+        
+        return details.size();
+    }
+
+    @Transactional
+    public void updateItem(ItemEntity item, Object details) {
+        if (details instanceof TmdbMovieDetailsDto movieDetails) {
+            TmdbItemMapper.updateFromMovie(item, movieDetails);
+            if (movieDetails.genres() != null) {
+                item.setGenres(mapGenres(movieDetails.genres()));
+            }
+            if (movieDetails.credits() != null) {
+                item.setActorItems(mapActors(movieDetails.credits()));
+                item.setDirectors(mapDirectors(movieDetails.credits()));
+            }
+        } else if (details instanceof TmdbTvShowDetailsDto tvDetails) {
+            TmdbItemMapper.updateFromTvShow(item, tvDetails);
+            if (tvDetails.genres() != null) {
+                item.setGenres(mapGenres(tvDetails.genres()));
+            }
+            if (tvDetails.credits() != null) {
+                item.setActorItems(mapActors(tvDetails.credits()));
+                item.setDirectors(mapDirectors(tvDetails.credits()));
+            }
+        }
+
+        itemRepository.save(item);
+        log.debug("Updated item (tmdbId={})", item.getTmdbId());
     }
 }
