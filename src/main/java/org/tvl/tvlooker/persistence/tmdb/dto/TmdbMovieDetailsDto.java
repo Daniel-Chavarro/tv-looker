@@ -25,4 +25,11 @@ public record TmdbMovieDetailsDto(
         @JsonProperty("backdrop_path") String backdropPath,
         List<TmdbGenreDto> genres,
         TmdbCreditsDto credits
-) {}
+) implements TmdbMediaDetails {
+    @Override
+    public List<Integer> genreIds() {
+        return genres() != null ? genres().stream()
+            .map(TmdbGenreDto::id)
+            .toList() : List.of();
+    }
+}
