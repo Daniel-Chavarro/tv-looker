@@ -71,7 +71,7 @@ class ItemRepositoryTest {
                 .voteAverage(new BigDecimal("8.71"))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorItems(new HashSet<>())
                 .build();
 
         // When

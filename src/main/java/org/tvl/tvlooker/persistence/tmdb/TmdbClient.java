@@ -1,5 +1,6 @@
 package org.tvl.tvlooker.persistence.tmdb;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,9 +33,8 @@ import java.time.LocalDate;
  * @since 2026-03-10
  */
 @Component
+@Slf4j
 public class TmdbClient {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TmdbClient.class);
 
     private final RestClient restClient;
     private final String language;
@@ -54,7 +54,7 @@ public class TmdbClient {
      */
     @Deprecated
     public TmdbMovieDto getMovieDetails(long movieId) {
-        LOGGER.debug("Fetching movie details for ID {}", movieId);
+        log.debug("Fetching movie details for ID {}", movieId);
         return restClient.get()
                 .uri("/movie/{id}?language={lang}", movieId, language)
                 .retrieve()
@@ -69,7 +69,7 @@ public class TmdbClient {
      */
     @Deprecated
     public TmdbCreditsDto getMovieCredits(long movieId) {
-        LOGGER.debug("Fetching movie credits for ID {}", movieId);
+        log.debug("Fetching movie credits for ID {}", movieId);
         return restClient.get()
                 .uri("/movie/{id}/credits?language={lang}", movieId, language)
                 .retrieve()
@@ -84,7 +84,7 @@ public class TmdbClient {
      */
     @Deprecated
     public TmdbTvShowDto getTvShowDetails(long tvShowId) {
-        LOGGER.debug("Fetching TV show details for ID {}", tvShowId);
+        log.debug("Fetching TV show details for ID {}", tvShowId);
         return restClient.get()
                 .uri("/tv/{id}?language={lang}", tvShowId, language)
                 .retrieve()
@@ -99,7 +99,7 @@ public class TmdbClient {
      */
     @Deprecated
     public TmdbCreditsDto getTvShowCredits(long tvShowId) {
-        LOGGER.debug("Fetching TV show credits for ID {}", tvShowId);
+        log.debug("Fetching TV show credits for ID {}", tvShowId);
         return restClient.get()
                 .uri("/tv/{id}/credits?language={lang}", tvShowId, language)
                 .retrieve()
@@ -110,7 +110,7 @@ public class TmdbClient {
 
     public <T extends TmdbMediaItem> TmdbPagedResponseDto<T> getPopular(
             TmdbMediaType type, int page) {
-        LOGGER.debug("Fetching popular {} page {}", type, page);
+        log.debug("Fetching popular {} page {}", type, page);
         return restClient.get()
                 .uri("/{type}/popular?language={lang}&page={page}",
                         type.getPath(), language, page)
@@ -120,7 +120,7 @@ public class TmdbClient {
 
     public <T extends TmdbMediaDetails> T getDetailsWithCredits(
             TmdbMediaType type, long id) {
-        LOGGER.debug("Fetching {} details + credits for ID {}", type, id);
+        log.debug("Fetching {} details + credits for ID {}", type, id);
         return restClient.get()
                 .uri("/{type}/{id}?language={lang}&append_to_response=credits",
                         type.getPath(), id, language)
@@ -130,7 +130,7 @@ public class TmdbClient {
 
     public TmdbPagedResponseDto<TmdbChangesDto> getChanges(
             TmdbMediaType type, LocalDate startDate, LocalDate endDate, int page) {
-        LOGGER.debug("Fetching {} changes from {} to {}, page {}", 
+        log.debug("Fetching {} changes from {} to {}, page {}",
                 type, startDate, endDate, page);
         return restClient.get()
                 .uri("/{type}/changes?start_date={start}&end_date={end}&page={page}",
@@ -140,7 +140,7 @@ public class TmdbClient {
     }
 
     public TmdbGenreListDto getGenres(TmdbMediaType type) {
-        LOGGER.debug("Fetching {} genres", type);
+        log.debug("Fetching {} genres", type);
         return restClient.get()
                 .uri("/{type}/genre/list?language={lang}", type.getPath(), language)
                 .retrieve()

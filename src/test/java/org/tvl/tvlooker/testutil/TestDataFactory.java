@@ -74,7 +74,7 @@ public class TestDataFactory {
                 .voteAverage(BigDecimal.valueOf(7.5))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorsInItem(new HashSet<>())
                 .build();
     }
 
@@ -93,7 +93,7 @@ public class TestDataFactory {
                 .voteAverage(BigDecimal.valueOf(voteAverage))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorsInItem(new HashSet<>())
                 .build();
     }
 

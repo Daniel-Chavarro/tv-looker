@@ -23,4 +23,5 @@ public class Item {
     private final Long tmdbId;
     private final Set<Genre> genres;
     private final Set<Director> directors;
+    private final Set<ActorItem> actorsInItem;
 }

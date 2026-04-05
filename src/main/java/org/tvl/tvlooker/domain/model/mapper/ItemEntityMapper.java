@@ -2,9 +2,12 @@ package org.tvl.tvlooker.domain.model.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.tvl.tvlooker.domain.model.dto.ActorItem;
 import org.tvl.tvlooker.domain.model.dto.Item;
+import org.tvl.tvlooker.domain.model.entity.ActorItemEntity;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -12,7 +15,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @RequiredArgsConstructor
-public class    ItemEntityMapper {
+public class ItemEntityMapper {
 
     /**
      * Converts an ItemEntity to an Item domain model.
@@ -22,6 +25,7 @@ public class    ItemEntityMapper {
      */
     public static Item toDomain(ItemEntity entity) {
         if (entity == null) {return null;}
+
         return Item.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
@@ -41,15 +45,14 @@ public class    ItemEntityMapper {
                         .map(DirectorEntityMapper::toDomain)
                         .collect(Collectors.toSet()) :
                         null)
-                .actors(entity.getActorItems() != null
+                .actorsInItem(entity.getActorItems() != null
                         ? entity.getActorItems().stream()
-                        .map(ai -> ActorEntityMapper.toDomain(ai.getActor()))
+                        .map(ActorItemEntityMapper::toDomain)
                         .collect(Collectors.toSet())
                         : null)
                 .build();
     }
 
-    // Note: We only map the user ID to avoid loading the entire UserEntity, which can be expensive.
     /**
      * Converts an Item domain model to an ItemEntity JPA entity.
      * NOTE: The 'actors' field is now stored in 'actorItems' join entity and is handled separately.
@@ -78,7 +81,6 @@ public class    ItemEntityMapper {
                         .map(DirectorEntityMapper::toEntity)
                         .collect(Collectors.toSet())
                         : null)
-                // Note: actors are now in actorItems, not set here
                 .build();
     }
 }

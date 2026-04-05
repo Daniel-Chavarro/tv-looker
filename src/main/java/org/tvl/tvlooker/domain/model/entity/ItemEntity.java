@@ -126,4 +126,17 @@ public class ItemEntity {
             inverseJoinColumns = @JoinColumn(name = "director_id_fk")
     )
     private Set<DirectorEntity> directors;
+
+    /**
+     * The actors associated with this item, including character names and billing order.
+     * This replaces the simple @ManyToMany relationship to capture additional metadata.
+     * Uses @OneToMany with orphanRemoval to ensure ActorItems are deleted when removed from the set.
+     */
+    @OneToMany(
+            mappedBy = "item",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<ActorItemEntity> actorItems = new HashSet<>();
 }

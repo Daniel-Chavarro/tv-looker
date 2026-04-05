@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
+import org.tvl.tvlooker.domain.model.entity.ActorItemEntity;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
@@ -21,6 +22,7 @@ import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbCastMemberMapper;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -162,16 +164,45 @@ public class TmdbItemPersistenceService {
      * @param credits TMDB credits containing cast information
      * @return set of Actor entities
      */
-    public Set<ActorEntity> mapActors(TmdbCreditsDto credits) {
-        Set<ActorEntity> actors = new HashSet<>();
+    public Set<ActorItemEntity> mapActors(TmdbCreditsDto credits) {
+        Set<ActorItemEntity> actors = new HashSet<>();
         if (credits.cast() != null) {
             credits.cast().stream()
-                    .sorted((a, b) -> Integer.compare(a.order(), b.order()))
+                    .sorted(Comparator.comparingInt(TmdbCreditsDto.CastMember::order))
                     .limit(MAX_ACTORS_PER_ITEM)
                     .forEach(c -> actors.add(
                             TmdbCastMemberMapper.findOrCreateActor(c, actorRepository)));
         }
         return actors;
+    }
+
+    /**
+     * Maps TMDB cast members to ActorItemEntity instances.
+     * Creates ActorItemEntity objects with character name and billing order.
+     * Only the top {@value MAX_ACTORS_PER_ITEM} actors (by billing order) are included.
+     *
+     * @param item the ItemEntity to associate actors with
+     * @param credits TMDB credits containing cast information
+     */
+    public void mapActorsToActorItems(ItemEntity item, TmdbCreditsDto credits) {
+        if (credits.cast() == null) {
+            return;
+        }
+        Set<ActorItemEntity> actorItems = new HashSet<>();
+        credits.cast().stream()
+                .sorted((a, b) -> Integer.compare(a.order(), b.order()))
+                .limit(MAX_ACTORS_PER_ITEM)
+                .forEach(c -> {
+                    ActorEntity actor = TmdbCastMemberMapper.findOrCreateActor(c, actorRepository);
+                    ActorItemEntity actorItem = ActorItemEntity.builder()
+                            .item(item)
+                            .actor(actor)
+                            .characterName(c.character())
+                            .billingOrder(c.order())
+                            .build();
+                    actorItems.add(actorItem);
+                });
+        item.setActorItems(actorItems);
     }
 
     /**

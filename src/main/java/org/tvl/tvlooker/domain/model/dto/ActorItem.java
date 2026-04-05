@@ -7,8 +7,8 @@ import lombok.Data;
 @Data
 public class ActorItem {
     private final Long id;
-    private final Long actorId;
-    private final Long itemId;
+    private final Actor actor;
+    private final Item item;
     private final String characterName;
     private final Integer billingOrder;
 }

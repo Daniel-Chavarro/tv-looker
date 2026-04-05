@@ -76,7 +76,6 @@ public class ItemService {
             updateField(update.getTitle(), actual::setTitle);
             updateField(update.getGenres(), actual::setGenres);
             updateField(update.getDirectors(), actual::setDirectors);
-            updateField(update.getActorItems(), actual::setActorItems);
             updateField(update.getTmdbId(), actual::setTmdbId);
             updateField(update.getTmdbType(), actual::setTmdbType);
             updateField(update.getOverview(), actual::setOverview);

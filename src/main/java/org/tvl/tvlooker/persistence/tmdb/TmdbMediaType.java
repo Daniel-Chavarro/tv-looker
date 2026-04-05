@@ -1,5 +1,8 @@
 package org.tvl.tvlooker.persistence.tmdb;
 
+import lombok.Getter;
+
+@Getter
 public enum TmdbMediaType {
     MOVIE("movie"),
     TV("tv");
@@ -8,10 +11,6 @@ public enum TmdbMediaType {
 
     TmdbMediaType(String path) {
         this.path = path;
-    }
-
-    public String getPath() {
-        return path;
     }
 
     public String getGenresEndpoint() {

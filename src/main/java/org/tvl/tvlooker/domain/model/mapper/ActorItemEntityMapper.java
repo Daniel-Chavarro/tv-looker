@@ -1,8 +1,6 @@
 package org.tvl.tvlooker.domain.model.mapper;
 
-import org.tvl.tvlooker.domain.model.dto.Actor;
 import org.tvl.tvlooker.domain.model.dto.ActorItem;
-import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.domain.model.entity.ActorItemEntity;
 
 /**
@@ -19,8 +17,8 @@ public class ActorItemEntityMapper {
     public static ActorItem toDomain(ActorItemEntity entity) {
         return ActorItem.builder()
                 .id(entity.getId())
-                .itemId(entity.getItem().getId())
-                .actorId(entity.getActor().getId())
+                .item(ItemEntityMapper.toDomain(entity.getItem()))
+                .actor(ActorEntityMapper.toDomain(entity.getActor()))
                 .characterName(entity.getCharacterName())
                 .billingOrder(entity.getBillingOrder())
                 .build();
@@ -28,19 +26,15 @@ public class ActorItemEntityMapper {
 
     /**
      * Converts an ActorItem domain model to an ActorItemEntity.
+     *
      * @param domain the domain model
-     * @param item the associated Item entity (must be provided to set the relationship)
-     * @param actor the associated Actor entity (must be provided to set the relationship)
      * @return the JPA entity
      */
-    public static ActorItemEntity toEntity(
-            ActorItem domain,
-            Item  item,
-            Actor actor) {
+    public static ActorItemEntity toEntity(ActorItem domain) {
         return ActorItemEntity.builder()
                 .id(domain.getId())
-                .actor(ActorEntityMapper.toEntity(actor))
-                .item(ItemEntityMapper.toEntity(item))
+                .actor(ActorEntityMapper.toEntity(domain.getActor()))
+                .item(ItemEntityMapper.toEntity(domain.getItem()))
                 .characterName(domain.getCharacterName())
                 .billingOrder(domain.getBillingOrder())
                 .build();
