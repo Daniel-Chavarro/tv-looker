@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.tvl.tvlooker.domain.exception.ItemNotFoundException;
-import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;

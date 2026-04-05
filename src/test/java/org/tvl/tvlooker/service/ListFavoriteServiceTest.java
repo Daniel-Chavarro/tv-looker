@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.tvl.tvlooker.domain.exception.ListFavoriteNotFoundException;
-import org.tvl.tvlooker.domain.model.ListFavorite;
+import org.tvl.tvlooker.domain.model.dto.ListFavorite;
 import org.tvl.tvlooker.domain.model.entity.ListFavoriteEntity;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.persistence.repository.ListFavoriteRepository;

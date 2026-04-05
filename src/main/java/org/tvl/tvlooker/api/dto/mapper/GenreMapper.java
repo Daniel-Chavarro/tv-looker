@@ -1,7 +1,7 @@
 package org.tvl.tvlooker.api.dto.mapper;
 
 import org.tvl.tvlooker.api.dto.response.GenreResponse;
-import org.tvl.tvlooker.domain.model.Genre;
+import org.tvl.tvlooker.domain.model.dto.Genre;
 /**
  * Mapper for converting between Genre DTOs and models.
  */

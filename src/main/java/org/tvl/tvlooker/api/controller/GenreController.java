@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.mapper.GenreMapper;
 import org.tvl.tvlooker.api.dto.response.GenreResponse;
-import org.tvl.tvlooker.domain.model.Genre;
+import org.tvl.tvlooker.domain.model.dto.Genre;
 import org.tvl.tvlooker.service.GenreService;
 
 import java.util.List;

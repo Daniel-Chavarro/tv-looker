@@ -1,10 +1,10 @@
 package org.tvl.tvlooker.domain.model.mapper;
 
 import org.springframework.stereotype.Component;
-import org.tvl.tvlooker.domain.model.Interaction;
-import org.tvl.tvlooker.domain.model.Item;
-import org.tvl.tvlooker.domain.model.Review;
-import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.dto.Interaction;
+import org.tvl.tvlooker.domain.model.dto.Item;
+import org.tvl.tvlooker.domain.model.dto.Review;
+import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.entity.InteractionEntity;
 
 

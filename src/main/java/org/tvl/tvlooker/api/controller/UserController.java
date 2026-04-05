@@ -16,7 +16,7 @@ import org.tvl.tvlooker.api.dto.mapper.UserMapper;
 import org.tvl.tvlooker.api.dto.request.CreateUserRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateUserRequest;
 import org.tvl.tvlooker.api.dto.response.UserResponse;
-import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.service.UserService;
 
 import java.util.List;

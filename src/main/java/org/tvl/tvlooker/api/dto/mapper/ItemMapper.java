@@ -2,7 +2,7 @@ package org.tvl.tvlooker.api.dto.mapper;
 
 import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.response.ItemResponse;
-import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.dto.Item;
 
 /**
  * Mapper for converting between Item DTOs and models.

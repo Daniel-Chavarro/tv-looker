@@ -1,7 +1,7 @@
 package org.tvl.tvlooker.domain.model.mapper;
 
 import org.springframework.stereotype.Component;
-import org.tvl.tvlooker.domain.model.Director;
+import org.tvl.tvlooker.domain.model.dto.Director;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 
 /**

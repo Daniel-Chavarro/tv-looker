@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.response.ActorResponse;
-import org.tvl.tvlooker.domain.model.Actor;
+import org.tvl.tvlooker.domain.model.dto.Actor;
 import org.tvl.tvlooker.service.ActorService;
 
 import java.util.List;

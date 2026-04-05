@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
-import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.persistence.repository.UserRepository;
 

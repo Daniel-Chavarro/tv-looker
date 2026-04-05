@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.InteractionNotFoundException;
-import org.tvl.tvlooker.domain.model.Interaction;
+import org.tvl.tvlooker.domain.model.dto.Interaction;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.service.InteractionService;
 

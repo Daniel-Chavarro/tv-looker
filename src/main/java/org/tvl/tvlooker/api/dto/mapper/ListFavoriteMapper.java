@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.request.CreateListFavoriteRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateListFavoriteRequest;
 import org.tvl.tvlooker.api.dto.response.ListFavoriteResponse;
-import org.tvl.tvlooker.domain.model.ListFavorite;
+import org.tvl.tvlooker.domain.model.dto.ListFavorite;
 
 import java.util.stream.Collectors;
 

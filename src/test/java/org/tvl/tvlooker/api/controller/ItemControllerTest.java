@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.ItemNotFoundException;
-import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.service.ItemService;
 

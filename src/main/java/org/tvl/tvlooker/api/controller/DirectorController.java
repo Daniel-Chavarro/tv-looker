@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.mapper.DirectorMapper;
 import org.tvl.tvlooker.api.dto.response.DirectorResponse;
-import org.tvl.tvlooker.domain.model.Director;
+import org.tvl.tvlooker.domain.model.dto.Director;
 import org.tvl.tvlooker.service.DirectorService;
 
 import java.util.List;

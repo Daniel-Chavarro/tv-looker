@@ -3,7 +3,7 @@ package org.tvl.tvlooker.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.DirectorNotFoundException;
-import org.tvl.tvlooker.domain.model.Director;
+import org.tvl.tvlooker.domain.model.dto.Director;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 import org.tvl.tvlooker.domain.model.mapper.DirectorEntityMapper;
 import org.tvl.tvlooker.persistence.repository.DirectorRepository;

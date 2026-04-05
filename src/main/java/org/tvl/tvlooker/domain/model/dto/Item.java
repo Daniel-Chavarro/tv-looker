@@ -1,4 +1,4 @@
-package org.tvl.tvlooker.domain.model;
+package org.tvl.tvlooker.domain.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,5 +23,4 @@ public class Item {
     private final Long tmdbId;
     private final Set<Genre> genres;
     private final Set<Director> directors;
-    private final Set<Actor> actors;
 }

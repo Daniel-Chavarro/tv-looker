@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.request.CreateReviewRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateReviewRequest;
 import org.tvl.tvlooker.api.dto.response.ReviewResponse;
-import org.tvl.tvlooker.domain.model.Review;
+import org.tvl.tvlooker.domain.model.dto.Review;
 
 /**
  * Mapper for converting between Review DTOs and models.

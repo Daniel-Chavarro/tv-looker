@@ -1,6 +1,6 @@
 package org.tvl.tvlooker.service;
 
-import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.domain.exception.ItemNotFoundException;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.mapper.ItemEntityMapper;

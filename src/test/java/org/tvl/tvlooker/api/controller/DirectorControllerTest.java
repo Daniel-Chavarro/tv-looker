@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.DirectorNotFoundException;
-import org.tvl.tvlooker.domain.model.Director;
+import org.tvl.tvlooker.domain.model.dto.Director;
 import org.tvl.tvlooker.service.DirectorService;
 
 import java.util.Arrays;

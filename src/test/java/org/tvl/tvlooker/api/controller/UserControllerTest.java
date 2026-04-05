@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
-import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.service.UserService;
 
 import java.sql.Timestamp;

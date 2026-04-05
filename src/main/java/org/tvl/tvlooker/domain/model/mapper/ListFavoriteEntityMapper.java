@@ -2,7 +2,7 @@ package org.tvl.tvlooker.domain.model.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.tvl.tvlooker.domain.model.ListFavorite;
+import org.tvl.tvlooker.domain.model.dto.ListFavorite;
 import org.tvl.tvlooker.domain.model.entity.ListFavoriteEntity;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
 
