@@ -9,6 +9,8 @@ import org.springframework.web.client.RestClient;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaDetails;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaItem;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
@@ -68,6 +70,7 @@ public class TmdbClient {
      * @param movieId the TMDB movie ID
      * @return movie details DTO
      */
+    @Deprecated
     public TmdbMovieDto getMovieDetails(long movieId) {
         LOGGER.debug("Fetching movie details for ID {}", movieId);
         return restClient.get()
@@ -147,6 +150,7 @@ public class TmdbClient {
      * @param tvShowId the TMDB TV show ID
      * @return TV show details DTO
      */
+    @Deprecated
     public TmdbTvShowDto getTvShowDetails(long tvShowId) {
         LOGGER.debug("Fetching TV show details for ID {}", tvShowId);
         return restClient.get()
@@ -228,6 +232,47 @@ public class TmdbClient {
         LOGGER.debug("Fetching TV genre list");
         return restClient.get()
                 .uri("/genre/tv/list?language={lang}", language)
+                .retrieve()
+                .body(TmdbGenreListDto.class);
+    }
+
+    // ===================== GENERIC METHODS =====================
+
+    public <T extends TmdbMediaItem> TmdbPagedResponseDto<T> getPopular(
+            TmdbMediaType type, int page) {
+        LOGGER.debug("Fetching popular {} page {}", type, page);
+        return restClient.get()
+                .uri("/{type}/popular?language={lang}&page={page}",
+                        type.getPath(), language, page)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+    }
+
+    public <T extends TmdbMediaDetails> T getDetailsWithCredits(
+            TmdbMediaType type, long id) {
+        LOGGER.debug("Fetching {} details + credits for ID {}", type, id);
+        return restClient.get()
+                .uri("/{type}/{id}?language={lang}&append_to_response=credits",
+                        type.getPath(), id, language)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+    }
+
+    public TmdbPagedResponseDto<TmdbChangesDto> getChanges(
+            TmdbMediaType type, LocalDate startDate, LocalDate endDate, int page) {
+        LOGGER.debug("Fetching {} changes from {} to {}, page {}", 
+                type, startDate, endDate, page);
+        return restClient.get()
+                .uri("/{type}/changes?start_date={start}&end_date={end}&page={page}",
+                        type.getPath(), startDate, endDate, page)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+    }
+
+    public TmdbGenreListDto getGenres(TmdbMediaType type) {
+        LOGGER.debug("Fetching {} genres", type);
+        return restClient.get()
+                .uri("/{type}/genre/list?language={lang}", type.getPath(), language)
                 .retrieve()
                 .body(TmdbGenreListDto.class);
     }
