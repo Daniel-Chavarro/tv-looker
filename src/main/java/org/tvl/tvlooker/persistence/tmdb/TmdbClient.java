@@ -11,10 +11,8 @@ import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaDetails;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaItem;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 
 
@@ -48,22 +46,6 @@ public class TmdbClient {
         this.language = language;
     }
 
-    // ===================== MOVIES =====================
-
-    /**
-     * GET /movie/popular — Paginated list of popular movies.
-     *
-     * @param page Page number (1-based, max 500)
-     * @return paginated response with movie DTOs
-     */
-    public TmdbPagedResponseDto<TmdbMovieDto> getPopularMovies(int page) {
-        LOGGER.debug("Fetching popular movies page {}", page);
-        return restClient.get()
-                .uri("/movie/popular?language={lang}&page={page}", language, page)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
-    }
-
     /**
      * GET /movie/{id} — Full details for a movie (includes genre objects).
      *
@@ -95,56 +77,6 @@ public class TmdbClient {
     }
 
     /**
-     * GET /movie/changes — IDs of movies that changed in a date range.
-     *
-     * @param startDate Start date (inclusive)
-     * @param endDate   End date (inclusive)
-     * @param page      Page number
-     * @return paginated response with changed item IDs
-     */
-    public TmdbPagedResponseDto<TmdbChangesDto> getMovieChanges(
-            LocalDate startDate, LocalDate endDate, int page) {
-        LOGGER.debug("Fetching movie changes from {} to {}, page {}", startDate, endDate, page);
-        return restClient.get()
-                .uri("/movie/changes?start_date={start}&end_date={end}&page={page}",
-                        startDate, endDate, page)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
-    }
-
-    /**
-     * GET /movie/{id}?append_to_response=credits
-     * Fetches movie details with credits in a single API call.
-     *
-     * @param movieId the TMDB movie ID
-     * @return movie details DTO with appended credits
-     */
-    public TmdbMovieDetailsDto getMovieDetailsWithCredits(long movieId) {
-        LOGGER.debug("Fetching movie details + credits for ID {}", movieId);
-        return restClient.get()
-                .uri("/movie/{id}?language={lang}&append_to_response=credits",
-                        movieId, language)
-                .retrieve()
-                .body(TmdbMovieDetailsDto.class);
-    }
-
-    // ===================== TV SHOWS =====================
-
-    /**
-     * GET /tv/popular — Paginated list of popular TV shows.
-     *
-     * @param page Page number (1-based, max 500)
-     * @return paginated response with TV show DTOs
-     */
-    public TmdbPagedResponseDto<TmdbTvShowDto> getPopularTvShows(int page) {
-        LOGGER.debug("Fetching popular TV shows page {}", page);
-        return restClient.get()
-                .uri("/tv/popular?language={lang}&page={page}", language, page)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
-    }
-
-    /**
      * GET /tv/{id} — Full details for a TV show (includes genre objects).
      *
      * @param tvShowId the TMDB TV show ID
@@ -172,68 +104,6 @@ public class TmdbClient {
                 .uri("/tv/{id}/credits?language={lang}", tvShowId, language)
                 .retrieve()
                 .body(TmdbCreditsDto.class);
-    }
-
-    /**
-     * GET /tv/changes — IDs of TV shows that changed in a date range.
-     *
-     * @param startDate Start date (inclusive)
-     * @param endDate   End date (inclusive)
-     * @param page      Page number
-     * @return paginated response with changed item IDs
-     */
-    public TmdbPagedResponseDto<TmdbChangesDto> getTvShowChanges(
-            LocalDate startDate, LocalDate endDate, int page) {
-        LOGGER.debug("Fetching TV show changes from {} to {}, page {}", startDate, endDate, page);
-        return restClient.get()
-                .uri("/tv/changes?start_date={start}&end_date={end}&page={page}",
-                        startDate, endDate, page)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
-    }
-
-    /**
-     * GET /tv/{id}?append_to_response=credits
-     * Fetches TV show details with credits in a single API call.
-     *
-     * @param tvShowId the TMDB TV show ID
-     * @return TV show details DTO with appended credits
-     */
-    public TmdbTvShowDetailsDto getTvShowDetailsWithCredits(long tvShowId) {
-        LOGGER.debug("Fetching TV show details + credits for ID {}", tvShowId);
-        return restClient.get()
-                .uri("/tv/{id}?language={lang}&append_to_response=credits",
-                        tvShowId, language)
-                .retrieve()
-                .body(TmdbTvShowDetailsDto.class);
-    }
-
-    // ===================== GENRES =====================
-
-    /**
-     * GET /genre/movie/list — All movie genres.
-     *
-     * @return list of movie genres
-     */
-    public TmdbGenreListDto getMovieGenres() {
-        LOGGER.debug("Fetching movie genre list");
-        return restClient.get()
-                .uri("/genre/movie/list?language={lang}", language)
-                .retrieve()
-                .body(TmdbGenreListDto.class);
-    }
-
-    /**
-     * GET /genre/tv/list — All TV genres.
-     *
-     * @return list of TV genres
-     */
-    public TmdbGenreListDto getTvGenres() {
-        LOGGER.debug("Fetching TV genre list");
-        return restClient.get()
-                .uri("/genre/tv/list?language={lang}", language)
-                .retrieve()
-                .body(TmdbGenreListDto.class);
     }
 
     // ===================== GENERIC METHODS =====================
@@ -277,4 +147,3 @@ public class TmdbClient {
                 .body(TmdbGenreListDto.class);
     }
 }
-
