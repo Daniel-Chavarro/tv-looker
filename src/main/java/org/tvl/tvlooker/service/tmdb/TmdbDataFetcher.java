@@ -7,10 +7,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaDetails;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaItem;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -83,6 +93,69 @@ public class TmdbDataFetcher {
     }
 
     /**
+     * Fetches genre list for a given media type asynchronously, respecting rate limits.
+     *
+     * @param mediaType the TMDB media type (MOVIE or TV)
+     * @return CompletableFuture containing the list of genres for the specified media type
+     */
+    public CompletableFuture<TmdbGenreListDto> fetchGenresAsync(TmdbMediaType mediaType) {
+        return CompletableFuture.supplyAsync(() -> {
+            rateLimiter.acquire();
+            return tmdbClient.getGenres(mediaType);
+        }, tmdbTaskExecutor);
+    }
+
+    /**
+     * Fetches a page of popular movies or TV shows asynchronously, respecting rate limits.
+     *
+     * @param page the page number to fetch (1-based index)
+     * @return CompletableFuture containing a paged response of movies or TV shows for the specified media type and page
+     */
+    public CompletableFuture<TmdbPagedResponseDto<TmdbMovieDto>> fetchPopularMoviesAsync(int page) {
+        return CompletableFuture.supplyAsync(() -> {
+            rateLimiter.acquire();
+            return tmdbClient.getPopular(TmdbMediaType.MOVIE, page);
+        }, tmdbTaskExecutor);
+    }
+
+    /**
+     * Fetches a page of popular TV shows asynchronously, respecting rate limits.
+     *
+     * @param page the page number to fetch (1-based index)
+     * @return CompletableFuture containing a paged response of TV shows for the specified page
+     */
+    public CompletableFuture<TmdbPagedResponseDto<TmdbTvShowDto>> fetchPopularTvShowsAsync(int page) {
+        return CompletableFuture.supplyAsync(() -> {
+            rateLimiter.acquire();
+            return tmdbClient.getPopular(TmdbMediaType.TV, page);
+        }, tmdbTaskExecutor);
+    }
+
+    public CompletableFuture<TmdbPagedResponseDto<TmdbChangesDto>> fetchChangesAsync(
+            TmdbMediaType type, LocalDate startDate, LocalDate endDate, int page) {
+        return CompletableFuture.supplyAsync(() -> {
+            rateLimiter.acquire();
+            return tmdbClient.getChanges(type, startDate, endDate, page);
+        }, tmdbTaskExecutor);
+    }
+
+    public <T extends TmdbMediaDetails> CompletableFuture<T> fetchDetailsWithCreditsAsync(
+            TmdbMediaType type, long id) {
+        return CompletableFuture.supplyAsync(() -> {
+            rateLimiter.acquire();
+            return tmdbClient.getDetailsWithCredits(type, id);
+        }, tmdbTaskExecutor);
+    }
+
+    public <T extends TmdbMediaItem> CompletableFuture<TmdbPagedResponseDto<T>> fetchPopularAsync(
+            TmdbMediaType type, int page) {
+        return CompletableFuture.supplyAsync(() -> {
+            rateLimiter.acquire();
+            return tmdbClient.getPopular(type, page);
+        }, tmdbTaskExecutor);
+    }
+
+    /**
      * Batch fetches multiple movies in parallel with rate limiting.
      *
      * Each movie fetch respects the global rate limiter, so the total throughput
@@ -93,7 +166,7 @@ public class TmdbDataFetcher {
      * @param tmdbIds List of TMDB movie IDs to fetch
      * @return List of movie details with credits (in any order)
      */
-    public List<TmdbMovieDetailsDto> fetchMoviesBatch(List<Long> tmdbIds) {
+    public List<TmdbMovieDetailsDto> fetchMoviesDetailsBatch(List<Long> tmdbIds) {
         log.debug("Fetching {} movies in parallel batch", tmdbIds.size());
 
         List<CompletableFuture<TmdbMovieDetailsDto>> futures = tmdbIds.stream()
@@ -116,7 +189,7 @@ public class TmdbDataFetcher {
      * @param tvShowIds List of TMDB TV show IDs to fetch
      * @return List of TV show details with credits
      */
-    public List<TmdbTvShowDetailsDto> fetchTvShowsBatch(List<Long> tvShowIds) {
+    public List<TmdbTvShowDetailsDto> fetchTvShowsDetailsBatch(List<Long> tvShowIds) {
         log.debug("Fetching {} TV shows in parallel batch", tvShowIds.size());
 
         List<CompletableFuture<TmdbTvShowDetailsDto>> futures = tvShowIds.stream()
@@ -131,5 +204,26 @@ public class TmdbDataFetcher {
                         .filter(Objects::nonNull)
                         .toList())
                 .join();
+    }
+
+    /**
+     * Batch fetches genres for both movies and TV shows in parallel with rate limiting.
+     *
+     * @return List of all genres for movies and TV shows combined.
+     */
+    public List<TmdbGenreDto> fetchGenres() {
+        log.debug("Fetching genres for both movies and TV shows in parallel batch");
+
+        CompletableFuture<TmdbGenreListDto> movieGenresFuture = fetchGenresAsync(TmdbMediaType.MOVIE);
+        CompletableFuture<TmdbGenreListDto> tvGenresFuture = fetchGenresAsync(TmdbMediaType.TV);
+
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(movieGenresFuture, tvGenresFuture);
+
+        return allOf.thenApply(v -> {
+            List<TmdbGenreDto> genres = new ArrayList<>();
+            genres.addAll(movieGenresFuture.join().genres());
+            genres.addAll(tvGenresFuture.join().genres());
+            return genres;
+        }).join();
     }
 }
