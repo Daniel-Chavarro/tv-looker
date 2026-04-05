@@ -15,6 +15,7 @@ import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
+import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
@@ -180,8 +181,8 @@ public class TmdbDataCollectorService {
     public void collectGenres() {
         log.info("Collecting genres...");
 
-        TmdbGenreListDto movieGenres = tmdbClient.getMovieGenres();
-        TmdbGenreListDto tvGenres = tmdbClient.getTvGenres();
+        TmdbGenreListDto movieGenres = tmdbClient.getGenres(TmdbMediaType.MOVIE);
+        TmdbGenreListDto tvGenres = tmdbClient.getGenres(TmdbMediaType.TV);
 
         Set<Integer> seen = new HashSet<>();
         int count = 0;
@@ -210,7 +211,7 @@ public class TmdbDataCollectorService {
         int skipped = 0;
 
         for (int page = 1; page <= maxPages; page++) {
-            TmdbPagedResponseDto<TmdbMovieDto> response = tmdbClient.getPopularMovies(page);
+            TmdbPagedResponseDto<TmdbMovieDto> response = tmdbClient.getPopular(TmdbMediaType.MOVIE, page);
 
             if (response == null || response.results() == null || response.results().isEmpty()) {
                 break;
@@ -258,7 +259,7 @@ public class TmdbDataCollectorService {
         int skipped = 0;
 
         for (int page = 1; page <= maxPages; page++) {
-            TmdbPagedResponseDto<TmdbTvShowDto> response = tmdbClient.getPopularTvShows(page);
+            TmdbPagedResponseDto<TmdbTvShowDto> response = tmdbClient.getPopular(TmdbMediaType.TV, page);
 
             if (response == null || response.results() == null || response.results().isEmpty()) {
                 break;

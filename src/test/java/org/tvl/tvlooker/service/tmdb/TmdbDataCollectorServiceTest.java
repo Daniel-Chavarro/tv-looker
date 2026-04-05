@@ -13,6 +13,7 @@ import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
+import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
@@ -66,8 +67,8 @@ class TmdbDataCollectorServiceTest {
         TmdbGenreListDto movieGenres = new TmdbGenreListDto(List.of(actionGenre, dramaGenre));
         TmdbGenreListDto tvGenres = new TmdbGenreListDto(List.of(dramaGenre));
 
-        when(tmdbClient.getMovieGenres()).thenReturn(movieGenres);
-        when(tmdbClient.getTvGenres()).thenReturn(tvGenres);
+        when(tmdbClient.getGenres(TmdbMediaType.MOVIE)).thenReturn(movieGenres);
+        when(tmdbClient.getGenres(TmdbMediaType.TV)).thenReturn(tvGenres);
         when(genreRepository.findByTmdbId(anyLong())).thenReturn(Optional.empty());
         when(genreRepository.save(any(GenreEntity.class))).thenAnswer(invocation ->
                 invocation.getArgument(0));
@@ -76,8 +77,8 @@ class TmdbDataCollectorServiceTest {
         collectorService.collectGenres();
 
         // Then
-        verify(tmdbClient, times(1)).getMovieGenres();
-        verify(tmdbClient, times(1)).getTvGenres();
+        verify(tmdbClient, times(1)).getGenres(TmdbMediaType.MOVIE);
+        verify(tmdbClient, times(1)).getGenres(TmdbMediaType.TV);
         verify(genreRepository, atLeast(2)).save(any(GenreEntity.class));
     }
 
@@ -91,16 +92,16 @@ class TmdbDataCollectorServiceTest {
 
         GenreEntity existingGenre = new GenreEntity(null, 28L, "Action");
 
-        when(tmdbClient.getMovieGenres()).thenReturn(movieGenres);
-        when(tmdbClient.getTvGenres()).thenReturn(tvGenres);
+        when(tmdbClient.getGenres(TmdbMediaType.MOVIE)).thenReturn(movieGenres);
+        when(tmdbClient.getGenres(TmdbMediaType.TV)).thenReturn(tvGenres);
         when(genreRepository.findByTmdbId(28L)).thenReturn(Optional.of(existingGenre));
 
         // When
         collectorService.collectGenres();
 
         // Then
-        verify(tmdbClient, times(1)).getMovieGenres();
-        verify(tmdbClient, times(1)).getTvGenres();
+        verify(tmdbClient, times(1)).getGenres(TmdbMediaType.MOVIE);
+        verify(tmdbClient, times(1)).getGenres(TmdbMediaType.TV);
         verify(genreRepository, never()).save(any(GenreEntity.class));
     }
 
@@ -128,14 +129,14 @@ class TmdbDataCollectorServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopularMovies(1)).thenReturn(response);
+        when(tmdbClient.getPopular(TmdbMediaType.MOVIE, 1)).thenReturn(response);
         when(itemRepository.existsByTmdbIdAndTmdbType(123L, TmdbType.MOVIE)).thenReturn(false);
 
         // When
         collectorService.collectPopularMovies();
 
         // Then
-        verify(tmdbClient, times(1)).getPopularMovies(1);
+        verify(tmdbClient, times(1)).getPopular(TmdbMediaType.MOVIE, 1);
         verify(persistenceService, times(1)).persistMovie(movie);
     }
 
@@ -163,14 +164,14 @@ class TmdbDataCollectorServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopularTvShows(1)).thenReturn(response);
+        when(tmdbClient.getPopular(TmdbMediaType.TV, 1)).thenReturn(response);
         when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(false);
 
         // When
         collectorService.collectPopularTvShows();
 
         // Then
-        verify(tmdbClient, times(1)).getPopularTvShows(1);
+        verify(tmdbClient, times(1)).getPopular(TmdbMediaType.TV, 1);
         verify(persistenceService, times(1)).persistTvShow(tvShow);
     }
 
@@ -217,14 +218,14 @@ class TmdbDataCollectorServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopularMovies(1)).thenReturn(response);
+        when(tmdbClient.getPopular(TmdbMediaType.MOVIE, 1)).thenReturn(response);
         when(itemRepository.existsByTmdbIdAndTmdbType(123L, TmdbType.MOVIE)).thenReturn(true); // Already exists
 
         // When
         collectorService.collectPopularMovies();
 
         // Then
-        verify(tmdbClient, times(1)).getPopularMovies(1);
+        verify(tmdbClient, times(1)).getPopular(TmdbMediaType.MOVIE, 1);
         verify(persistenceService, never()).persistMovie(any());
     }
 
@@ -252,14 +253,14 @@ class TmdbDataCollectorServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopularTvShows(1)).thenReturn(response);
+        when(tmdbClient.getPopular(TmdbMediaType.TV, 1)).thenReturn(response);
         when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(true); // Already exists
 
         // When
         collectorService.collectPopularTvShows();
 
         // Then
-        verify(tmdbClient, times(1)).getPopularTvShows(1);
+        verify(tmdbClient, times(1)).getPopular(TmdbMediaType.TV, 1);
         verify(persistenceService, never()).persistTvShow(any());
     }
 
@@ -274,7 +275,7 @@ class TmdbDataCollectorServiceTest {
                 0
         );
 
-        when(tmdbClient.getPopularMovies(1)).thenReturn(emptyResponse);
+        when(tmdbClient.getPopular(TmdbMediaType.MOVIE, 1)).thenReturn(emptyResponse);
 
         // When/Then - should not throw exception
         assertDoesNotThrow(() -> collectorService.collectPopularMovies());

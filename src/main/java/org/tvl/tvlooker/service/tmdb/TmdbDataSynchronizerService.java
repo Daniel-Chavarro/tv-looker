@@ -12,6 +12,7 @@ import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
+import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
@@ -111,13 +112,9 @@ public class TmdbDataSynchronizerService {
         int totalPages = 1;
 
         while (page <= totalPages) {
-            TmdbPagedResponseDto<TmdbChangesDto> changes;
-
-            if (type == TmdbType.MOVIE) {
-                changes = tmdbClient.getMovieChanges(startDate, endDate, page);
-            } else {
-                changes = tmdbClient.getTvShowChanges(startDate, endDate, page);
-            }
+            TmdbPagedResponseDto<TmdbChangesDto> changes = tmdbClient.getChanges(
+                    type == TmdbType.MOVIE ? TmdbMediaType.MOVIE : TmdbMediaType.TV,
+                    startDate, endDate, page);
             persistenceService.throttle();
             
             if (changes == null || changes.results() == null) {
@@ -177,7 +174,7 @@ public class TmdbDataSynchronizerService {
 
     private int discoverNewMovies(int page) {
         int count = 0;
-        TmdbPagedResponseDto<TmdbMovieDto> response = tmdbClient.getPopularMovies(page);
+        TmdbPagedResponseDto<TmdbMovieDto> response = tmdbClient.getPopular(TmdbMediaType.MOVIE, page);
         persistenceService.throttle();
 
         if (response != null && response.results() != null) {
@@ -197,7 +194,7 @@ public class TmdbDataSynchronizerService {
 
     private int discoverNewTvShows(int page) {
         int count = 0;
-        TmdbPagedResponseDto<TmdbTvShowDto> response = tmdbClient.getPopularTvShows(page);
+        TmdbPagedResponseDto<TmdbTvShowDto> response = tmdbClient.getPopular(TmdbMediaType.TV, page);
         persistenceService.throttle();
 
         if (response != null && response.results() != null) {
@@ -235,7 +232,7 @@ public class TmdbDataSynchronizerService {
             TmdbCreditsDto credits = tmdbClient.getMovieCredits(item.getTmdbId());
             persistenceService.throttle();
             if (credits != null) {
-                item.setActors(persistenceService.mapActors(credits));
+                item.setActorItems(persistenceService.mapActors(credits));
                 item.setDirectors(persistenceService.mapDirectors(credits));
             }
         } else {
@@ -251,7 +248,7 @@ public class TmdbDataSynchronizerService {
             TmdbCreditsDto credits = tmdbClient.getTvShowCredits(item.getTmdbId());
             persistenceService.throttle();
             if (credits != null) {
-                item.setActors(persistenceService.mapActors(credits));
+                item.setActorItems(persistenceService.mapActors(credits));
                 item.setDirectors(persistenceService.mapDirectors(credits));
             }
         }

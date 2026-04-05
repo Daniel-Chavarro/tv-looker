@@ -12,6 +12,7 @@ import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
+import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
@@ -69,9 +70,9 @@ class TmdbDataSynchronizerServiceTest {
                 1
         );
 
-        when(tmdbClient.getMovieChanges(eq(startDate), any(LocalDate.class), eq(1)))
+        when(tmdbClient.getChanges(eq(TmdbMediaType.MOVIE), eq(startDate), any(LocalDate.class), eq(1)))
                 .thenReturn(movieChanges);
-        when(tmdbClient.getTvShowChanges(eq(startDate), any(LocalDate.class), eq(1)))
+        when(tmdbClient.getChanges(eq(TmdbMediaType.TV), eq(startDate), any(LocalDate.class), eq(1)))
                 .thenReturn(tvChanges);
 
         ItemEntity existingMovie = new ItemEntity();
@@ -131,8 +132,8 @@ class TmdbDataSynchronizerServiceTest {
                 1
         );
 
-        when(tmdbClient.getPopularMovies(1)).thenReturn(popularMovies);
-        when(tmdbClient.getPopularTvShows(1)).thenReturn(popularTvShows);
+        when(tmdbClient.getPopular(TmdbMediaType.MOVIE, 1)).thenReturn(popularMovies);
+        when(tmdbClient.getPopular(TmdbMediaType.TV, 1)).thenReturn(popularTvShows);
         when(itemRepository.existsByTmdbIdAndTmdbType(300L, TmdbType.MOVIE)).thenReturn(false);
         when(itemRepository.existsByTmdbIdAndTmdbType(400L, TmdbType.TV)).thenReturn(false);
 
@@ -141,7 +142,7 @@ class TmdbDataSynchronizerServiceTest {
 
         // Then
         ArgumentCaptor<LocalDate> endDateCaptor = ArgumentCaptor.forClass(LocalDate.class);
-        verify(tmdbClient).getMovieChanges(eq(startDate), endDateCaptor.capture(), eq(1));
+        verify(tmdbClient).getChanges(eq(TmdbMediaType.MOVIE), eq(startDate), endDateCaptor.capture(), eq(1));
         LocalDate endDate = endDateCaptor.getValue();
 
         assertEquals(endDate, synchronizerService.getLastSyncDate());
