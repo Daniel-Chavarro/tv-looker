@@ -2,6 +2,7 @@ package org.tvl.tvlooker.service.tmdb;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +15,7 @@ import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@Disabled("Integration test that requires real TMDB API access - run manually with valid TMDB_API_KEY")
 public class TmdbDataCollectorLocalTest {
     @Autowired
     private TmdbDataCollectorService collector;

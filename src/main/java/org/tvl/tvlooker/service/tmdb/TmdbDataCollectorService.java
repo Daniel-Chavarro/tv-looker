@@ -194,9 +194,8 @@ public class TmdbDataCollectorService {
     public void collectPopularMovies() {
         log.info("Collecting popular movies (max {} pages)...", maxPages);
 
-        // Collect all movie IDs first
-        List<Long> movieIds = new ArrayList<>();
-        int skipped = 0;
+        int totalCollected = 0;
+        int totalSkipped = 0;
 
         for (int page = 1; page <= maxPages; page++) {
             TmdbPagedResponseDto<TmdbMovieDto> response = dataFetcher.fetchPopularMoviesAsync(page).join();
@@ -205,34 +204,21 @@ public class TmdbDataCollectorService {
                 break;
             }
 
-            for (TmdbMovieDto movie : response.results()) {
-                if (!itemRepository.existsByTmdbIdAndTmdbType(movie.id(), TmdbType.MOVIE)) {
-                    movieIds.add(movie.id());
-                } else {
-                    skipped++;
-                }
-            }
+            int collected = persistenceService.discoverAndPersistNewMovies(response.results());
+            totalCollected += collected;
+            totalSkipped += response.results().size() - collected;
 
             if (page >= response.totalPages()) {
                 break;
             }
 
             if (page % 10 == 0) {
-                log.info("Movies progress: page {}/{}, collected IDs={}, skipped={}",
-                        page, Math.min(maxPages, response.totalPages()), movieIds.size(), skipped);
+                log.info("Movies progress: page {}/{}, collected={}, skipped={}",
+                        page, Math.min(maxPages, response.totalPages()), totalCollected, totalSkipped);
             }
         }
 
-        log.info("Fetched {} movie IDs (skipped {}), now batch fetching details...", movieIds.size(), skipped);
-
-        // Batch fetch all movie details with credits in parallel
-        List<TmdbMovieDetailsDto> movieDetails = dataFetcher.fetchMoviesDetailsBatch(movieIds);
-        log.info("Fetched details for {} movies, now building and persisting...", movieDetails.size());
-
-        // Use persistence service
-        persistenceService.persistMovies(movieDetails);
-
-        log.info("Popular movies done: {} collected, {} skipped", movieDetails.size(), skipped);
+        log.info("Popular movies done: {} collected, {} skipped", totalCollected, totalSkipped);
     }
 
     /**

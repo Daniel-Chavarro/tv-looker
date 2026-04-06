@@ -70,9 +70,6 @@ class TmdbDataCollectorServiceTest {
 
         when(dataFetcher.fetchGenresAsync(TmdbMediaType.MOVIE)).thenReturn(CompletableFuture.completedFuture(movieGenres));
         when(dataFetcher.fetchGenresAsync(TmdbMediaType.TV)).thenReturn(CompletableFuture.completedFuture(tvGenres));
-        when(genreRepository.findByTmdbId(anyLong())).thenReturn(Optional.empty());
-        when(genreRepository.save(any(GenreEntity.class))).thenAnswer(invocation ->
-                invocation.getArgument(0));
 
         // When
         collectorService.collectGenres();
@@ -80,7 +77,8 @@ class TmdbDataCollectorServiceTest {
         // Then
         verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.MOVIE);
         verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.TV);
-        verify(genreRepository, atLeast(2)).save(any(GenreEntity.class));
+        verify(persistenceService, times(1)).persistGenres(movieGenres);
+        verify(persistenceService, times(1)).persistGenres(tvGenres);
     }
 
     @Test
@@ -91,14 +89,8 @@ class TmdbDataCollectorServiceTest {
         TmdbGenreListDto movieGenres = new TmdbGenreListDto(List.of(actionGenre));
         TmdbGenreListDto tvGenres = new TmdbGenreListDto(List.of());
 
-        GenreEntity existingGenre = GenreEntity.builder()
-                .tmdbId(28L)
-                .name("Action")
-                .build();
-
         when(dataFetcher.fetchGenresAsync(TmdbMediaType.MOVIE)).thenReturn(CompletableFuture.completedFuture(movieGenres));
         when(dataFetcher.fetchGenresAsync(TmdbMediaType.TV)).thenReturn(CompletableFuture.completedFuture(tvGenres));
-        when(genreRepository.findByTmdbId(28L)).thenReturn(Optional.of(existingGenre));
 
         // When
         collectorService.collectGenres();
@@ -106,7 +98,8 @@ class TmdbDataCollectorServiceTest {
         // Then
         verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.MOVIE);
         verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.TV);
-        verify(genreRepository, never()).save(any(GenreEntity.class));
+        verify(persistenceService, times(1)).persistGenres(movieGenres);
+        verify(persistenceService, times(1)).persistGenres(tvGenres);
     }
 
     @Test
@@ -134,7 +127,6 @@ class TmdbDataCollectorServiceTest {
         );
 
         when(dataFetcher.fetchPopularMoviesAsync(1)).thenReturn(CompletableFuture.completedFuture(response));
-        when(itemRepository.existsByTmdbIdAndTmdbType(123L, TmdbType.MOVIE)).thenReturn(false);
 
         // When
         collectorService.collectPopularMovies();
@@ -169,14 +161,13 @@ class TmdbDataCollectorServiceTest {
         );
 
         when(dataFetcher.fetchPopularTvShowsAsync(1)).thenReturn(CompletableFuture.completedFuture(response));
-        when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(false);
 
         // When
         collectorService.collectPopularTvShows();
 
         // Then
         verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
-        verify(persistenceService, times(1)).discoverAndPersistNewTvShows(anyList());
+        verify(persistenceService, times(1)).persistTvShows(anyList());
     }
 
     @Test
@@ -223,14 +214,13 @@ class TmdbDataCollectorServiceTest {
         );
 
         when(dataFetcher.fetchPopularMoviesAsync(1)).thenReturn(CompletableFuture.completedFuture(response));
-        when(itemRepository.existsByTmdbIdAndTmdbType(123L, TmdbType.MOVIE)).thenReturn(true); // Already exists
 
         // When
         collectorService.collectPopularMovies();
 
         // Then
         verify(dataFetcher, times(1)).fetchPopularMoviesAsync(1);
-        verify(persistenceService, never()).discoverAndPersistNewMovies(anyList());
+        verify(persistenceService, times(1)).discoverAndPersistNewMovies(anyList());
     }
 
     @Test
@@ -265,7 +255,7 @@ class TmdbDataCollectorServiceTest {
 
         // Then
         verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
-        verify(persistenceService, never()).discoverAndPersistNewTvShows(anyList());
+        verify(persistenceService, times(1)).persistTvShows(anyList());
     }
 
     @Test

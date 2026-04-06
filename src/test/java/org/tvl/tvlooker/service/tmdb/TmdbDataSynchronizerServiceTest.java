@@ -13,6 +13,7 @@ import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaDetails;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
@@ -70,24 +71,17 @@ class TmdbDataSynchronizerServiceTest {
                 1
         );
 
-        when(fetcher.fetchChangesAsync(eq(TmdbMediaType.MOVIE), eq(startDate), any(LocalDate.class), eq(1)))
-                .thenReturn(CompletableFuture.completedFuture(movieChanges));
-        when(fetcher.fetchChangesAsync(eq(TmdbMediaType.TV), eq(startDate), any(LocalDate.class), eq(1)))
+        when(fetcher.fetchChangesAsync(any(TmdbMediaType.class), any(LocalDate.class), any(LocalDate.class), anyInt()))
+                .thenReturn(CompletableFuture.completedFuture(movieChanges))
                 .thenReturn(CompletableFuture.completedFuture(tvChanges));
 
-        ItemEntity existingMovie = new ItemEntity();
-        existingMovie.setTmdbId(100L);
-        existingMovie.setTmdbType(TmdbType.MOVIE);
-        existingMovie.setTitle("Existing Movie");
-        ItemEntity existingTvShow = new ItemEntity();
-        existingTvShow.setTmdbId(200L);
-        existingTvShow.setTmdbType(TmdbType.TV);
-        existingTvShow.setTitle("Existing TV");
+        lenient().when(fetcher.fetchDetailsWithCreditsAsync(any(TmdbMediaType.class), anyLong()))
+                .thenReturn(CompletableFuture.completedFuture(mock(TmdbMediaDetails.class)));
 
         when(itemRepository.findByTmdbIdAndTmdbType(100L, TmdbType.MOVIE))
-                .thenReturn(Optional.of(existingMovie));
+                .thenReturn(Optional.of(mock(ItemEntity.class)));
         when(itemRepository.findByTmdbIdAndTmdbType(200L, TmdbType.TV))
-                .thenReturn(Optional.of(existingTvShow));
+                .thenReturn(Optional.of(mock(ItemEntity.class)));
 
         TmdbMovieDto newMovie = new TmdbMovieDto(
                 300L,
@@ -129,8 +123,8 @@ class TmdbDataSynchronizerServiceTest {
 
         when(fetcher.fetchPopularMoviesAsync(1)).thenReturn(CompletableFuture.completedFuture(popularMovies));
         when(fetcher.fetchPopularTvShowsAsync(1)).thenReturn(CompletableFuture.completedFuture(popularTvShows));
-        when(itemRepository.existsByTmdbIdAndTmdbType(300L, TmdbType.MOVIE)).thenReturn(false);
-        when(itemRepository.existsByTmdbIdAndTmdbType(400L, TmdbType.TV)).thenReturn(false);
+        when(persistenceService.discoverAndPersistNewMovies(anyList())).thenReturn(1);
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(1);
 
         // When
         synchronizerService.synchronize();

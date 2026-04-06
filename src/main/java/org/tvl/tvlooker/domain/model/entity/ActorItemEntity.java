@@ -1,5 +1,6 @@
 package org.tvl.tvlooker.domain.model.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -52,7 +53,7 @@ public class ActorItemEntity {
      * The actor that appeared in the item.
      * Many ActorItems can reference the same Actor.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "actor_id_fk", nullable = false)
     private ActorEntity actor;
 
