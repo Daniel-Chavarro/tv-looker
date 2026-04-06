@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
+import org.tvl.tvlooker.domain.model.entity.ActorItemEntity;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
@@ -100,7 +101,7 @@ class ItemRepositoryTest {
                 .voteAverage(new BigDecimal("9.50"))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorItems(new HashSet<>())
                 .build();
 
         // When
@@ -295,7 +296,7 @@ class ItemRepositoryTest {
                 .title("Action Sci-Fi Movie")
                 .genres(genres)
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorItems(new HashSet<>())
                 .build();
 
         // When - ItemEntity save will cascade to genres
@@ -328,7 +329,7 @@ class ItemRepositoryTest {
                 .title("Epic Movie")
                 .directors(directors)
                 .genres(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorItems(new HashSet<>())
                 .build();
 
         // When - ItemEntity save will cascade to directors
@@ -343,9 +344,9 @@ class ItemRepositoryTest {
     }
 
     @Test
-    @DisplayName("Should save item with actors using cascade persist")
+    @DisplayName("Should save item with actorItems using cascade persist")
     void testSaveItemWithActors() {
-        // Given - Create new actors (not persisted yet)
+        // Given - Create new actorItems (not persisted yet)
         ActorEntity actor1 = new ActorEntity();
         actor1.setName("Leonardo DiCaprio");
         actor1.setTmdbId(3000L);
@@ -353,25 +354,34 @@ class ItemRepositoryTest {
         actor2.setName("Tom Hanks");
         actor2.setTmdbId(4000L);
 
-        Set<ActorEntity> actors = new HashSet<>(List.of(actor1, actor2));
+        ActorItemEntity actorItem1 = ActorItemEntity.builder()
+                .actor(actor1)
+                .billingOrder(0)
+                .build();
+        ActorItemEntity actorItem2 = ActorItemEntity.builder()
+                .actor(actor2)
+                .billingOrder(1)
+                .build();
+
+        Set<ActorItemEntity> actorItems = new HashSet<>(List.of(actorItem1, actorItem2));
 
         ItemEntity item = ItemEntity.builder()
                 .tmdbId(800L)
                 .tmdbType(TmdbType.MOVIE)
                 .title("Star-Studded Film")
-                .actors(actors)
+                .actorItems(actorItems)
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
                 .build();
 
-        // When - ItemEntity save will cascade to actors
+        // When - ItemEntity save will cascade to actorItems
         ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // Then
-        assertThat(savedItem.getActors()).hasSize(2);
-        assertThat(savedItem.getActors()).extracting(ActorEntity::getName)
+        assertThat(savedItem.getActorItems()).hasSize(2);
+        assertThat(savedItem.getActorItems()).extracting(actorItem -> actorItem.getActor().getName())
                 .containsExactlyInAnyOrder("Leonardo DiCaprio", "Tom Hanks");
-        // Verify actors were persisted
+        // Verify actorItems were persisted
         assertThat(actorRepository.count()).isEqualTo(2);
     }
 
@@ -406,7 +416,7 @@ class ItemRepositoryTest {
                 .title("Invalid ItemEntity")
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorItems(new HashSet<>())
                 .build();
 
         // When & Then
@@ -429,7 +439,7 @@ class ItemRepositoryTest {
                 .title("Invalid Type ItemEntity")
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorItems(new HashSet<>())
                 .build();
 
         // When & Then
@@ -452,7 +462,7 @@ class ItemRepositoryTest {
                 .title(null)
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorItems(new HashSet<>())
                 .build();
 
         // When & Then
@@ -478,7 +488,7 @@ class ItemRepositoryTest {
                 .voteAverage(new BigDecimal("7.50"))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorItems(new HashSet<>())
                 .build();
     }
 }

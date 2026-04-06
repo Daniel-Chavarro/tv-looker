@@ -63,7 +63,7 @@ class RecommendationControllerTest {
                 .tmdbId(1000L + id)
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorsInItem(new HashSet<>())
                 .build();
     }
 

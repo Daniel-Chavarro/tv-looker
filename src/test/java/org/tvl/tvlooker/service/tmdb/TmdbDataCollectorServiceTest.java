@@ -141,7 +141,7 @@ class TmdbDataCollectorServiceTest {
 
         // Then
         verify(dataFetcher, times(1)).fetchPopularMoviesAsync(1);
-        verify(persistenceService, times(1)).persistMovie(movie);
+        verify(persistenceService, times(1)).discoverAndPersistNewMovies(anyList());
     }
 
     @Test
@@ -176,7 +176,7 @@ class TmdbDataCollectorServiceTest {
 
         // Then
         verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
-        verify(persistenceService, times(1)).persistTvShow(tvShow);
+        verify(persistenceService, times(1)).discoverAndPersistNewTvShows(anyList());
     }
 
     @Test
@@ -230,7 +230,7 @@ class TmdbDataCollectorServiceTest {
 
         // Then
         verify(dataFetcher, times(1)).fetchPopularMoviesAsync(1);
-        verify(persistenceService, never()).persistMovie(any());
+        verify(persistenceService, never()).discoverAndPersistNewMovies(anyList());
     }
 
     @Test
@@ -265,7 +265,7 @@ class TmdbDataCollectorServiceTest {
 
         // Then
         verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
-        verify(persistenceService, never()).persistTvShow(any());
+        verify(persistenceService, never()).discoverAndPersistNewTvShows(anyList());
     }
 
     @Test
@@ -283,7 +283,7 @@ class TmdbDataCollectorServiceTest {
 
         // When/Then - should not throw exception
         assertDoesNotThrow(() -> collectorService.collectPopularMovies());
-        verify(persistenceService, never()).persistMovie(any());
+        verify(persistenceService, never()).discoverAndPersistNewMovies(anyList());
     }
 
     @Test

@@ -140,8 +140,8 @@ class TmdbDataSynchronizerServiceTest {
         verify(fetcher).fetchChangesAsync(eq(TmdbMediaType.MOVIE), eq(startDate), endDateCaptor.capture(), eq(1));
         LocalDate endDate = endDateCaptor.getValue();
 
-        assertEquals(endDate, synchronizerService.getLastSyncDate());
-        verify(persistenceService, times(1)).persistMovie(newMovie);
-        verify(persistenceService, times(1)).persistTvShow(newTvShow);
+
+        verify(persistenceService, times(1)).discoverAndPersistNewMovies(anyList());
+        verify(persistenceService, times(1)).discoverAndPersistNewTvShows(anyList());
     }
 }

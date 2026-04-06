@@ -112,7 +112,7 @@ public class TestDataFactory {
                 .voteAverage(BigDecimal.valueOf(voteAverage))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorsInItem(new HashSet<>())
                 .build();
     }
 
