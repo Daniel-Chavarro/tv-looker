@@ -4,36 +4,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.exception.TmdbCollectionInProgressException;
-import org.tvl.tvlooker.domain.model.entity.ActorEntity;
-import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
-import org.tvl.tvlooker.domain.model.entity.GenreEntity;
-import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
-
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
-import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
-import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemBuilder;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * Collects and persists data from the TMDB API into the local database.
@@ -68,7 +54,9 @@ public class TmdbDataCollectorService {
     private final EntityCacheService entityCacheService;
     private final TmdbItemPersistenceService persistenceService;
 
-    /** Prevents concurrent collection operations */
+    /**
+     * Prevents concurrent collection operations
+     */
     private final AtomicBoolean collectionInProgress = new AtomicBoolean(false);
 
     @Value("${tmdb.collector.max-pages:50}")
@@ -187,10 +175,8 @@ public class TmdbDataCollectorService {
         TmdbGenreListDto movieGenres = movieGenresFuture.join();
         TmdbGenreListDto tvGenres = tvGenresFuture.join();
 
-        Set<Integer> seen = new HashSet<>();
-
-        persistenceService.persistGenres(movieGenres, seen);
-        persistenceService.persistGenres(tvGenres, seen);
+        persistenceService.persistGenres(movieGenres);
+        persistenceService.persistGenres(tvGenres);
 
         log.info("Genres collected");
     }

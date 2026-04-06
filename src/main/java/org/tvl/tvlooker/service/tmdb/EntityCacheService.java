@@ -14,7 +14,6 @@ import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbCastMemberMapper;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
 
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

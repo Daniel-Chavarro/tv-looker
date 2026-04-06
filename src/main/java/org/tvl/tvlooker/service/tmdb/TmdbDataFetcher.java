@@ -65,7 +65,7 @@ public class TmdbDataFetcher {
 
     /**
      * Fetches movie details with credits asynchronously, respecting rate limits.
-     *
+     * <p>
      * RateLimiter.acquire() will block until the request can be made without
      * exceeding the configured rate limit.
      *
@@ -157,7 +157,7 @@ public class TmdbDataFetcher {
 
     /**
      * Batch fetches multiple movies in parallel with rate limiting.
-     *
+     * <p>
      * Each movie fetch respects the global rate limiter, so the total throughput
      * never exceeds the configured limit. With 20 parallel threads and a 35 req/s
      * limit, this will take approximately:

@@ -7,22 +7,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaDetails;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
-import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemMapper;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -57,7 +52,7 @@ public class TmdbDataSynchronizerService {
 
     @Value("${tmdb.sync.popular-pages:5}")
     private int popularPages;
-    
+
     @Getter
     private LocalDate lastSyncDate = LocalDate.now().minusDays(1);
 
@@ -119,7 +114,7 @@ public class TmdbDataSynchronizerService {
         while (page <= totalPages) {
             TmdbPagedResponseDto<TmdbChangesDto> changes = fetcher.fetchChangesAsync(
                     mediaType, startDate, endDate, page).join();
-            
+
             if (changes == null || changes.results() == null) {
                 break;
             }
@@ -127,14 +122,14 @@ public class TmdbDataSynchronizerService {
             totalPages = changes.totalPages();
 
             List<Long> existingIds = changes.results().stream()
-                .filter(change -> itemRepository.findByTmdbIdAndTmdbType(change.id(), type).isPresent())
-                .map(TmdbChangesDto::id)
-                .toList();
+                    .filter(change -> itemRepository.findByTmdbIdAndTmdbType(change.id(), type).isPresent())
+                    .map(TmdbChangesDto::id)
+                    .toList();
 
             if (!existingIds.isEmpty()) {
                 List<CompletableFuture<TmdbMediaDetails>> futures = existingIds.stream()
-                    .map(id -> fetcher.fetchDetailsWithCreditsAsync(mediaType, id))
-                    .toList();
+                        .map(id -> fetcher.fetchDetailsWithCreditsAsync(mediaType, id))
+                        .toList();
 
                 CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 

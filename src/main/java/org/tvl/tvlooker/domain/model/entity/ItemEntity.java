@@ -138,5 +138,6 @@ public class ItemEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @Builder.Default
     private Set<ActorItemEntity> actorItems = new HashSet<>();
 }

@@ -1,7 +1,6 @@
 package org.tvl.tvlooker.service.tmdb;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
@@ -9,21 +8,16 @@ import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
-import org.tvl.tvlooker.persistence.repository.ActorRepository;
-import org.tvl.tvlooker.persistence.repository.DirectorRepository;
-import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
-import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbGenreMapper;
-import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemMapper;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaDetails;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 import org.tvl.tvlooker.persistence.tmdb.mapper.TmdbItemBuilder;
-
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -54,41 +48,28 @@ import java.util.stream.Collectors;
 public class TmdbItemPersistenceService {
 
     private final ItemRepository itemRepository;
-    private final GenreRepository genreRepository;
     private final EntityCacheService entityCacheService;
     private final TmdbDataFetcher fetcher;
 
-    @Value("${tmdb.collector.request-delay-ms:40}")
-    private long requestDelayMs;
-
     public TmdbItemPersistenceService(
             ItemRepository itemRepository,
-            GenreRepository genreRepository,
             EntityCacheService entityCacheService,
             TmdbDataFetcher fetcher) {
         this.itemRepository = itemRepository;
-        this.genreRepository = genreRepository;
         this.entityCacheService = entityCacheService;
         this.fetcher = fetcher;
     }
 
 
-
-    /**
-     * Introduces a delay between API calls to respect TMDB rate limits.
-     * Delay duration is configured via {@code tmdb.collector.request-delay-ms}.
-     */
-    public void throttle() {
-        try {
-            Thread.sleep(requestDelayMs);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.warn("Throttle interrupted");
-        }
-    }
-
     // ===================== PERSISTENCE METHODS =====================
 
+    //TODO: Refactor to use a single method persist for items (same logic)
+
+    /**
+     * Persists a batch of movies with their associated genres, actors, and directors.
+     *
+     * @param movieDetails List of TMDB movie details DTOs (must include appended credits)
+     */
     @Transactional
     public void persistMovies(List<TmdbMovieDetailsDto> movieDetails) {
         if (movieDetails == null || movieDetails.isEmpty()) {
@@ -125,6 +106,11 @@ public class TmdbItemPersistenceService {
         log.info("Persisted {} movies in batch", items.size());
     }
 
+    /**
+     * Persists a batch of TV shows with their associated genres, actors, and directors.
+     *
+     * @param tvShowDetails List of TMDB TV show details DTOs (must include appended credits)
+     */
     @Transactional
     public void persistTvShows(List<TmdbTvShowDetailsDto> tvShowDetails) {
         if (tvShowDetails == null || tvShowDetails.isEmpty()) {
@@ -161,20 +147,29 @@ public class TmdbItemPersistenceService {
         log.info("Persisted {} TV shows in batch", items.size());
     }
 
+    /**
+     * Persists genres from TMDB genre list.
+     *
+     * @param genreList TMDB genre list DTO containing genres for movies and TV shows
+     */
     @Transactional
-    public void persistGenres(TmdbGenreListDto genreList, Set<Integer> seen) {
-        int count = 0;
-        if (genreList != null && genreList.genres() != null) {
-            for (TmdbGenreDto dto : genreList.genres()) {
-                if (seen.add(dto.id())) {
-                    TmdbGenreMapper.findOrCreate(dto, genreRepository);
-                    count++;
-                }
-            }
+    public void persistGenres(TmdbGenreListDto genreList) {
+        if (genreList == null || genreList.genres() == null) {
+            log.warn("No genres to persist");
+            return;
         }
-        log.info("Persisted {} genres", count);
+
+        entityCacheService.findOrCreateGenres(genreList.genres());
+
+        log.info("Persisted genres");
     }
 
+    /**
+     * Discovers new movies from a list of TMDB movie DTOs, fetches their details, and persists them.
+     *
+     * @param movies List of TMDB movie DTOs to check for new entries
+     * @return number of new movies discovered and persisted
+     */
     @Transactional
     public int discoverAndPersistNewMovies(List<TmdbMovieDto> movies) {
         if (movies == null || movies.isEmpty()) {
@@ -182,8 +177,8 @@ public class TmdbItemPersistenceService {
         }
 
         List<TmdbMovieDto> newMovies = movies.stream()
-            .filter(movie -> !itemRepository.existsByTmdbIdAndTmdbType(movie.id(), TmdbType.MOVIE))
-            .toList();
+                .filter(movie -> !itemRepository.existsByTmdbIdAndTmdbType(movie.id(), TmdbType.MOVIE))
+                .toList();
 
         if (newMovies.isEmpty()) {
             return 0;
@@ -191,12 +186,18 @@ public class TmdbItemPersistenceService {
 
         List<Long> ids = newMovies.stream().map(TmdbMovieDto::id).toList();
         List<TmdbMovieDetailsDto> details = fetcher.fetchMoviesDetailsBatch(ids);
-        
+
         persistMovies(details);
-        
+
         return details.size();
     }
 
+    /**
+     * Discovers new TV shows from a list of TMDB TV show DTOs, fetches their details, and persists them.
+     *
+     * @param tvShows List of TMDB TV show DTOs to check for new entries
+     * @return number of new TV shows discovered and persisted
+     */
     @Transactional
     public int discoverAndPersistNewTvShows(List<TmdbTvShowDto> tvShows) {
         if (tvShows == null || tvShows.isEmpty()) {
@@ -204,8 +205,8 @@ public class TmdbItemPersistenceService {
         }
 
         List<TmdbTvShowDto> newTvShows = tvShows.stream()
-            .filter(tvShow -> !itemRepository.existsByTmdbIdAndTmdbType(tvShow.id(), TmdbType.TV))
-            .toList();
+                .filter(tvShow -> !itemRepository.existsByTmdbIdAndTmdbType(tvShow.id(), TmdbType.TV))
+                .toList();
 
         if (newTvShows.isEmpty()) {
             return 0;
@@ -213,45 +214,35 @@ public class TmdbItemPersistenceService {
 
         List<Long> ids = newTvShows.stream().map(TmdbTvShowDto::id).toList();
         List<TmdbTvShowDetailsDto> details = fetcher.fetchTvShowsDetailsBatch(ids);
-        
+
         persistTvShows(details);
-        
+
         return details.size();
     }
 
+    /**
+     * Updates an existing item with fresh details from TMDB, including genres, actors, and directors.
+     *
+     * @param item    existing item entity to update (must already exist in database)
+     * @param details fresh details from TMDB (must include genres and credits)
+     */
     @Transactional
-    public void updateItem(ItemEntity item, Object details) {
-        if (details instanceof TmdbMovieDetailsDto movieDetails) {
-            TmdbItemMapper.updateFromMovie(item, movieDetails);
-            if (movieDetails.genres() != null && movieDetails.credits() != null) {
-                Map<Long, GenreEntity> genreCache = entityCacheService.findOrCreateGenres(movieDetails.genres());
-                Map<Long, ActorEntity> actorCache = entityCacheService.findOrCreateActors(movieDetails.credits().cast());
-                Map<Long, DirectorEntity> directorCache = entityCacheService.findOrCreateDirectors(movieDetails.credits().crew());
-
-                TmdbItemBuilder.buildActorItems(item, movieDetails.credits(), actorCache);
-                item.setGenres(genreCache.values().stream()
-                        .filter(g -> movieDetails.genres().stream()
-                                .anyMatch(dto -> dto.id() == g.getTmdbId().intValue()))
-                        .collect(Collectors.toSet()));
-                item.setDirectors(directorCache.values());
-            }
-        } else if (details instanceof TmdbTvShowDetailsDto tvDetails) {
-            TmdbItemMapper.updateFromTvShow(item, tvDetails);
-            if (tvDetails.genres() != null && tvDetails.credits() != null) {
-                Map<Long, GenreEntity> genreCache = entityCacheService.findOrCreateGenres(tvDetails.genres());
-                Map<Long, ActorEntity> actorCache = entityCacheService.findOrCreateActors(tvDetails.credits().cast());
-                Map<Long, DirectorEntity> directorCache = entityCacheService.findOrCreateDirectors(tvDetails.credits().crew());
-
-                TmdbItemBuilder.buildActorItems(item, tvDetails.credits(), actorCache);
-                item.setGenres(genreCache.values().stream()
-                        .filter(g -> tvDetails.genres().stream()
-                                .anyMatch(dto -> dto.id() == g.getTmdbId().intValue()))
-                        .collect(Collectors.toSet()));
-                item.setDirectors(directorCache.values());
-            }
+    public void updateItem(ItemEntity item, TmdbMediaDetails details) {
+        if (details.genres() == null || details.credits() == null) {
+            log.warn("Skipping item update (tmdbId={}) due to missing genres or credits", item.getTmdbId());
+            return;
         }
+
+        Map<Long, GenreEntity> genreCache = entityCacheService.findOrCreateGenres(details.genres());
+        Map<Long, ActorEntity> actorCache = entityCacheService.findOrCreateActors(details.credits().cast());
+        Map<Long, DirectorEntity> directorCache = entityCacheService.findOrCreateDirectors(details.credits().crew());
+
+        TmdbItemBuilder.buildActorItems(item, details, actorCache);
+        item.setGenres(Set.copyOf(genreCache.values()));
+        item.setDirectors(Set.copyOf(directorCache.values()));
 
         itemRepository.save(item);
         log.debug("Updated item (tmdbId={})", item.getTmdbId());
     }
 }
+
