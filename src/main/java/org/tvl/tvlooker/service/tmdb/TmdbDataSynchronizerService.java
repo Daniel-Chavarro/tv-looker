@@ -53,6 +53,10 @@ public class TmdbDataSynchronizerService {
     @Value("${tmdb.sync.popular-pages:5}")
     private int popularPages;
 
+    @Value("${tmdb.sync.enabled:true}")
+    @Getter
+    private boolean syncEnabled;
+
     @Getter
     private LocalDate lastSyncDate = LocalDate.now().minusDays(1);
 
@@ -66,13 +70,23 @@ public class TmdbDataSynchronizerService {
     }
 
     /**
-     * Main scheduled sync method.
-     * Default: runs every 24 hours, first run 60 seconds after startup.
+     * Scheduled method that triggers the synchronization process at fixed intervals.
      */
-    @ConditionalOnProperty(name = "tmdb.sync.enabled", havingValue = "true", matchIfMissing = true)
     @Scheduled(
             fixedDelayString = "${tmdb.sync.interval-ms:86400000}",
             initialDelayString = "${tmdb.sync.initial-delay-ms:60000}")
+    public void scheduledSync() {
+        if (!syncEnabled) {
+            log.warn("Scheduled sync is disabled");
+            return;
+        }
+
+        synchronize();
+    }
+
+    /**
+     * Main sync method.
+     */
     public void synchronize() {
         log.info("========== TMDB SYNC STARTED (changes since {}) ==========", lastSyncDate);
 

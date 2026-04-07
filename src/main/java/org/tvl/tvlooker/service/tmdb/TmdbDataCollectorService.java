@@ -49,9 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class TmdbDataCollectorService {
     private final ItemRepository itemRepository;
-    private final GenreRepository genreRepository;
     private final TmdbDataFetcher dataFetcher;
-    private final EntityCacheService entityCacheService;
     private final TmdbItemPersistenceService persistenceService;
 
     /**
@@ -67,14 +65,10 @@ public class TmdbDataCollectorService {
 
     public TmdbDataCollectorService(
             ItemRepository itemRepository,
-            GenreRepository genreRepository,
             TmdbDataFetcher dataFetcher,
-            EntityCacheService entityCacheService,
             TmdbItemPersistenceService persistenceService) {
         this.itemRepository = itemRepository;
-        this.genreRepository = genreRepository;
         this.dataFetcher = dataFetcher;
-        this.entityCacheService = entityCacheService;
         this.persistenceService = persistenceService;
     }
 

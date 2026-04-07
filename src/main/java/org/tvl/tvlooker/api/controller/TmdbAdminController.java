@@ -98,7 +98,7 @@ public class TmdbAdminController {
         return ResponseEntity.ok(TmdbStatusResponse.builder()
                 .collectorRunning(collector.isCollectionInProgress())
                 .lastSyncDate(synchronizer.getLastSyncDate())
-                .syncEnabled(true)
+                .syncEnabled(synchronizer.isSyncEnabled())
                 .timestamp(Instant.now())
                 .build());
     }

@@ -142,7 +142,7 @@ public class TmdbClient {
     public TmdbGenreListDto getGenres(TmdbMediaType type) {
         log.debug("Fetching {} genres", type);
         return restClient.get()
-                .uri("/{type}/genre/list?language={lang}", type.getPath(), language)
+                .uri("/genre/{type}/list?language={lang}", type.getPath(), language)
                 .retrieve()
                 .body(TmdbGenreListDto.class);
     }
