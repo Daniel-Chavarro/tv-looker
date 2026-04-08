@@ -258,7 +258,7 @@ public class TmdbDataCollectorService {
         log.info("Fetched details for {} TV shows, now building and persisting...", tvShowDetails.size());
 
         // Use persistence service
-        persistenceService.persistTvShows(tvShowDetails);
+        persistenceService.persistItems(tvShowDetails);
 
         log.info("Popular TV shows done: {} collected, {} skipped", tvShowDetails.size(), skipped);
     }
