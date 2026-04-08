@@ -50,7 +50,7 @@ public class TmdbDataFetcher {
 
     public TmdbDataFetcher(
             TmdbClient tmdbClient,
-            @Qualifier("taskExecutor") Executor tmdbTaskExecutor,
+            @Qualifier("tmdbTaskExecutor") Executor tmdbTaskExecutor,
             @Value("${tmdb.api.rate-limit:35}") double requestsPerSecond) {
 
         if (requestsPerSecond <= 0 || requestsPerSecond > 40) {

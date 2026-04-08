@@ -1,6 +1,7 @@
 package org.tvl.tvlooker.service.tmdb;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
@@ -58,7 +59,7 @@ public class EntityCacheService {
      * 1. Extract all unique TMDB actor IDs<p>
      * 2. Bulk query database for existing actors<p>
      * 3. Identify missing actors<p>
-     * 4. Create and save missing actors<p>
+     * 4. Create and save missing actors with duplicate handling for race conditions<p>
      * 5. Return map of tmdbId → ActorEntity
      *
      * @param castMembers TMDB cast members (from credits response)
@@ -86,17 +87,28 @@ public class EntityCacheService {
                 .filter(id -> !actorMap.containsKey(id))
                 .collect(Collectors.toSet());
 
-        // 3. Create and save missing actors
+        // 3. Create and save missing actors with duplicate handling
         if (!missingIds.isEmpty()) {
-            List<ActorEntity> newActors = castMembers.stream()
-                    .filter(cast -> missingIds.contains(cast.id()))
-                    .map(TmdbCastMemberMapper::toEntity)
-                    .toList();
+            for (TmdbCreditsDto.CastMember cast : castMembers) {
+                if (!missingIds.contains(cast.id())) {
+                    continue;
+                }
 
-            List<ActorEntity> saved = actorRepository.saveAll(newActors);
-            saved.forEach(a -> actorMap.put(a.getTmdbId(), a));
+                try {
+                    ActorEntity newActor = TmdbCastMemberMapper.toEntity(cast);
+                    ActorEntity saved = actorRepository.save(newActor);
+                    actorMap.put(saved.getTmdbId(), saved);
+                    log.debug("Created new actor: tmdbId={}", cast.id());
+                } catch (DataIntegrityViolationException e) {
+                    // Race condition: another thread already created this actor
+                    log.debug("Actor {} already exists (race condition), retrieving it", cast.id());
+                    actorRepository.findByTmdbId(cast.id()).ifPresent(actor ->
+                            actorMap.put(actor.getTmdbId(), actor)
+                    );
+                }
+            }
 
-            log.debug("Created {} new actors", newActors.size());
+            log.debug("Created or retrieved {} new actors", missingIds.size());
         }
 
         return actorMap;
@@ -104,6 +116,8 @@ public class EntityCacheService {
 
     /**
      * Batch finds or creates directors from TMDB crew members.
+     * <p>
+     * Handles race conditions when multiple threads attempt to create the same director.
      *
      * @param crewMembers TMDB crew members (from credits response)
      * @return Map of tmdbId → DirectorEntity
@@ -140,15 +154,26 @@ public class EntityCacheService {
                 .collect(Collectors.toSet());
 
         if (!missingIds.isEmpty()) {
-            List<DirectorEntity> newDirectors = directors.stream()
-                    .filter(crew -> missingIds.contains(crew.id()))
-                    .map(TmdbCastMemberMapper::toEntity)
-                    .toList();
+            for (TmdbCreditsDto.CrewMember crew : directors) {
+                if (!missingIds.contains(crew.id())) {
+                    continue;
+                }
 
-            List<DirectorEntity> saved = directorRepository.saveAll(newDirectors);
-            saved.forEach(d -> directorMap.put(d.getTmdbId(), d));
+                try {
+                    DirectorEntity newDirector = TmdbCastMemberMapper.toEntity(crew);
+                    DirectorEntity saved = directorRepository.save(newDirector);
+                    directorMap.put(saved.getTmdbId(), saved);
+                    log.debug("Created new director: tmdbId={}", crew.id());
+                } catch (DataIntegrityViolationException e) {
+                    // Race condition: another thread already created this director
+                    log.debug("Director {} already exists (race condition), retrieving it", crew.id());
+                    directorRepository.findByTmdbId(crew.id()).ifPresent(director ->
+                            directorMap.put(director.getTmdbId(), director)
+                    );
+                }
+            }
 
-            log.debug("Created {} new directors", newDirectors.size());
+            log.debug("Created or retrieved {} new directors", missingIds.size());
         }
 
         return directorMap;
@@ -156,6 +181,8 @@ public class EntityCacheService {
 
     /**
      * Batch finds or creates genres from TMDB genre DTOs.
+     * <p>
+     * Handles race conditions when multiple threads attempt to create the same genre.
      *
      * @param genreDtos TMDB genre DTOs
      * @return Map of tmdbId → GenreEntity
@@ -183,15 +210,27 @@ public class EntityCacheService {
                 .collect(Collectors.toSet());
 
         if (!missingIds.isEmpty()) {
-            List<GenreEntity> newGenres = genreDtos.stream()
-                    .filter(g -> missingIds.contains((long) g.id()))
-                    .map(TmdbGenreMapper::toEntity)
-                    .toList();
+            for (TmdbGenreDto genreDto : genreDtos) {
+                long genreId = (long) genreDto.id();
+                if (!missingIds.contains(genreId)) {
+                    continue;
+                }
 
-            List<GenreEntity> saved = genreRepository.saveAll(newGenres);
-            saved.forEach(g -> genreMap.put(g.getTmdbId(), g));
+                try {
+                    GenreEntity newGenre = TmdbGenreMapper.toEntity(genreDto);
+                    GenreEntity saved = genreRepository.save(newGenre);
+                    genreMap.put(saved.getTmdbId(), saved);
+                    log.debug("Created new genre: tmdbId={}", genreId);
+                } catch (DataIntegrityViolationException e) {
+                    // Race condition: another thread already created this genre
+                    log.debug("Genre {} already exists (race condition), retrieving it", genreId);
+                    genreRepository.findByTmdbId(genreId).ifPresent(genre ->
+                            genreMap.put(genre.getTmdbId(), genre)
+                    );
+                }
+            }
 
-            log.debug("Created {} new genres", newGenres.size());
+            log.debug("Created or retrieved {} new genres", missingIds.size());
         }
 
         return genreMap;
