@@ -6,11 +6,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.TmdbCollectionInProgressException;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
-import org.tvl.tvlooker.persistence.repository.GenreRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
@@ -194,7 +192,12 @@ public class TmdbDataCollectorService {
         for (int page = 1; page <= maxPages; page++) {
             TmdbPagedResponseDto<TmdbMovieDto> response = dataFetcher.fetchPopularMoviesAsync(page).join();
 
+
             if (response == null || response.results() == null || response.results().isEmpty()) {
+                break;
+            }
+
+            if (page >= response.totalPages()) {
                 break;
             }
 
@@ -202,9 +205,6 @@ public class TmdbDataCollectorService {
             totalCollected += collected;
             totalSkipped += response.results().size() - collected;
 
-            if (page >= response.totalPages()) {
-                break;
-            }
 
             if (page % 10 == 0) {
                 log.info("Movies progress: page {}/{}, collected={}, skipped={}",

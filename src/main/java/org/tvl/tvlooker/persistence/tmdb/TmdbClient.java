@@ -1,10 +1,9 @@
 package org.tvl.tvlooker.persistence.tmdb;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.ResolvableType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
@@ -15,7 +14,6 @@ import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaItem;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
-
 
 import java.time.LocalDate;
 
@@ -115,7 +113,11 @@ public class TmdbClient {
                 .uri("/{type}/popular?language={lang}&page={page}",
                         type.getPath(), language, page)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(ParameterizedTypeReference.forType(
+                                ResolvableType.forClassWithGenerics(
+                                        TmdbPagedResponseDto.class, type.getMediaItemClass()).getType()
+                        )
+                );
     }
 
     public <T extends TmdbMediaDetails> T getDetailsWithCredits(
@@ -125,7 +127,9 @@ public class TmdbClient {
                 .uri("/{type}/{id}?language={lang}&append_to_response=credits",
                         type.getPath(), id, language)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(ParameterizedTypeReference.forType(
+                        ResolvableType.forClass(type.getMediaDetailsClass()).getType()
+                ));
     }
 
     public TmdbPagedResponseDto<TmdbChangesDto> getChanges(
@@ -136,7 +140,8 @@ public class TmdbClient {
                 .uri("/{type}/changes?start_date={start}&end_date={end}&page={page}",
                         type.getPath(), startDate, endDate, page)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
     }
 
     public TmdbGenreListDto getGenres(TmdbMediaType type) {

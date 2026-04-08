@@ -7,11 +7,12 @@ import java.util.List;
 
 /**
  * Credits (cast and crew) for a movie or TV show from TMDB API.
- * GET /movie/{id}/credits or /tv/{id}/credits
+ * Now used in TmdbMediaDetails responses (GET /movie/{id} and GET /tv/{id} with append_to_response=credits).
  */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TmdbCreditsDto(
-        long id,
+        Long id,
         List<CastMember> cast,
         List<CrewMember> crew
 ) {

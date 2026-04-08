@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
 /**
@@ -177,9 +178,20 @@ public class TmdbDataFetcher {
                 futures.toArray(new CompletableFuture[0]));
 
         return allOf.thenApply(v -> futures.stream()
-                        .map(CompletableFuture::join)
+                        .map(f -> {
+                            try {
+                                return f.join();
+                            } catch (CompletionException e) {
+                                log.error("Future individual falló: {}", e.getCause().getMessage(), e);
+                                return null;
+                            }
+                        })
                         .filter(Objects::nonNull)
                         .toList())
+                .exceptionally(ex -> {
+                    log.error("Error en fetchTvShowsDetailsBatch: {}", ex.getMessage(), ex);
+                    return List.of();
+                })
                 .join();
     }
 
