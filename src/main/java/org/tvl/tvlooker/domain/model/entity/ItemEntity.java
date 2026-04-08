@@ -53,9 +53,9 @@ public class ItemEntity {
 
     /**
      * The TMDB ID of the item, stored as a Long.
-     * This field is unique and cannot be null.
+     * This field cannot be null.
      */
-    @Column(name = "tmdb_id", nullable = false, unique = true)
+    @Column(name = "tmdb_id", nullable = false)
     private Long tmdbId;
 
     /**
