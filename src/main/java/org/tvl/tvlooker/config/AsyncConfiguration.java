@@ -38,4 +38,32 @@ public class AsyncConfiguration {
         executor.initialize();
         return executor;
     }
+
+    /**
+     * Thread pool executor for TMDB API calls.
+     *
+     * @return configured Executor bean
+     */
+    @Bean(name = "tmdbTaskExecutor")
+    public Executor tmdbTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        // Core threads: number of threads to keep alive even if idle
+        executor.setCorePoolSize(20);
+
+        // Max threads: maximum number of threads
+        executor.setMaxPoolSize(40);
+
+        // Queue size: pending tasks when all threads are busy
+        executor.setQueueCapacity(200);
+
+        // Thread naming for debugging
+        executor.setThreadNamePrefix("tmdb-fetch-");
+
+        // When queue is full, run the task in the caller's thread
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+
+        executor.initialize();
+        return executor;
+    }
 }

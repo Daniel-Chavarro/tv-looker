@@ -77,7 +77,7 @@ public class TmdbDataCollectorService {
      * @return CompletableFuture that completes when collection is done
      * @throws TmdbCollectionInProgressException if collection is already running
      */
-    @Async("taskExecutor")
+    @Async("tmdbTaskExecutor")
     public CompletableFuture<Void> collectAllAsync() {
         if (!collectionInProgress.compareAndSet(false, true)) {
             throw new TmdbCollectionInProgressException(
@@ -99,7 +99,7 @@ public class TmdbDataCollectorService {
      * @return CompletableFuture that completes when movie collection is done
      * @throws TmdbCollectionInProgressException if collection is already running
      */
-    @Async("taskExecutor")
+    @Async("tmdbTaskExecutor")
     public CompletableFuture<Void> collectPopularMoviesAsync() {
         if (!collectionInProgress.compareAndSet(false, true)) {
             throw new TmdbCollectionInProgressException(
@@ -121,7 +121,7 @@ public class TmdbDataCollectorService {
      * @return CompletableFuture that completes when TV show collection is done
      * @throws TmdbCollectionInProgressException if collection is already running
      */
-    @Async("taskExecutor")
+    @Async("tmdbTaskExecutor")
     public CompletableFuture<Void> collectPopularTvShowsAsync() {
         if (!collectionInProgress.compareAndSet(false, true)) {
             throw new TmdbCollectionInProgressException(
@@ -222,45 +222,33 @@ public class TmdbDataCollectorService {
     public void collectPopularTvShows() {
         log.info("Collecting popular TV shows (max {} pages)...", maxPages);
 
-        // Collect all TV show IDs first
-        List<Long> tvShowIds = new ArrayList<>();
-        int skipped = 0;
+        int totalCollected = 0;
+        int totalSkipped = 0;
 
         for (int page = 1; page <= maxPages; page++) {
             TmdbPagedResponseDto<TmdbTvShowDto> response = dataFetcher.fetchPopularTvShowsAsync(page).join();
 
+
             if (response == null || response.results() == null || response.results().isEmpty()) {
                 break;
-            }
-
-            for (TmdbTvShowDto tvShow : response.results()) {
-                if (!itemRepository.existsByTmdbIdAndTmdbType(tvShow.id(), TmdbType.TV)) {
-                    tvShowIds.add(tvShow.id());
-                } else {
-                    skipped++;
-                }
             }
 
             if (page >= response.totalPages()) {
                 break;
             }
 
+            int collected = persistenceService.discoverAndPersistNewTvShows(response.results());
+            totalCollected += collected;
+            totalSkipped += response.results().size() - collected;
+
+
             if (page % 10 == 0) {
-                log.info("TV shows progress: page {}/{}, collected IDs={}, skipped={}",
-                        page, Math.min(maxPages, response.totalPages()), tvShowIds.size(), skipped);
+                log.info("Tv Shows progress: page {}/{}, collected={}, skipped={}",
+                        page, Math.min(maxPages, response.totalPages()), totalCollected, totalSkipped);
             }
         }
 
-        log.info("Fetched {} TV show IDs (skipped {}), now batch fetching details...", tvShowIds.size(), skipped);
-
-        // Batch fetch all TV show details with credits in parallel
-        List<TmdbTvShowDetailsDto> tvShowDetails = dataFetcher.fetchTvShowsDetailsBatch(tvShowIds);
-        log.info("Fetched details for {} TV shows, now building and persisting...", tvShowDetails.size());
-
-        // Use persistence service
-        persistenceService.persistItems(tvShowDetails);
-
-        log.info("Popular TV shows done: {} collected, {} skipped", tvShowDetails.size(), skipped);
+        log.info("Popular TV shows done: {} collected, {} skipped", totalCollected, totalSkipped);;
     }
 }
 

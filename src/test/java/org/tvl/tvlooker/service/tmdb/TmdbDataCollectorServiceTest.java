@@ -85,7 +85,7 @@ class TmdbDataCollectorServiceTest {
         // Then: Should collect genres, movies, and TV shows
         verify(persistenceService, times(2)).persistGenres(any());
         verify(persistenceService, times(1)).discoverAndPersistNewMovies(anyList());
-        verify(persistenceService, times(1)).persistTvShows(anyList());
+        verify(persistenceService, times(1)).persistItems(anyList());
     }
 
     @Test
@@ -227,7 +227,7 @@ class TmdbDataCollectorServiceTest {
         // Then: Should batch fetch details and persist new TV shows
         verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
         verify(dataFetcher, times(1)).fetchTvShowsDetailsBatch(List.of(456L));
-        verify(persistenceService, times(1)).persistTvShows(List.of(tvShowDetails));
+        verify(persistenceService, times(1)).persistItems(List.of(tvShowDetails));
     }
 
     @Test
@@ -249,7 +249,7 @@ class TmdbDataCollectorServiceTest {
 
         // Then: Should skip existing TV shows and call batch fetch with empty list
         verify(dataFetcher, times(1)).fetchTvShowsDetailsBatch(Collections.emptyList());
-        verify(persistenceService, times(1)).persistTvShows(Collections.emptyList());
+        verify(persistenceService, times(1)).persistItems(Collections.emptyList());
     }
 
     @Test
@@ -265,7 +265,7 @@ class TmdbDataCollectorServiceTest {
         // When: Collecting popular TV shows
         // Then: Should complete without errors
         assertDoesNotThrow(() -> collectorService.collectPopularTvShows());
-        verify(persistenceService, times(1)).persistTvShows(Collections.emptyList());
+        verify(persistenceService, times(1)).persistItems(Collections.emptyList());
     }
 
     @Test
@@ -295,7 +295,7 @@ class TmdbDataCollectorServiceTest {
         CompletableFuture<Void> result = collectorService.collectPopularMoviesAsync();
 
         // Then: Should complete successfully and reset progress flag
-        assertDoesNotThrow(() -> result.join());
+        assertDoesNotThrow(result::join);
         assertFalse(collectorService.isCollectionInProgress());
     }
 
@@ -317,7 +317,7 @@ class TmdbDataCollectorServiceTest {
         CompletableFuture<Void> result = collectorService.collectPopularTvShowsAsync();
 
         // Then: Should complete successfully and reset progress flag
-        assertDoesNotThrow(() -> result.join());
+        assertDoesNotThrow(result::join);
         assertFalse(collectorService.isCollectionInProgress());
     }
 

@@ -1,6 +1,7 @@
 package org.tvl.tvlooker.service.tmdb;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
@@ -65,6 +66,7 @@ public class TmdbItemPersistenceService {
      * @param details List of TMDB media details DTOs (must include appended credits)
      */
     @Transactional
+    @Async("tmdbTaskExecutor")
     public <T extends TmdbMediaDetails> void persistItems(List<T> details) {
         if (details == null || details.isEmpty()) {
             return;
@@ -103,6 +105,7 @@ public class TmdbItemPersistenceService {
      * @param genreList TMDB genre list DTO containing genres for movies and TV shows
      */
     @Transactional
+    @Async("tmdbTaskExecutor")
     public void persistGenres(TmdbGenreListDto genreList) {
         if (genreList == null || genreList.genres() == null) {
             log.warn("No genres to persist");
@@ -177,6 +180,7 @@ public class TmdbItemPersistenceService {
      * @param details fresh details from TMDB (must include genres and credits)
      */
     @Transactional
+    @Async("tmdbTaskExecutor")
     public void updateItem(ItemEntity item, TmdbMediaDetails details) {
         if (details.genres() == null || details.credits() == null) {
             log.warn("Skipping item update (tmdbId={}) due to missing genres or credits", item.getTmdbId());
