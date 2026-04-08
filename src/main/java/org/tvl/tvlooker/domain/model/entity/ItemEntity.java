@@ -93,7 +93,7 @@ public class ItemEntity {
     /**
      * The average vote of the item, stored as a BigDecimal.
      */
-    @Column(name = "vote_average", precision = 3, scale = 2)
+    @Column(name = "vote_average", precision = 4, scale = 2)
     private BigDecimal voteAverage;
 
     /**
