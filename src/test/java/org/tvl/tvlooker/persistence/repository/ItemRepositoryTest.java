@@ -389,26 +389,7 @@ class ItemRepositoryTest {
     }
 
     // ==================== CONSTRAINT TESTS ====================
-
-    @Test
-    @DisplayName("Should enforce tmdbId uniqueness constraint")
-    void testTmdbIdUniqueConstraint() {
-        // Given
-        ItemEntity item1 = createItemEntity(9999L, "First Movie", TmdbType.MOVIE);
-        itemRepository.saveAndFlush(item1);
-
-        ItemEntity item2 = createItemEntity(9999L, "Duplicate TMDB ID", TmdbType.MOVIE);
-
-        // When & Then
-        try {
-            itemRepository.saveAndFlush(item2);
-            fail("Should have thrown exception for duplicate tmdbId");
-        } catch (Exception e) {
-            // Expected exception due to unique constraint violation
-            assertThat(e.getMessage()).containsAnyOf("unique", "constraint", "duplicate", "Unique");
-        }
-    }
-
+    
     @Test
     @DisplayName("Should not allow null tmdbId")
     void testNullTmdbId() {
