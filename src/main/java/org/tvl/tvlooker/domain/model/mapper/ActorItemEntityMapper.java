@@ -17,7 +17,6 @@ public class ActorItemEntityMapper {
     public static ActorItem toDomain(ActorItemEntity entity) {
         return ActorItem.builder()
                 .id(entity.getId())
-                .item(ItemEntityMapper.toDomain(entity.getItem()))
                 .actor(ActorEntityMapper.toDomain(entity.getActor()))
                 .characterName(entity.getCharacterName())
                 .billingOrder(entity.getBillingOrder())
@@ -34,7 +33,6 @@ public class ActorItemEntityMapper {
         return ActorItemEntity.builder()
                 .id(domain.getId())
                 .actor(ActorEntityMapper.toEntity(domain.getActor()))
-                .item(ItemEntityMapper.toEntity(domain.getItem()))
                 .characterName(domain.getCharacterName())
                 .billingOrder(domain.getBillingOrder())
                 .build();
