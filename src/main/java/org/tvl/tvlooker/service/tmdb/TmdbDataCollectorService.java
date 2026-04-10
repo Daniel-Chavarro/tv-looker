@@ -47,7 +47,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 @Slf4j
 public class TmdbDataCollectorService {
-    private final ItemRepository itemRepository;
     private final TmdbDataFetcher dataFetcher;
     private final TmdbItemPersistenceService persistenceService;
 
@@ -66,7 +65,6 @@ public class TmdbDataCollectorService {
             ItemRepository itemRepository,
             TmdbDataFetcher dataFetcher,
             TmdbItemPersistenceService persistenceService) {
-        this.itemRepository = itemRepository;
         this.dataFetcher = dataFetcher;
         this.persistenceService = persistenceService;
     }
@@ -178,11 +176,12 @@ public class TmdbDataCollectorService {
      * Fetches popular movies from TMDB page by page and persists each batch.
      * <p>
      * NEW APPROACH:
-     * 1. Fetch all movie IDs from pages sequentially
-     * 2. Batch fetch all movie details with credits in parallel
-     * 3. Bulk cache all entities (actors, directors, genres)
-     * 4. Build items with pre-cached entities
-     * 5. Save batch transactionally
+     * :
+     * 1. Fetch the first page to get total pages
+     * 2. Persist the first page
+     * 3. Fetch remaining pages asynchronously in parallel
+     * 4. Persist each page as it completes
+     * 5. Wait for all pages to complete
      */
     public void collectPopularMovies() {
         log.info("Collecting popular movies (max {} pages)...", maxPages);
@@ -242,38 +241,68 @@ public class TmdbDataCollectorService {
 
     /**
      * Fetches popular TV shows from TMDB page by page and persists each batch.
-     * Same batch approach as movies.
+     * <p>
+     * CONCURRENT APPROACH (same as movies):
+     * 1. Fetch the first page to get total pages
+     * 2. Persist the first page
+     * 3. Fetch remaining pages asynchronously in parallel
+     * 4. Persist each page as it completes
+     * 5. Wait for all pages to complete
      */
     public void collectPopularTvShows() {
         log.info("Collecting popular TV shows (max {} pages)...", maxPages);
 
-        int totalCollected = 0;
-        int totalSkipped = 0;
+        AtomicInteger totalCollected = new AtomicInteger(0);
+        AtomicInteger totalSkipped = new AtomicInteger(0);
 
-        for (int page = 1; page <= maxPages; page++) {
-            TmdbPagedResponseDto<TmdbTvShowDto> response = dataFetcher.fetchPopularTvShowsAsync(page).join();
-
-
-            if (response == null || response.results() == null || response.results().isEmpty()) {
-                break;
-            }
-
-            if (page >= response.totalPages()) {
-                break;
-            }
-
-            int collected = persistenceService.discoverAndPersistNewTvShows(response.results());
-            totalCollected += collected;
-            totalSkipped += response.results().size() - collected;
-
-
-            if (page % 10 == 0) {
-                log.info("Tv Shows progress: page {}/{}, collected={}, skipped={}",
-                        page, Math.min(maxPages, response.totalPages()), totalCollected, totalSkipped);
-            }
+        // Fetch first page to get total pages
+        TmdbPagedResponseDto<TmdbTvShowDto> firstPageResponse = dataFetcher.fetchPopularTvShowsAsync(1).join();
+        if (firstPageResponse == null || firstPageResponse.results() == null || firstPageResponse.results().isEmpty()) {
+            log.warn("No TV shows found on the first page");
+            return;
         }
 
-        log.info("Popular TV shows done: {} collected, {} skipped", totalCollected, totalSkipped);;
+        // Save first page
+        int collected = persistenceService.discoverAndPersistNewTvShows(firstPageResponse.results());
+        totalCollected.addAndGet(collected);
+        totalSkipped.addAndGet(firstPageResponse.results().size() - collected);
+
+        int pagesToFetch = Math.min(firstPageResponse.totalPages(), maxPages);
+
+        if (pagesToFetch <= 1) {
+            log.info("Popular TV shows done: {} collected, {} skipped", totalCollected.get(), totalSkipped.get());
+            return;
+        }
+
+        log.info("Pipelining TV shows pages from 2 to {}...", pagesToFetch);
+
+        List<CompletableFuture<Void>> pageTasks = new ArrayList<>();
+
+        // Fetch asynchronously the remaining pages
+        for (int page = 2; page <= pagesToFetch; page++) {
+            int currentPage = page;
+            CompletableFuture<Void> pageTask = dataFetcher.fetchPopularTvShowsAsync(currentPage)
+                    .thenAccept(response -> {
+                        if (response != null && response.results() != null && !response.results().isEmpty()) {
+                            int collectedResult = persistenceService.discoverAndPersistNewTvShows(response.results());
+                            totalCollected.addAndGet(collectedResult);
+                            totalSkipped.addAndGet(response.results().size() - collectedResult);
+                            log.info("TV shows progress: page {}/{}, collected={}, skipped={}",
+                                    currentPage, pagesToFetch, totalCollected.get(), totalSkipped.get());
+                        } else {
+                            log.warn("No TV shows found on page {}", currentPage);
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        log.error("Error fetching or persisting TV shows for page {}: {}", currentPage, ex.getMessage());
+                        return null;
+                    });
+            pageTasks.add(pageTask);
+        }
+
+        CompletableFuture.allOf(pageTasks.toArray(new CompletableFuture[0])).join();
+
+        log.info("Popular TV shows collected, collected={}, skipped={}", totalCollected.get(), totalSkipped.get());
     }
 }
 
