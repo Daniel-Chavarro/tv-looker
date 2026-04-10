@@ -3,7 +3,6 @@ package org.tvl.tvlooker.service.tmdb;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
 import org.tvl.tvlooker.domain.model.entity.GenreEntity;
@@ -22,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 /**
  * Shared service containing common TMDB item persistence and mapping operations.
@@ -65,8 +65,6 @@ public class TmdbItemPersistenceService {
      *
      * @param details List of TMDB media details DTOs (must include appended credits)
      */
-    @Transactional
-    @Async("tmdbTaskExecutor")
     public <T extends TmdbMediaDetails> void persistItems(List<T> details) {
         if (details == null || details.isEmpty()) {
             return;
@@ -82,14 +80,16 @@ public class TmdbItemPersistenceService {
             }
 
             if (itemDetails.credits() != null) {
-                if (itemDetails.credits().cast() != null) {
-                    actorCache = entityCacheService.findOrCreateActors(itemDetails.credits().cast());
+                if (itemDetails.credits().getCast() != null) {
+                    actorCache = entityCacheService.findOrCreateActors(itemDetails.credits().getCast());
                 }
-                if (itemDetails.credits().crew() != null) {
-                    directorCache = entityCacheService.findOrCreateDirectors(itemDetails.credits().crew());
+                if (itemDetails.credits().getCrew() != null) {
+                    directorCache = entityCacheService.findOrCreateDirectors(itemDetails.credits().getCrew());
                 }
             }
 
+            log.debug("Persisting item (tmdbId={}) with {} genres, {} actors, and {} directors",
+                    itemDetails.id(), genreCache.size(), actorCache.size(), directorCache.size());
             // Can be persisted batches in one call after created the items instead of one call per item
             ItemEntity persisted = itemRepository.save(TmdbItemBuilder
                     .buildFromItemDetails(itemDetails, genreCache, actorCache, directorCache));
@@ -104,8 +104,6 @@ public class TmdbItemPersistenceService {
      *
      * @param genreList TMDB genre list DTO containing genres for movies and TV shows
      */
-    @Transactional
-    @Async("tmdbTaskExecutor")
     public void persistGenres(TmdbGenreListDto genreList) {
         if (genreList == null || genreList.genres() == null) {
             log.warn("No genres to persist");
@@ -123,7 +121,6 @@ public class TmdbItemPersistenceService {
      * @param movies List of TMDB movie DTOs to check for new entries
      * @return number of new movies discovered and persisted
      */
-    @Transactional
     public int discoverAndPersistNewMovies(List<TmdbMovieDto> movies) {
         if (movies == null || movies.isEmpty()) {
             return 0;
@@ -151,7 +148,6 @@ public class TmdbItemPersistenceService {
      * @param tvShows List of TMDB TV show DTOs to check for new entries
      * @return number of new TV shows discovered and persisted
      */
-    @Transactional
     public int discoverAndPersistNewTvShows(List<TmdbTvShowDto> tvShows) {
         if (tvShows == null || tvShows.isEmpty()) {
             return 0;
@@ -179,8 +175,6 @@ public class TmdbItemPersistenceService {
      * @param item    existing item entity to update (must already exist in database)
      * @param details fresh details from TMDB (must include genres and credits)
      */
-    @Transactional
-    @Async("tmdbTaskExecutor")
     public void updateItem(ItemEntity item, TmdbMediaDetails details) {
         if (details.genres() == null || details.credits() == null) {
             log.warn("Skipping item update (tmdbId={}) due to missing genres or credits", item.getTmdbId());
@@ -188,8 +182,8 @@ public class TmdbItemPersistenceService {
         }
 
         Map<Long, GenreEntity> genreCache = entityCacheService.findOrCreateGenres(details.genres());
-        Map<Long, ActorEntity> actorCache = entityCacheService.findOrCreateActors(details.credits().cast());
-        Map<Long, DirectorEntity> directorCache = entityCacheService.findOrCreateDirectors(details.credits().crew());
+        Map<Long, ActorEntity> actorCache = entityCacheService.findOrCreateActors(details.credits().getCast());;
+        Map<Long, DirectorEntity> directorCache = entityCacheService.findOrCreateDirectors(details.credits().getCrew());
 
         TmdbItemBuilder.buildActorItems(item, details, actorCache);
         item.setGenres(Set.copyOf(genreCache.values()));

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbChangesDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaDetails;
