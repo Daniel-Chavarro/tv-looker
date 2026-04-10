@@ -94,10 +94,10 @@ public final class TmdbItemBuilder {
             TmdbMediaDetails details,
             Map<Long, ActorEntity> actorCache) {
         Set<ActorItemEntity> actorItems = new HashSet<>();
-        if (details.credits() != null && details.credits().cast() != null) {
-            details.credits().cast().stream()
+        if (details.credits() != null && details.credits().getCast() != null) {
+            details.credits().getCast().stream()
                     .sorted(Comparator.comparingInt(TmdbCreditsDto.CastMember::order))
-                    .limit(MAX_ACTORS_PER_ITEM)
+                    //.limit(MAX_ACTORS_PER_ITEM)
                     .forEach(cast -> {
                         ActorEntity actor = actorCache.get(cast.id());
                         if (actor != null) {

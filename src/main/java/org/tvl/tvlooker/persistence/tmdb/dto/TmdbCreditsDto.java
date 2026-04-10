@@ -2,6 +2,8 @@ package org.tvl.tvlooker.persistence.tmdb.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.List;
 
@@ -11,11 +13,13 @@ import java.util.List;
  */
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TmdbCreditsDto(
-        Long id,
-        List<CastMember> cast,
-        List<CrewMember> crew
-) {
+@Data
+@AllArgsConstructor
+public class TmdbCreditsDto{
+        private Long id;
+        private List<CastMember> cast;
+        private List<CrewMember> crew;
+
     /**
      * Represents an actor in the cast.
      */
