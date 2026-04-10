@@ -107,7 +107,7 @@ public class ItemEntity {
      * The genres associated with the item, represented as a many-to-many relationship with the Genre entity.
      * This field is lazily loaded and uses a join table named "genres_items" to link items and genres.
      */
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinTable(
             name = "genres_items",
             joinColumns = @JoinColumn(name = "item_id_fk"),
@@ -119,7 +119,7 @@ public class ItemEntity {
      * The directors associated with the item, represented as a many-to-many relationship with the Director entity.
      * This field is lazily loaded and uses a join table named "directors_items" to link items and directors.
      */
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinTable(
             name = "directors_items",
             joinColumns = @JoinColumn(name = "item_id_fk"),

@@ -53,7 +53,7 @@ public class ActorItemEntity {
      * The actor that appeared in the item.
      * Many ActorItems can reference the same Actor.
      */
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "actor_id_fk", nullable = false)
     private ActorEntity actor;
 
