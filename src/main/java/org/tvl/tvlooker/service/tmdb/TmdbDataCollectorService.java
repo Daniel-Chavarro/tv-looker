@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Collects and persists data from the TMDB API into the local database.
@@ -186,33 +187,57 @@ public class TmdbDataCollectorService {
     public void collectPopularMovies() {
         log.info("Collecting popular movies (max {} pages)...", maxPages);
 
-        int totalCollected = 0;
-        int totalSkipped = 0;
+        AtomicInteger totalCollected = new AtomicInteger(0);
+        AtomicInteger totalSkipped = new AtomicInteger(0);
 
-        for (int page = 1; page <= maxPages; page++) {
-            TmdbPagedResponseDto<TmdbMovieDto> response = dataFetcher.fetchPopularMoviesAsync(page).join();
-
-
-            if (response == null || response.results() == null || response.results().isEmpty()) {
-                break;
-            }
-
-            if (page >= response.totalPages()) {
-                break;
-            }
-
-            int collected = persistenceService.discoverAndPersistNewMovies(response.results());
-            totalCollected += collected;
-            totalSkipped += response.results().size() - collected;
+        // Fetch first page to get total pages
+        TmdbPagedResponseDto<TmdbMovieDto> firstPageResponse = dataFetcher.fetchPopularMoviesAsync(1).join();
+        if (firstPageResponse == null || firstPageResponse.results() == null || firstPageResponse.results().isEmpty()) {
+            log.warn("No movies found on the first page");
+            return;}
 
 
-            if (page % 10 == 0) {
-                log.info("Movies progress: page {}/{}, collected={}, skipped={}",
-                        page, Math.min(maxPages, response.totalPages()), totalCollected, totalSkipped);
-            }
+        // Save first page
+        int collected = persistenceService.discoverAndPersistNewMovies(firstPageResponse.results());
+
+        totalCollected.addAndGet(collected);
+        totalSkipped.addAndGet(firstPageResponse.results().size() - collected);
+
+        int pagesToFetch = Math.min(firstPageResponse.totalPages(), maxPages);
+
+        if (pagesToFetch <= 1){
+            return;
         }
 
-        log.info("Popular movies done: {} collected, {} skipped", totalCollected, totalSkipped);
+        log.info("Pipelining movies pages from 2 to {}...", pagesToFetch);
+
+        List<CompletableFuture<Void>> pageTasks = new ArrayList<>();
+
+        //Fetch asynchronously the remaining pages
+        for (int page = 2; page <= pagesToFetch; page++) {
+            int currentPage = page;
+            CompletableFuture<Void> pageTask = dataFetcher.fetchPopularMoviesAsync(currentPage)
+                    .thenAccept(response -> {
+                        if (response != null && response.results() != null && !response.results().isEmpty()) {
+                            int collectedResult = persistenceService.discoverAndPersistNewMovies(response.results());
+                            totalCollected.addAndGet(collectedResult);
+                            totalSkipped.addAndGet(response.results().size() - collectedResult);
+                            log.info("Movies progress: page {}/{}, collected={}, skipped={}",
+                                    currentPage, pagesToFetch, totalCollected.get(), totalSkipped.get());
+                        } else {
+                            log.warn("No movies found on page {}", currentPage);
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        log.error("Error fetching or persisting movies for page {}: {}", currentPage, ex.getMessage());
+                        return null;
+                    });
+            pageTasks.add(pageTask);
+        }
+
+        CompletableFuture.allOf(pageTasks.toArray(new CompletableFuture[0])).join();
+
+        log.info("Popular movies collected, collected={}, skipped={}", totalCollected.get(), totalSkipped.get());
     }
 
     /**

@@ -103,10 +103,10 @@ public class EntityCacheService {
 
                 actorMap.put(cast.id(), actor);
                 missingIds.remove(cast.id());
-                log.debug("Upserted actor: tmdbId={}", cast.id());
+                log.debug("Saved actor: tmdbId={}", cast.id());
             }
 
-            log.debug("Upserted {} actors", missingIds.size());
+            log.debug("Saved {} actors", missingIds.size());
         }
 
         return actorMap;
@@ -222,10 +222,10 @@ public class EntityCacheService {
 
                 genreMap.put((long) genreDto.id(), genre);
                 missingIds.remove(genreId);
-                log.debug("Upserted genre: tmdbId={}", genreId);
+                log.debug("Saved genre: tmdbId={}", genreId);
             }
 
-            log.debug("Upserted {} genres", missingIds.size());
+            log.debug("Saved {} genres", missingIds.size());
         }
 
         return genreMap;
