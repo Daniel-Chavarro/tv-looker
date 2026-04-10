@@ -11,11 +11,14 @@ import org.tvl.tvlooker.persistence.tmdb.dto.TmdbCreditsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaDetails;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMediaItem;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Client for the TMDB API v3.
@@ -123,13 +126,27 @@ public class TmdbClient {
     public <T extends TmdbMediaDetails> T getDetailsWithCredits(
             TmdbMediaType type, long id) {
         log.debug("Fetching {} details + credits for ID {}", type, id);
-        return restClient.get()
+        T details = restClient.get()
                 .uri("/{type}/{id}?language={lang}&append_to_response=credits",
                         type.getPath(), id, language)
                 .retrieve()
                 .body(ParameterizedTypeReference.forType(
                         ResolvableType.forClass(type.getMediaDetailsClass()).getType()
                 ));
+        return filterUncreditedCast(details);
+    }
+
+    private <T extends TmdbMediaDetails> T filterUncreditedCast(T details) {
+        if (details == null || details.credits() == null || details.credits().getCast() == null) {
+            return details;
+        }
+        List<TmdbCreditsDto.CastMember> filteredCast = details.credits().getCast().stream()
+                .filter(cast -> cast.character() == null || !cast.character().contains("(uncredited)"))
+                .toList();
+
+
+        details.credits().setCast(filteredCast);
+        return details;
     }
 
     public TmdbPagedResponseDto<TmdbChangesDto> getChanges(
