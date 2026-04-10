@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.response.ActorItemResponse;
 import org.tvl.tvlooker.domain.model.dto.ActorItem;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 

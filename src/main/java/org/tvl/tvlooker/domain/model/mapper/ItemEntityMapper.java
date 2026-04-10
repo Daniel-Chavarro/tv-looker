@@ -2,12 +2,9 @@ package org.tvl.tvlooker.domain.model.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.tvl.tvlooker.domain.model.dto.ActorItem;
 import org.tvl.tvlooker.domain.model.dto.Item;
-import org.tvl.tvlooker.domain.model.entity.ActorItemEntity;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**

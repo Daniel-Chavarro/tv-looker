@@ -1,7 +1,6 @@
 package org.tvl.tvlooker.service.tmdb;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
@@ -21,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 /**
  * Shared service containing common TMDB item persistence and mapping operations.

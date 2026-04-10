@@ -5,13 +5,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.TmdbCollectionInProgressException;
-import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 
 import java.util.ArrayList;
@@ -294,7 +292,8 @@ public class TmdbDataCollectorService {
                         }
                     })
                     .exceptionally(ex -> {
-                        log.error("Error fetching or persisting TV shows for page {}: {}", currentPage, ex.getMessage());
+                        log.error("Error fetching or persisting TV shows for page {}: {}",
+                                currentPage, ex.getMessage());
                         return null;
                     });
             pageTasks.add(pageTask);
