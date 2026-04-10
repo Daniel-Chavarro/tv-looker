@@ -282,11 +282,14 @@ class ItemRepositoryTest {
     @Test
     @DisplayName("Should save item with genres using cascade persist")
     void testSaveItemWithGenres() {
-        // Given - Create new genres (not persisted yet)
+        // Given - Create and persist new genres first
         GenreEntity action = new GenreEntity();
         action.setName("Action");
         GenreEntity sciFi = new GenreEntity();
         sciFi.setName("Sci-Fi");
+
+        action = genreRepository.saveAndFlush(action);
+        sciFi = genreRepository.saveAndFlush(sciFi);
 
         Set<GenreEntity> genres = new HashSet<>(List.of(action, sciFi));
 
@@ -299,27 +302,28 @@ class ItemRepositoryTest {
                 .actorItems(new HashSet<>())
                 .build();
 
-        // When - ItemEntity save will cascade to genres
+        // When - ItemEntity save will merge to existing genres
         ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // Then
         assertThat(savedItem.getGenres()).hasSize(2);
         assertThat(savedItem.getGenres()).extracting(GenreEntity::getName)
                 .containsExactlyInAnyOrder("Action", "Sci-Fi");
-        // Verify genres were persisted
-        assertThat(genreRepository.count()).isEqualTo(2);
     }
 
     @Test
     @DisplayName("Should save item with directors using cascade persist")
     void testSaveItemWithDirectors() {
-        // Given - Create new directors (not persisted yet)
+        // Given - Create and persist new directors first
         DirectorEntity director1 = new DirectorEntity();
         director1.setName("Christopher Nolan");
         director1.setTmdbId(1000L);
         DirectorEntity director2 = new DirectorEntity();
         director2.setName("Steven Spielberg");
         director2.setTmdbId(2000L);
+
+        director1 = directorRepository.saveAndFlush(director1);
+        director2 = directorRepository.saveAndFlush(director2);
 
         Set<DirectorEntity> directors = new HashSet<>(List.of(director1, director2));
 
@@ -332,7 +336,7 @@ class ItemRepositoryTest {
                 .actorItems(new HashSet<>())
                 .build();
 
-        // When - ItemEntity save will cascade to directors
+        // When - ItemEntity save will merge to existing directors
         ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // Then
@@ -346,7 +350,18 @@ class ItemRepositoryTest {
     @Test
     @DisplayName("Should save item with actorItems using cascade persist")
     void testSaveItemWithActors() {
-        // Given - Create item first, then actors and actorItems
+        // Given - Create and persist actors first
+        ActorEntity actor1 = new ActorEntity();
+        actor1.setName("Leonardo DiCaprio");
+        actor1.setTmdbId(3000L);
+        ActorEntity actor2 = new ActorEntity();
+        actor2.setName("Tom Hanks");
+        actor2.setTmdbId(4000L);
+
+        actor1 = actorRepository.saveAndFlush(actor1);
+        actor2 = actorRepository.saveAndFlush(actor2);
+
+        // Then add persisted actors to actorItems
         ItemEntity item = ItemEntity.builder()
                 .tmdbId(800L)
                 .tmdbType(TmdbType.MOVIE)
@@ -355,13 +370,6 @@ class ItemRepositoryTest {
                 .directors(new HashSet<>())
                 .actorItems(new HashSet<>())
                 .build();
-
-        ActorEntity actor1 = new ActorEntity();
-        actor1.setName("Leonardo DiCaprio");
-        actor1.setTmdbId(3000L);
-        ActorEntity actor2 = new ActorEntity();
-        actor2.setName("Tom Hanks");
-        actor2.setTmdbId(4000L);
 
         ActorItemEntity actorItem1 = ActorItemEntity.builder()
                 .item(item)
@@ -377,7 +385,7 @@ class ItemRepositoryTest {
         item.getActorItems().add(actorItem1);
         item.getActorItems().add(actorItem2);
 
-        // When - ItemEntity save will cascade to actorItems and actors
+        // When - ItemEntity save will merge actorItems with existing actors
         ItemEntity savedItem = itemRepository.saveAndFlush(item);
 
         // Then

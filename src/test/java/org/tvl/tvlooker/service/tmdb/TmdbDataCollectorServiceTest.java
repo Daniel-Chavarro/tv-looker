@@ -75,9 +75,8 @@ class TmdbDataCollectorServiceTest {
         when(dataFetcher.fetchPopularTvShowsAsync(1))
                 .thenReturn(CompletableFuture.completedFuture(tvResponse));
 
-        when(itemRepository.existsByTmdbIdAndTmdbType(200L, TmdbType.TV)).thenReturn(false);
-        when(dataFetcher.fetchTvShowsDetailsBatch(anyList()))
-                .thenReturn(List.of(createMockTvShowDetails(200L)));
+        when(persistenceService.discoverAndPersistNewMovies(anyList())).thenReturn(1);
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(1);
 
         // When: Collecting all data
         collectorService.collectAll();
@@ -85,7 +84,7 @@ class TmdbDataCollectorServiceTest {
         // Then: Should collect genres, movies, and TV shows
         verify(persistenceService, times(2)).persistGenres(any());
         verify(persistenceService, times(1)).discoverAndPersistNewMovies(anyList());
-        verify(persistenceService, times(1)).persistItems(anyList());
+        verify(persistenceService, times(1)).discoverAndPersistNewTvShows(anyList());
     }
 
     @Test
@@ -215,19 +214,14 @@ class TmdbDataCollectorServiceTest {
 
         when(dataFetcher.fetchPopularTvShowsAsync(1))
                 .thenReturn(CompletableFuture.completedFuture(response));
-        when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(false);
-
-        TmdbTvShowDetailsDto tvShowDetails = createMockTvShowDetails(456L);
-        when(dataFetcher.fetchTvShowsDetailsBatch(List.of(456L)))
-                .thenReturn(List.of(tvShowDetails));
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(1);
 
         // When: Collecting popular TV shows
         collectorService.collectPopularTvShows();
 
-        // Then: Should batch fetch details and persist new TV shows
+        // Then: Should discover and persist new TV shows
         verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
-        verify(dataFetcher, times(1)).fetchTvShowsDetailsBatch(List.of(456L));
-        verify(persistenceService, times(1)).persistItems(List.of(tvShowDetails));
+        verify(persistenceService, times(1)).discoverAndPersistNewTvShows(List.of(tvShow));
     }
 
     @Test
@@ -240,16 +234,14 @@ class TmdbDataCollectorServiceTest {
 
         when(dataFetcher.fetchPopularTvShowsAsync(1))
                 .thenReturn(CompletableFuture.completedFuture(response));
-        when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(true);
-        when(dataFetcher.fetchTvShowsDetailsBatch(Collections.emptyList()))
-                .thenReturn(Collections.emptyList());
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(0);
 
         // When: Collecting popular TV shows
         collectorService.collectPopularTvShows();
 
-        // Then: Should skip existing TV shows and call batch fetch with empty list
-        verify(dataFetcher, times(1)).fetchTvShowsDetailsBatch(Collections.emptyList());
-        verify(persistenceService, times(1)).persistItems(Collections.emptyList());
+        // Then: Should skip existing TV shows
+        verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
+        verify(persistenceService, times(1)).discoverAndPersistNewTvShows(List.of(existingTvShow));
     }
 
     @Test
@@ -265,7 +257,7 @@ class TmdbDataCollectorServiceTest {
         // When: Collecting popular TV shows
         // Then: Should complete without errors
         assertDoesNotThrow(() -> collectorService.collectPopularTvShows());
-        verify(persistenceService, times(1)).persistItems(Collections.emptyList());
+        verify(persistenceService, never()).discoverAndPersistNewTvShows(anyList());
     }
 
     @Test
@@ -309,9 +301,7 @@ class TmdbDataCollectorServiceTest {
 
         when(dataFetcher.fetchPopularTvShowsAsync(1))
                 .thenReturn(CompletableFuture.completedFuture(response));
-        when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(false);
-        when(dataFetcher.fetchTvShowsDetailsBatch(anyList()))
-                .thenReturn(List.of(createMockTvShowDetails(456L)));
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(1);
 
         // When: Collecting TV shows asynchronously
         CompletableFuture<Void> result = collectorService.collectPopularTvShowsAsync();
@@ -362,9 +352,7 @@ class TmdbDataCollectorServiceTest {
 
         when(dataFetcher.fetchPopularTvShowsAsync(1))
                 .thenReturn(CompletableFuture.completedFuture(response));
-        when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(false);
-        when(dataFetcher.fetchTvShowsDetailsBatch(anyList()))
-                .thenReturn(List.of(createMockTvShowDetails(456L)));
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(1);
 
         // When: Collecting popular TV shows
         collectorService.collectPopularTvShows();

@@ -107,15 +107,15 @@ class TmdbDataSynchronizerServiceTest {
     @DisplayName("Should fetch updated details and persist changes when syncing existing items")
     void testSyncChanges_UpdatesExistingItems() {
         // Given: A movie exists in the database and has changes on TMDB
-        LocalDate startDate = LocalDate.of(2026, 4, 1);
-        LocalDate endDate = LocalDate.of(2026, 4, 7);
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate today = LocalDate.now();
         ReflectionTestUtils.setField(synchronizerService, "syncEnabled", true);
 
         TmdbChangesDto change = new TmdbChangesDto(123L, false);
         TmdbPagedResponseDto<TmdbChangesDto> changes = 
                 new TmdbPagedResponseDto<>(1, List.of(change), 1, 1);
 
-        when(fetcher.fetchChangesAsync(TmdbMediaType.MOVIE, startDate, endDate, 1))
+        when(fetcher.fetchChangesAsync(TmdbMediaType.MOVIE, yesterday, today, 1))
                 .thenReturn(CompletableFuture.completedFuture(changes));
 
         ItemEntity existingItem = mock(ItemEntity.class);
@@ -127,7 +127,7 @@ class TmdbDataSynchronizerServiceTest {
                 .thenReturn(CompletableFuture.completedFuture(updatedDetails));
 
         // When: Syncing changes for the date range
-        ReflectionTestUtils.setField(synchronizerService, "lastSyncDate", startDate);
+        ReflectionTestUtils.setField(synchronizerService, "lastSyncDate", yesterday);
         synchronizerService.synchronize();
 
         // Then: Should fetch updated details and persist the changes
