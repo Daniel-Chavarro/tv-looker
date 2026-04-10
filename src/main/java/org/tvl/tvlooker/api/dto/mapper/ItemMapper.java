@@ -27,6 +27,11 @@ public class ItemMapper {
                 .voteAverage(item.getVoteAverage())
                 .tmdbType(item.getTmdbType())
                 .tmdbId(item.getTmdbId())
+                .genreResponses(item.getGenres() != null
+                        ? item.getGenres().stream()
+                        .map(GenreMapper::toResponse)
+                        .collect(java.util.stream.Collectors.toSet())
+                        : null)
                 .actorItemResponses(item.getActorsInItem() != null
                         ? ActorItemMapper.toResponse(item.getActorsInItem())
                         : null)
