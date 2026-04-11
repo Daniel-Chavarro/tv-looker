@@ -20,7 +20,6 @@ public class CreateUserRequest {
     @Email(message = "Invalid email format")
     private String email;
 
-    @NotBlank(message = "Name is required")
     @Size(max = 100)
     private String name;
 
