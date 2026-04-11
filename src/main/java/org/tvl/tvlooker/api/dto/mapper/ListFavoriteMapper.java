@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.request.CreateListFavoriteRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateListFavoriteRequest;
 import org.tvl.tvlooker.api.dto.response.ListFavoriteResponse;
-import org.tvl.tvlooker.domain.model.ListFavorite;
+import org.tvl.tvlooker.domain.model.dto.ListFavorite;
 
 import java.util.stream.Collectors;
 
@@ -25,17 +25,6 @@ public class ListFavoriteMapper {
                 .build();
     }
 
-    public static ListFavorite toModel(ListFavoriteResponse response){
-        return ListFavorite.builder()
-                .id(response.getId())
-                .name(response.getName())
-                .description(response.getDescription())
-                .userId(response.getUserId())
-                .items(response.getItems().stream()
-                        .map(ItemMapper::toModel)
-                        .collect(Collectors.toSet()))
-                .build();
-    }
 
     public static ListFavorite fromCreateRequest(CreateListFavoriteRequest request){
         return ListFavorite.builder()

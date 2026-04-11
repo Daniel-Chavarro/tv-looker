@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.mapper.ItemMapper;
 import org.tvl.tvlooker.api.dto.response.ItemResponse;
 import org.tvl.tvlooker.api.dto.response.RecommendationResponse;
-import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.service.RecommendationService;
 
 import java.util.List;

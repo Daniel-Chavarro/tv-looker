@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.request.CreateInteractionRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateInteractionRequest;
 import org.tvl.tvlooker.api.dto.response.InteractionResponse;
-import org.tvl.tvlooker.domain.model.Interaction;
+import org.tvl.tvlooker.domain.model.dto.Interaction;
 
 
 /**

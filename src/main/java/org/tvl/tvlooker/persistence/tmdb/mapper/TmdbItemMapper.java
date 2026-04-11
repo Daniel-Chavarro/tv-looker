@@ -2,7 +2,9 @@ package org.tvl.tvlooker.persistence.tmdb.mapper;
 
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
+import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDetailsDto;
 import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 
 import java.math.BigDecimal;
@@ -68,6 +70,28 @@ public final class TmdbItemMapper {
      * Updates mutable fields on an existing Item with fresh TMDB TV show data.
      */
     public static void updateFromTvShow(ItemEntity existing, TmdbTvShowDto dto) {
+        existing.setTitle(dto.name());
+        existing.setOverview(dto.overview());
+        existing.setPopularity(BigDecimal.valueOf(dto.popularity()));
+        existing.setVoteAverage(BigDecimal.valueOf(dto.voteAverage()));
+        existing.setReleaseDate(parseDate(dto.firstAirDate()));
+    }
+
+    /**
+     * Updates mutable fields on an existing Item with fresh TMDB movie details data.
+     */
+    public static void updateFromMovie(ItemEntity existing, TmdbMovieDetailsDto dto) {
+        existing.setTitle(dto.title());
+        existing.setOverview(dto.overview());
+        existing.setPopularity(BigDecimal.valueOf(dto.popularity()));
+        existing.setVoteAverage(BigDecimal.valueOf(dto.voteAverage()));
+        existing.setReleaseDate(parseDate(dto.releaseDate()));
+    }
+
+    /**
+     * Updates mutable fields on an existing Item with fresh TMDB TV show details data.
+     */
+    public static void updateFromTvShow(ItemEntity existing, TmdbTvShowDetailsDto dto) {
         existing.setTitle(dto.name());
         existing.setOverview(dto.overview());
         existing.setPopularity(BigDecimal.valueOf(dto.popularity()));

@@ -1,12 +1,12 @@
 package org.tvl.tvlooker.service;
 
-import org.tvl.tvlooker.domain.model.Interaction;
+import org.tvl.tvlooker.domain.model.dto.Interaction;
 import org.tvl.tvlooker.domain.exception.InteractionNotFoundException;
-import org.tvl.tvlooker.domain.model.Item;
-import org.tvl.tvlooker.domain.model.Review;
-import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.dto.Item;
+import org.tvl.tvlooker.domain.model.dto.Review;
+import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.entity.InteractionEntity;
-import org.tvl.tvlooker.persistence.mapper.InteractionEntityMapper;
+import org.tvl.tvlooker.domain.model.mapper.InteractionEntityMapper;
 import org.tvl.tvlooker.persistence.repository.InteractionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

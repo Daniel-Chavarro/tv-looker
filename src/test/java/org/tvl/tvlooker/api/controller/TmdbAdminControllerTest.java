@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -38,7 +39,11 @@ class TmdbAdminControllerTest {
     @InjectMocks
     private TmdbAdminController controller;
 
+    @Value("${tmdb.sync.enabled:true}")
+    private boolean syncEnabled;
+
     private MockMvc mockMvc;
+
 
     @BeforeEach
     void setUp() {
@@ -195,7 +200,7 @@ class TmdbAdminControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.collectorRunning", is(false)))
                 .andExpect(jsonPath("$.lastSyncDate", is("2026-03-15")))
-                .andExpect(jsonPath("$.syncEnabled", is(true)))
+                .andExpect(jsonPath("$.syncEnabled", is(syncEnabled)))
                 .andExpect(jsonPath("$.timestamp", notNullValue()));
 
         verify(collectorService, times(1)).isCollectionInProgress();
@@ -215,7 +220,7 @@ class TmdbAdminControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.collectorRunning", is(true)))
                 .andExpect(jsonPath("$.lastSyncDate", is("2026-03-14")))
-                .andExpect(jsonPath("$.syncEnabled", is(true)))
+                .andExpect(jsonPath("$.syncEnabled", is(syncEnabled)))
                 .andExpect(jsonPath("$.timestamp", notNullValue()));
 
         verify(collectorService, times(1)).isCollectionInProgress();
@@ -234,7 +239,7 @@ class TmdbAdminControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.collectorRunning", is(false)))
                 .andExpect(jsonPath("$.lastSyncDate").doesNotExist())
-                .andExpect(jsonPath("$.syncEnabled", is(true)))
+                .andExpect(jsonPath("$.syncEnabled", is(syncEnabled)))
                 .andExpect(jsonPath("$.timestamp", notNullValue()));
 
         verify(collectorService, times(1)).isCollectionInProgress();

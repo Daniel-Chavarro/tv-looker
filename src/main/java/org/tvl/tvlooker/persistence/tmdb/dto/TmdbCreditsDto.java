@@ -2,19 +2,24 @@ package org.tvl.tvlooker.persistence.tmdb.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.List;
 
 /**
  * Credits (cast and crew) for a movie or TV show from TMDB API.
- * GET /movie/{id}/credits or /tv/{id}/credits
+ * Now used in TmdbMediaDetails responses (GET /movie/{id} and GET /tv/{id} with append_to_response=credits).
  */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TmdbCreditsDto(
-        long id,
-        List<CastMember> cast,
-        List<CrewMember> crew
-) {
+@Data
+@AllArgsConstructor
+public class TmdbCreditsDto{
+        private Long id;
+        private List<CastMember> cast;
+        private List<CrewMember> crew;
+
     /**
      * Represents an actor in the cast.
      */

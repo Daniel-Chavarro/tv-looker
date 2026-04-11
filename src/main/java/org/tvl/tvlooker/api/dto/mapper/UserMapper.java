@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.api.dto.request.CreateUserRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateUserRequest;
 import org.tvl.tvlooker.api.dto.response.UserResponse;
-import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.dto.User;
 
 /**
  * Mapper for converting between User DTOs and models.

@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Configuration for asynchronous task execution.
@@ -27,14 +28,41 @@ public class AsyncConfiguration {
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        int corePoolSize = Runtime.getRuntime().availableProcessors();
-        log.info("Configuring TMDB Task Executor with core pool size: {}", corePoolSize);
-        executor.setCorePoolSize(corePoolSize);
-        executor.setMaxPoolSize(corePoolSize * 2);
-        executor.setQueueCapacity(corePoolSize * 2);
+        executor.setCorePoolSize(20);
+        executor.setMaxPoolSize(20 * 2);
+        executor.setQueueCapacity(200);
         executor.setThreadNamePrefix("Tasks-Async-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(60);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
+    }
+
+    /**
+     * Thread pool executor for TMDB API calls.
+     *
+     * @return configured Executor bean
+     */
+    @Bean(name = "tmdbTaskExecutor")
+    public Executor tmdbTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        // Core threads: number of threads to keep alive even if idle
+        executor.setCorePoolSize(20);
+
+        // Max threads: maximum number of threads
+        executor.setMaxPoolSize(40);
+
+        // Queue size: pending tasks when all threads are busy
+        executor.setQueueCapacity(200);
+
+        // Thread naming for debugging
+        executor.setThreadNamePrefix("tmdb-fetch-");
+
+        // When queue is full, run the task in the caller's thread
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+
         executor.initialize();
         return executor;
     }

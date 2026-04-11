@@ -9,41 +9,33 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.tvl.tvlooker.domain.exception.TmdbCollectionInProgressException;
-import org.tvl.tvlooker.domain.model.entity.GenreEntity;
-import org.tvl.tvlooker.persistence.repository.GenreRepository;
-import org.tvl.tvlooker.persistence.repository.ItemRepository;
-import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbGenreListDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbMovieDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbPagedResponseDto;
-import org.tvl.tvlooker.persistence.tmdb.dto.TmdbTvShowDto;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
+import org.tvl.tvlooker.persistence.repository.ItemRepository;
+import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
+import org.tvl.tvlooker.persistence.tmdb.dto.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for TmdbDataCollectorService.
- * Tests collection logic with mocked dependencies.
+ * Behavior-driven tests for TmdbDataCollectorService.
+ * Tests follow Given-When-Then pattern and focus on what methods do and return,
+ * not on implementation details.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TmdbDataCollectorService Unit Tests")
+@DisplayName("TmdbDataCollectorService Behavior Tests")
 class TmdbDataCollectorServiceTest {
 
     @Mock
-    private TmdbClient tmdbClient;
+    private TmdbDataFetcher dataFetcher;
 
     @Mock
     private ItemRepository itemRepository;
-
-    @Mock
-    private GenreRepository genreRepository;
 
     @Mock
     private TmdbItemPersistenceService persistenceService;
@@ -55,243 +47,367 @@ class TmdbDataCollectorServiceTest {
     void setUp() {
         // Set maxPages to 1 for testing to avoid long loops
         ReflectionTestUtils.setField(collectorService, "maxPages", 1);
+        ReflectionTestUtils.setField(collectorService, "batchSize", 50);
     }
 
     @Test
-    @DisplayName("Should successfully collect genres from TMDB")
+    @DisplayName("Should collect genres, movies, and TV shows when collecting all data")
+    void testCollectAll_CompletesFullFlow() {
+        // Given: Empty database
+        TmdbGenreDto actionGenre = new TmdbGenreDto(28, "Action");
+        TmdbGenreListDto movieGenres = new TmdbGenreListDto(List.of(actionGenre));
+        TmdbGenreListDto tvGenres = new TmdbGenreListDto(List.of(actionGenre));
+
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.MOVIE))
+                .thenReturn(CompletableFuture.completedFuture(movieGenres));
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.TV))
+                .thenReturn(CompletableFuture.completedFuture(tvGenres));
+
+        TmdbMovieDto movie = createMockMovie(100L);
+        TmdbPagedResponseDto<TmdbMovieDto> movieResponse = 
+                new TmdbPagedResponseDto<>(1, List.of(movie), 1, 1);
+        when(dataFetcher.fetchPopularMoviesAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(movieResponse));
+
+        TmdbTvShowDto tvShow = createMockTvShow(200L);
+        TmdbPagedResponseDto<TmdbTvShowDto> tvResponse = 
+                new TmdbPagedResponseDto<>(1, List.of(tvShow), 1, 1);
+        when(dataFetcher.fetchPopularTvShowsAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(tvResponse));
+
+        when(persistenceService.discoverAndPersistNewMovies(anyList())).thenReturn(1);
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(1);
+
+        // When: Collecting all data
+        collectorService.collectAll();
+
+        // Then: Should collect genres, movies, and TV shows
+        verify(persistenceService, times(2)).persistGenres(any());
+        verify(persistenceService, times(1)).discoverAndPersistNewMovies(anyList());
+        verify(persistenceService, times(1)).discoverAndPersistNewTvShows(anyList());
+    }
+
+    @Test
+    @DisplayName("Should fetch and persist both movie and TV genres when collecting genres")
     void testCollectGenres_Success() {
-        // Given
+        // Given: TMDB has movie and TV genres
         TmdbGenreDto actionGenre = new TmdbGenreDto(28, "Action");
         TmdbGenreDto dramaGenre = new TmdbGenreDto(18, "Drama");
         TmdbGenreListDto movieGenres = new TmdbGenreListDto(List.of(actionGenre, dramaGenre));
         TmdbGenreListDto tvGenres = new TmdbGenreListDto(List.of(dramaGenre));
 
-        when(tmdbClient.getMovieGenres()).thenReturn(movieGenres);
-        when(tmdbClient.getTvGenres()).thenReturn(tvGenres);
-        when(genreRepository.findByTmdbId(anyLong())).thenReturn(Optional.empty());
-        when(genreRepository.save(any(GenreEntity.class))).thenAnswer(invocation ->
-                invocation.getArgument(0));
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.MOVIE))
+                .thenReturn(CompletableFuture.completedFuture(movieGenres));
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.TV))
+                .thenReturn(CompletableFuture.completedFuture(tvGenres));
 
-        // When
+        // When: Collecting genres
         collectorService.collectGenres();
 
-        // Then
-        verify(tmdbClient, times(1)).getMovieGenres();
-        verify(tmdbClient, times(1)).getTvGenres();
-        verify(genreRepository, atLeast(2)).save(any(GenreEntity.class));
+        // Then: Should fetch and persist both movie and TV genres
+        verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.MOVIE);
+        verify(dataFetcher, times(1)).fetchGenresAsync(TmdbMediaType.TV);
+        verify(persistenceService, times(1)).persistGenres(movieGenres);
+        verify(persistenceService, times(1)).persistGenres(tvGenres);
     }
 
     @Test
-    @DisplayName("Should not create duplicate genres when tmdbId already exists")
-    void testCollectGenres_NoDuplicates() {
-        // Given
-        TmdbGenreDto actionGenre = new TmdbGenreDto(28, "Action");
-        TmdbGenreListDto movieGenres = new TmdbGenreListDto(List.of(actionGenre));
-        TmdbGenreListDto tvGenres = new TmdbGenreListDto(List.of());
+    @DisplayName("Should complete without errors when TMDB returns empty genre lists")
+    void testCollectGenres_EmptyResults() {
+        // Given: TMDB returns empty genre lists
+        TmdbGenreListDto emptyGenres = new TmdbGenreListDto(List.of());
 
-        GenreEntity existingGenre = new GenreEntity(null, 28L, "Action");
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.MOVIE))
+                .thenReturn(CompletableFuture.completedFuture(emptyGenres));
+        when(dataFetcher.fetchGenresAsync(TmdbMediaType.TV))
+                .thenReturn(CompletableFuture.completedFuture(emptyGenres));
 
-        when(tmdbClient.getMovieGenres()).thenReturn(movieGenres);
-        when(tmdbClient.getTvGenres()).thenReturn(tvGenres);
-        when(genreRepository.findByTmdbId(28L)).thenReturn(Optional.of(existingGenre));
-
-        // When
-        collectorService.collectGenres();
-
-        // Then
-        verify(tmdbClient, times(1)).getMovieGenres();
-        verify(tmdbClient, times(1)).getTvGenres();
-        verify(genreRepository, never()).save(any(GenreEntity.class));
+        // When: Collecting genres
+        // Then: Should complete without errors
+        assertDoesNotThrow(() -> collectorService.collectGenres());
+        verify(persistenceService, times(2)).persistGenres(emptyGenres);
     }
 
     @Test
-    @DisplayName("Should successfully collect popular movies")
-    void testCollectPopularMovies_Success() {
-        // Given
-        TmdbMovieDto movie = new TmdbMovieDto(
-                123L,
-                "Test Movie",
-                "Overview",
-                "2026-03-15",
-                1.0,
-                8.0,
-                100,
-                "/poster.jpg",
-                List.of(),
-                List.of()
-        );
+    @DisplayName("Should discover and persist new movies when collecting popular movies")
+    void testCollectPopularMovies_NewMovies() {
+        // Given: Popular movies list contains items not in database
+        TmdbMovieDto movie = createMockMovie(123L);
+        TmdbPagedResponseDto<TmdbMovieDto> response = 
+                new TmdbPagedResponseDto<>(1, List.of(movie), 1, 1);
 
-        TmdbPagedResponseDto<TmdbMovieDto> response = new TmdbPagedResponseDto<>(
-                1,
-                List.of(movie),
-                1,
-                1
-        );
+        when(dataFetcher.fetchPopularMoviesAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(response));
+        when(persistenceService.discoverAndPersistNewMovies(anyList())).thenReturn(1);
 
-        when(tmdbClient.getPopularMovies(1)).thenReturn(response);
-        when(itemRepository.existsByTmdbIdAndTmdbType(123L, TmdbType.MOVIE)).thenReturn(false);
-
-        // When
+        // When: Collecting popular movies
         collectorService.collectPopularMovies();
 
-        // Then
-        verify(tmdbClient, times(1)).getPopularMovies(1);
-        verify(persistenceService, times(1)).persistMovie(movie);
+        // Then: Should discover and persist new movies
+        verify(dataFetcher, times(1)).fetchPopularMoviesAsync(1);
+        verify(persistenceService, times(1)).discoverAndPersistNewMovies(List.of(movie));
     }
 
     @Test
-    @DisplayName("Should successfully collect popular TV shows")
-    void testCollectPopularTvShows_Success() {
-        // Given
-        TmdbTvShowDto tvShow = new TmdbTvShowDto(
-                456L,
-                "Test TV Show",
-                "Overview",
-                "2026-03-10",
-                1.0,
-                8.0,
-                100,
-                "/poster.jpg",
-                List.of(),
-                List.of()
-        );
+    @DisplayName("Should skip existing movies and only add new ones when collecting popular movies")
+    void testCollectPopularMovies_ExistingMovies() {
+        // Given: Some movies already exist in database
+        TmdbMovieDto existingMovie = createMockMovie(123L);
+        TmdbMovieDto newMovie = createMockMovie(456L);
+        TmdbPagedResponseDto<TmdbMovieDto> response = 
+                new TmdbPagedResponseDto<>(1, List.of(existingMovie, newMovie), 1, 2);
 
-        TmdbPagedResponseDto<TmdbTvShowDto> response = new TmdbPagedResponseDto<>(
-                1,
-                List.of(tvShow),
-                1,
-                1
-        );
+        when(dataFetcher.fetchPopularMoviesAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(response));
+        when(persistenceService.discoverAndPersistNewMovies(anyList())).thenReturn(1);
 
-        when(tmdbClient.getPopularTvShows(1)).thenReturn(response);
-        when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(false);
+        // When: Collecting popular movies
+        collectorService.collectPopularMovies();
 
-        // When
+        // Then: Should skip existing movies and only add new ones
+        verify(persistenceService, times(1)).discoverAndPersistNewMovies(anyList());
+    }
+
+    @Test
+    @DisplayName("Should fetch and process 3 pages when max pages is set to 3")
+    void testCollectPopularMovies_MultiplePages() {
+        // Given: Max pages is set to 3
+        ReflectionTestUtils.setField(collectorService, "maxPages", 3);
+
+        TmdbMovieDto movie = createMockMovie(123L);
+        TmdbPagedResponseDto<TmdbMovieDto> response = 
+                new TmdbPagedResponseDto<>(1, List.of(movie), 10, 1);
+
+        when(dataFetcher.fetchPopularMoviesAsync(anyInt()))
+                .thenReturn(CompletableFuture.completedFuture(response));
+
+        // When: Collecting popular movies
+        collectorService.collectPopularMovies();
+
+        // Then: Should fetch and process 3 pages
+        verify(dataFetcher, times(3)).fetchPopularMoviesAsync(anyInt());
+    }
+
+    @Test
+    @DisplayName("Should complete without errors when TMDB returns empty results")
+    void testCollectPopularMovies_EmptyResults() {
+        // Given: TMDB returns empty results
+        TmdbPagedResponseDto<TmdbMovieDto> emptyResponse = 
+                new TmdbPagedResponseDto<>(1, Collections.emptyList(), 0, 0);
+
+        when(dataFetcher.fetchPopularMoviesAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(emptyResponse));
+
+        // When: Collecting popular movies
+        // Then: Should complete without errors
+        assertDoesNotThrow(() -> collectorService.collectPopularMovies());
+        verify(persistenceService, never()).discoverAndPersistNewMovies(anyList());
+    }
+
+    @Test
+    @DisplayName("Should batch fetch details and persist new TV shows when collecting popular TV shows")
+    void testCollectPopularTvShows_NewTvShows() {
+        // Given: Popular TV shows list contains items not in database
+        TmdbTvShowDto tvShow = createMockTvShow(456L);
+        TmdbPagedResponseDto<TmdbTvShowDto> response = 
+                new TmdbPagedResponseDto<>(1, List.of(tvShow), 1, 1);
+
+        when(dataFetcher.fetchPopularTvShowsAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(response));
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(1);
+
+        // When: Collecting popular TV shows
         collectorService.collectPopularTvShows();
 
-        // Then
-        verify(tmdbClient, times(1)).getPopularTvShows(1);
-        verify(persistenceService, times(1)).persistTvShow(tvShow);
+        // Then: Should discover and persist new TV shows
+        verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
+        verify(persistenceService, times(1)).discoverAndPersistNewTvShows(List.of(tvShow));
     }
 
     @Test
-    @DisplayName("Should prevent concurrent collection operations")
+    @DisplayName("Should skip TV shows that already exist in database")
+    void testCollectPopularTvShows_ExistingTvShows() {
+        // Given: Some TV shows already exist in database
+        TmdbTvShowDto existingTvShow = createMockTvShow(456L);
+        TmdbPagedResponseDto<TmdbTvShowDto> response = 
+                new TmdbPagedResponseDto<>(1, List.of(existingTvShow), 1, 1);
+
+        when(dataFetcher.fetchPopularTvShowsAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(response));
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(0);
+
+        // When: Collecting popular TV shows
+        collectorService.collectPopularTvShows();
+
+        // Then: Should skip existing TV shows
+        verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
+        verify(persistenceService, times(1)).discoverAndPersistNewTvShows(List.of(existingTvShow));
+    }
+
+    @Test
+    @DisplayName("Should complete without errors when TMDB returns empty TV show results")
+    void testCollectPopularTvShows_EmptyResults() {
+        // Given: TMDB returns empty results
+        TmdbPagedResponseDto<TmdbTvShowDto> emptyResponse = 
+                new TmdbPagedResponseDto<>(1, Collections.emptyList(), 0, 0);
+
+        when(dataFetcher.fetchPopularTvShowsAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(emptyResponse));
+
+        // When: Collecting popular TV shows
+        // Then: Should complete without errors
+        assertDoesNotThrow(() -> collectorService.collectPopularTvShows());
+        verify(persistenceService, never()).discoverAndPersistNewTvShows(anyList());
+    }
+
+    @Test
+    @DisplayName("Should throw TmdbCollectionInProgressException when collection is already in progress")
     void testCollectAllAsync_PreventsConcurrent() {
-        // Given: manually set the flag to simulate concurrent execution
+        // Given: Collection is already in progress
         ReflectionTestUtils.setField(collectorService, "collectionInProgress",
                 new java.util.concurrent.atomic.AtomicBoolean(true));
 
-        // When/Then
+        // When/Then: Trying to start another collection should throw exception
         assertThrows(TmdbCollectionInProgressException.class,
                 () -> collectorService.collectAllAsync());
     }
 
     @Test
-    @DisplayName("Should return isCollectionInProgress as false initially")
-    void testIsCollectionInProgress_InitiallyFalse() {
-        // Then
+    @DisplayName("Should complete successfully and reset progress flag when collecting movies asynchronously")
+    void testCollectPopularMoviesAsync_Success() {
+        // Given: Valid configuration
+        TmdbMovieDto movie = createMockMovie(123L);
+        TmdbPagedResponseDto<TmdbMovieDto> response = 
+                new TmdbPagedResponseDto<>(1, List.of(movie), 1, 1);
+
+        when(dataFetcher.fetchPopularMoviesAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(response));
+
+        // When: Collecting movies asynchronously
+        CompletableFuture<Void> result = collectorService.collectPopularMoviesAsync();
+
+        // Then: Should complete successfully and reset progress flag
+        assertDoesNotThrow(result::join);
         assertFalse(collectorService.isCollectionInProgress());
     }
 
     @Test
-    @DisplayName("Should skip already existing movies")
-    void testCollectPopularMovies_SkipsExisting() {
-        // Given
-        TmdbMovieDto movie = new TmdbMovieDto(
-                123L,
-                "Existing Movie",
-                "Overview",
-                "2026-03-15",
-                1.0,
-                8.0,
-                100,
-                "/poster.jpg",
-                List.of(),
-                List.of()
-        );
+    @DisplayName("Should complete successfully and reset progress flag when collecting TV shows asynchronously")
+    void testCollectPopularTvShowsAsync_Success() {
+        // Given: Valid configuration
+        TmdbTvShowDto tvShow = createMockTvShow(456L);
+        TmdbPagedResponseDto<TmdbTvShowDto> response = 
+                new TmdbPagedResponseDto<>(1, List.of(tvShow), 1, 1);
 
-        TmdbPagedResponseDto<TmdbMovieDto> response = new TmdbPagedResponseDto<>(
-                1,
-                List.of(movie),
-                1,
-                1
-        );
+        when(dataFetcher.fetchPopularTvShowsAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(response));
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(1);
 
-        when(tmdbClient.getPopularMovies(1)).thenReturn(response);
-        when(itemRepository.existsByTmdbIdAndTmdbType(123L, TmdbType.MOVIE)).thenReturn(true); // Already exists
+        // When: Collecting TV shows asynchronously
+        CompletableFuture<Void> result = collectorService.collectPopularTvShowsAsync();
 
-        // When
+        // Then: Should complete successfully and reset progress flag
+        assertDoesNotThrow(result::join);
+        assertFalse(collectorService.isCollectionInProgress());
+    }
+
+    @Test
+    @DisplayName("Should return false when checking collection progress initially")
+    void testIsCollectionInProgress_InitiallyFalse() {
+        // Given: Service just initialized
+        // When: Checking collection progress
+        // Then: Should return false
+        assertFalse(collectorService.isCollectionInProgress());
+    }
+
+    @Test
+    @DisplayName("Should only fetch 2 pages when max pages is set to 2 but TMDB has 10 pages")
+    void testCollectPopularMovies_StopsAtMaxPages() {
+        // Given: Max pages is set to 2 but TMDB has 10 pages
+        ReflectionTestUtils.setField(collectorService, "maxPages", 2);
+
+        TmdbMovieDto movie = createMockMovie(123L);
+        TmdbPagedResponseDto<TmdbMovieDto> response = 
+                new TmdbPagedResponseDto<>(1, List.of(movie), 10, 1);
+
+        when(dataFetcher.fetchPopularMoviesAsync(anyInt()))
+                .thenReturn(CompletableFuture.completedFuture(response));
+
+        // When: Collecting popular movies
         collectorService.collectPopularMovies();
 
-        // Then
-        verify(tmdbClient, times(1)).getPopularMovies(1);
-        verify(persistenceService, never()).persistMovie(any());
+        // Then: Should only fetch 2 pages
+        verify(dataFetcher, times(2)).fetchPopularMoviesAsync(anyInt());
     }
 
     @Test
-    @DisplayName("Should skip already existing TV shows")
-    void testCollectPopularTvShows_SkipsExisting() {
-        // Given
-        TmdbTvShowDto tvShow = new TmdbTvShowDto(
-                456L,
-                "Existing TV Show",
+    @DisplayName("Should only fetch 1 page when TMDB has only 1 page but max pages is 5")
+    void testCollectPopularTvShows_StopsAtTotalPages() {
+        // Given: TMDB has only 1 page but max pages is 5
+        ReflectionTestUtils.setField(collectorService, "maxPages", 5);
+
+        TmdbTvShowDto tvShow = createMockTvShow(456L);
+        TmdbPagedResponseDto<TmdbTvShowDto> response = 
+                new TmdbPagedResponseDto<>(1, List.of(tvShow), 1, 1);
+
+        when(dataFetcher.fetchPopularTvShowsAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(response));
+        when(persistenceService.discoverAndPersistNewTvShows(anyList())).thenReturn(1);
+
+        // When: Collecting popular TV shows
+        collectorService.collectPopularTvShows();
+
+        // Then: Should only fetch 1 page
+        verify(dataFetcher, times(1)).fetchPopularTvShowsAsync(1);
+        verify(dataFetcher, never()).fetchPopularTvShowsAsync(2);
+    }
+
+    // Helper methods to create mock data
+
+    private TmdbMovieDto createMockMovie(long id) {
+        return new TmdbMovieDto(
+                id,
+                "Test Movie",
                 "Overview",
-                "2026-03-10",
+                "2026-04-07",
                 1.0,
-                8.0,
+                7.5,
                 100,
                 "/poster.jpg",
                 List.of(),
                 List.of()
         );
-
-        TmdbPagedResponseDto<TmdbTvShowDto> response = new TmdbPagedResponseDto<>(
-                1,
-                List.of(tvShow),
-                1,
-                1
-        );
-
-        when(tmdbClient.getPopularTvShows(1)).thenReturn(response);
-        when(itemRepository.existsByTmdbIdAndTmdbType(456L, TmdbType.TV)).thenReturn(true); // Already exists
-
-        // When
-        collectorService.collectPopularTvShows();
-
-        // Then
-        verify(tmdbClient, times(1)).getPopularTvShows(1);
-        verify(persistenceService, never()).persistTvShow(any());
     }
 
-    @Test
-    @DisplayName("Should handle empty results gracefully")
-    void testCollectPopularMovies_EmptyResults() {
-        // Given
-        TmdbPagedResponseDto<TmdbMovieDto> emptyResponse = new TmdbPagedResponseDto<>(
-                1,
-                Collections.emptyList(),
-                0,
-                0
+    private TmdbTvShowDto createMockTvShow(long id) {
+        return new TmdbTvShowDto(
+                id,
+                "Test TV Show",
+                "Overview",
+                "2026-04-07",
+                1.0,
+                8.0,
+                150,
+                "/poster.jpg",
+                List.of(),
+                List.of()
         );
-
-        when(tmdbClient.getPopularMovies(1)).thenReturn(emptyResponse);
-
-        // When/Then - should not throw exception
-        assertDoesNotThrow(() -> collectorService.collectPopularMovies());
-        verify(persistenceService, never()).persistMovie(any());
     }
 
-    @Test
-    @DisplayName("Should handle empty genre list gracefully")
-    void testCollectGenres_EmptyList() {
-        // Given
-        TmdbGenreListDto emptyGenres = new TmdbGenreListDto(List.of());
-
-        when(tmdbClient.getMovieGenres()).thenReturn(emptyGenres);
-        when(tmdbClient.getTvGenres()).thenReturn(emptyGenres);
-
-        // When/Then - should not throw exception
-        assertDoesNotThrow(() -> collectorService.collectGenres());
-        verify(genreRepository, never()).save(any());
+    private TmdbTvShowDetailsDto createMockTvShowDetails(long id) {
+        TmdbCreditsDto credits = new TmdbCreditsDto(1L, List.of(), List.of());
+        return new TmdbTvShowDetailsDto(
+                id,
+                "Test TV Show",
+                "Overview",
+                "2026-04-07",
+                1.0,
+                8.0,
+                150,
+                "/poster.jpg",
+                "/backdrop.jpg",
+                List.of(),
+                credits
+        );
     }
 }

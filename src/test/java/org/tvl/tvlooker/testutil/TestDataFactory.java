@@ -1,8 +1,9 @@
 package org.tvl.tvlooker.testutil;
 
-import org.tvl.tvlooker.domain.model.Item;
-import org.tvl.tvlooker.domain.model.User;
-import org.tvl.tvlooker.domain.model.*;
+import org.tvl.tvlooker.domain.model.dto.Genre;
+import org.tvl.tvlooker.domain.model.dto.Interaction;
+import org.tvl.tvlooker.domain.model.dto.Item;
+import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
@@ -73,7 +74,7 @@ public class TestDataFactory {
                 .voteAverage(BigDecimal.valueOf(7.5))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorsInItem(new HashSet<>())
                 .build();
     }
 
@@ -92,7 +93,7 @@ public class TestDataFactory {
                 .voteAverage(BigDecimal.valueOf(voteAverage))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorsInItem(new HashSet<>())
                 .build();
     }
 
@@ -111,7 +112,7 @@ public class TestDataFactory {
                 .voteAverage(BigDecimal.valueOf(voteAverage))
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorsInItem(new HashSet<>())
                 .build();
     }
 

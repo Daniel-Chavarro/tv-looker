@@ -1,7 +1,7 @@
-package org.tvl.tvlooker.persistence.mapper;
+package org.tvl.tvlooker.domain.model.mapper;
 
 import org.springframework.stereotype.Component;
-import org.tvl.tvlooker.domain.model.Actor;
+import org.tvl.tvlooker.domain.model.dto.Actor;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
 
 /**
