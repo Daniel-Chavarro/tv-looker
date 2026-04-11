@@ -1,8 +1,8 @@
 package org.tvl.tvlooker.domain.strategy.recommendation;
 
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
-import org.tvl.tvlooker.domain.model.Item;
-import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.dto.Item;
+import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 
 import java.util.Comparator;

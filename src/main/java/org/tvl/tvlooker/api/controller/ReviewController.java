@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.mapper.ReviewMapper;
 import org.tvl.tvlooker.api.dto.request.CreateReviewRequest;
 import org.tvl.tvlooker.api.dto.response.ReviewResponse;
-import org.tvl.tvlooker.domain.model.Review;
+import org.tvl.tvlooker.domain.model.dto.Review;
 import org.tvl.tvlooker.service.ReviewService;
 
 import java.util.List;

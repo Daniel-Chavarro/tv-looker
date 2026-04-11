@@ -10,9 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.tvl.tvlooker.api.dto.response.ItemResponse;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
-import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.service.RecommendationService;
 
@@ -64,7 +63,7 @@ class RecommendationControllerTest {
                 .tmdbId(1000L + id)
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorsInItem(new HashSet<>())
                 .build();
     }
 

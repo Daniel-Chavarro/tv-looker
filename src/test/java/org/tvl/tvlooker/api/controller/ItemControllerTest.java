@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.ItemNotFoundException;
-import org.tvl.tvlooker.domain.model.Item;
+import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
 import org.tvl.tvlooker.service.ItemService;
 
@@ -58,7 +58,7 @@ class ItemControllerTest {
                 .tmdbId(12345L)
                 .genres(new HashSet<>())
                 .directors(new HashSet<>())
-                .actors(new HashSet<>())
+                .actorsInItem(new HashSet<>())
                 .build();
     }
 
@@ -78,8 +78,7 @@ class ItemControllerTest {
                     .tmdbId(67890L)
                     .genres(new HashSet<>())
                     .directors(new HashSet<>())
-                    .actors(new HashSet<>())
-                    .build();
+                    .actorsInItem(new HashSet<>())         .build();
             List<Item> items = Arrays.asList(testItem, secondItem);
 
             when(itemService.getAll()).thenReturn(items);
@@ -122,7 +121,7 @@ class ItemControllerTest {
                     .tmdbId(11111L)
                     .genres(new HashSet<>())
                     .directors(new HashSet<>())
-                    .actors(new HashSet<>())
+                    .actorsInItem(new HashSet<>())
                     .build();
 
             when(itemService.getAll()).thenReturn(Collections.singletonList(itemWithNullDate));
@@ -186,7 +185,7 @@ class ItemControllerTest {
                     .tmdbId(1396L)
                     .genres(new HashSet<>())
                     .directors(new HashSet<>())
-                    .actors(new HashSet<>())
+                    .actorsInItem(new HashSet<>())
                     .build();
 
             when(itemService.getById(2L)).thenReturn(tvShow);

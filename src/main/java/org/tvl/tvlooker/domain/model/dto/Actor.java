@@ -1,4 +1,4 @@
-package org.tvl.tvlooker.domain.model;
+package org.tvl.tvlooker.domain.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

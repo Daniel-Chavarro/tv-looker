@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
-import org.tvl.tvlooker.domain.model.Item;
-import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.dto.Item;
+import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.motor.RecommendationEngine;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 

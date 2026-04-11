@@ -3,11 +3,11 @@ package org.tvl.tvlooker.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.ReviewNotFoundException;
-import org.tvl.tvlooker.domain.model.Item;
-import org.tvl.tvlooker.domain.model.Review;
-import org.tvl.tvlooker.domain.model.User;
+import org.tvl.tvlooker.domain.model.dto.Item;
+import org.tvl.tvlooker.domain.model.dto.Review;
+import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.entity.ReviewEntity;
-import org.tvl.tvlooker.persistence.mapper.ReviewEntityMapper;
+import org.tvl.tvlooker.domain.model.mapper.ReviewEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ReviewRepository;
 
 import java.util.List;

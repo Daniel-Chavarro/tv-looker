@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.ListFavoriteNotFoundException;
-import org.tvl.tvlooker.domain.model.ListFavorite;
+import org.tvl.tvlooker.domain.model.dto.ListFavorite;
 import org.tvl.tvlooker.service.ListFavoriteService;
 
 import java.util.Collections;

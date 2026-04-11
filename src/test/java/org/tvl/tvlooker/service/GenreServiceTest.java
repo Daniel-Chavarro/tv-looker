@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.tvl.tvlooker.domain.exception.GenreNotFoundException;
-import org.tvl.tvlooker.domain.model.Genre;
+import org.tvl.tvlooker.domain.model.dto.Genre;
 import org.tvl.tvlooker.domain.model.entity.GenreEntity;
 import org.tvl.tvlooker.persistence.repository.GenreRepository;
 

@@ -21,5 +21,16 @@ public record TmdbTvShowDto(
         @JsonProperty("poster_path") String posterPath,
         @JsonProperty("genre_ids") List<Integer> genreIds,
         List<TmdbGenreDto> genres
-) {}
+) implements TmdbMediaItem {
+
+    @Override
+    public String title() {
+        return name();
+    }
+
+    @Override
+    public String releaseDate() {
+        return firstAirDate();
+    }
+}
 

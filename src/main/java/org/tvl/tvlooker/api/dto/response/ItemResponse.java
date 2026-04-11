@@ -7,6 +7,7 @@ import org.tvl.tvlooker.domain.model.enums.TmdbType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
 /**
  * DTO for item response.
@@ -23,4 +24,6 @@ public class ItemResponse {
     private BigDecimal voteAverage;
     private TmdbType tmdbType;
     private Long tmdbId;
+    private Set<GenreResponse> genreResponses;
+    private Set<ActorItemResponse> actorItemResponses;
 }

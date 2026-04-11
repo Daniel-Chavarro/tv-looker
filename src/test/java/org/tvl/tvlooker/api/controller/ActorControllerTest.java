@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.ActorNotFoundException;
-import org.tvl.tvlooker.domain.model.Actor;
+import org.tvl.tvlooker.domain.model.dto.Actor;
 import org.tvl.tvlooker.service.ActorService;
 
 import java.util.Arrays;

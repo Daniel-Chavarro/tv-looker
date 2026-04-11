@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.ReviewNotFoundException;
-import org.tvl.tvlooker.domain.model.Review;
+import org.tvl.tvlooker.domain.model.dto.Review;
 import org.tvl.tvlooker.service.ReviewService;
 
 import java.sql.Timestamp;

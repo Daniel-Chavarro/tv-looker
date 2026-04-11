@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.GenreNotFoundException;
-import org.tvl.tvlooker.domain.model.Genre;
+import org.tvl.tvlooker.domain.model.dto.Genre;
 import org.tvl.tvlooker.service.GenreService;
 
 import java.util.Arrays;

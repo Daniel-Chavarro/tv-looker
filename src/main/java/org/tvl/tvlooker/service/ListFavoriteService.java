@@ -3,11 +3,11 @@ package org.tvl.tvlooker.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.ListFavoriteNotFoundException;
-import org.tvl.tvlooker.domain.model.ListFavorite;
+import org.tvl.tvlooker.domain.model.dto.ListFavorite;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.entity.ListFavoriteEntity;
-import org.tvl.tvlooker.persistence.mapper.ItemEntityMapper;
-import org.tvl.tvlooker.persistence.mapper.ListFavoriteEntityMapper;
+import org.tvl.tvlooker.domain.model.mapper.ItemEntityMapper;
+import org.tvl.tvlooker.domain.model.mapper.ListFavoriteEntityMapper;
 import org.tvl.tvlooker.persistence.repository.ListFavoriteRepository;
 
 import java.util.List;

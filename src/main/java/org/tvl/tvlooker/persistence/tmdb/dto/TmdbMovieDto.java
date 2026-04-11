@@ -22,5 +22,5 @@ public record TmdbMovieDto(
         @JsonProperty("poster_path") String posterPath,
         @JsonProperty("genre_ids") List<Integer> genreIds,
         List<TmdbGenreDto> genres
-) {}
+) implements TmdbMediaItem {}
 
