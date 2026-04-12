@@ -1,7 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const Footer: React.FC = () => {
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
   return (
     <footer className="bg-neutral-900 border-t border-neutral-800 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -29,36 +38,56 @@ export const Footer: React.FC = () => {
               Account
             </h3>
             <ul className="space-y-2">
-              <li>
-                <Link to="/login" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
-                  Login
-                </Link>
-              </li>
-              <li>
-                <Link to="/register" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
-                  Register
-                </Link>
-              </li>
+              {isAuthenticated ? (
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="text-neutral-400 hover:text-amber-400 transition-colors text-sm"
+                  >
+                    Logout
+                  </button>
+                </li>
+              ) : (
+                <>
+                  <li>
+                    <Link to="/login" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
+                      Login
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/register" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
+                      Register
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
-          <div>
-            <h3 className="text-sm font-semibold text-neutral-200 uppercase tracking-wider mb-4">
-              User
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/my-lists" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
-                  My Lists
-                </Link>
-              </li>
-              <li>
-                <Link to="/my-reviews" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
-                  My Reviews
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {isAuthenticated && (
+            <div>
+              <h3 className="text-sm font-semibold text-neutral-200 uppercase tracking-wider mb-4">
+                User
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/recommendations" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
+                    Recommendations
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/my-lists" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
+                    My Lists
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/my-reviews" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
+                    My Reviews
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
 
           <div>
             <h3 className="text-sm font-semibold text-neutral-200 uppercase tracking-wider mb-4">
