@@ -1,16 +1,16 @@
-export interface Genre {
+export type Genre = {
   id: number;
   tmdbId: number;
   name: string;
 }
 
-export interface Actor {
+export type Actor = {
   id: number;
   tmdbId: number;
   name: string;
 }
 
-export interface ActorItem{
+export type ActorItem = {
     id: number;
     actorId: number;
     actorName: string;
@@ -18,13 +18,13 @@ export interface ActorItem{
     billingOrder: number;
 }
 
-export interface Director {
+export type Director = {
   id: number;
   tmdbId: number;
   name: string;
 }
 
-export interface Item {
+export type Item = {
   id: number;
   title: string;
   type: "MOVIE" | "TV";
@@ -40,11 +40,11 @@ export interface Item {
   directors: Director[];
 }
 
-export interface ItemResponse {
+export type ItemResponse = {
   data: Item;
 }
 
-export interface ItemsListResponse {
+export type ItemsListResponse = {
   data: Item[];
   count: number;
 }

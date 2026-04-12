@@ -1,11 +1,11 @@
-export interface ApiError {
+export type ApiError = {
   message: string;
   code?: string;
   statusCode: number;
 }
 
-// Generic interface for paginated API responses (future use)
-export interface PaginatedResponse<T> {
+// Generic type for paginated API responses (future use)
+export type PaginatedResponse<T> = {
   data: T[];
   total: number;
   page: number;

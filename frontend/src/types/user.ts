@@ -1,4 +1,4 @@
-export interface User {
+export type User = {
   id: string;
   username: string;
   email: string;
@@ -7,19 +7,19 @@ export interface User {
   updatedAt: string;
 }
 
-export interface CreateUserRequest {
+export type CreateUserRequest = {
   username: string;
   email: string;
   password: string;
   name?: string;
 }
 
-export interface UpdateUserRequest {
+export type UpdateUserRequest = {
   password?: string;
   name?: string;
   email?: string;
 }
 
-export interface UserResponse {
+export type UserResponse = {
   data: User;
 }

@@ -1,6 +1,6 @@
 import type { UUID } from "crypto";
 
-export interface Review {
+export type Review = {
   id: number;
   userId: UUID;
   itemId: number;
@@ -11,23 +11,23 @@ export interface Review {
   userName?: string;
 }
 
-export interface CreateReviewRequest {
+export type CreateReviewRequest = {
   userId: UUID;
   itemId: number;
   rating: number;
   content: string;
 }
 
-export interface UpdateReviewRequest {
+export type UpdateReviewRequest = {
   rating?: number;
   content?: string;
 }
 
-export interface ReviewResponse {
+export type ReviewResponse = {
   data: Review;
 }
 
-export interface ReviewsListResponse {
+export type ReviewsListResponse = {
   data: Review[];
   count: number;
 }
