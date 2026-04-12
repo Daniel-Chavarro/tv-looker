@@ -1533,7 +1533,7 @@ export function ItemCard({ item }: ItemCardProps) {
           </h3>
           <p className="text-sm text-gray-500 mb-2">{item.type}</p>
           <div className="flex items-center justify-between">
-            <Rating value={item.averageRating} />
+            <Rating value={item.voteAverage} />
             <span className="text-xs text-gray-400">
               {new Date(item.releaseDate).getFullYear()}
             </span>
@@ -2177,13 +2177,13 @@ export default function ItemDetail() {
             <div className="flex items-center gap-4 text-gray-600">
               <span>{item.type}</span>
               <span>{new Date(item.releaseDate).getFullYear()}</span>
-              <Rating value={item.averageRating} />
+              <Rating value={item.voteAverage} />
             </div>
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Synopsis</h2>
-            <p className="text-gray-700 leading-relaxed">{item.synopsis}</p>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Overview</h2>
+            <p className="text-gray-700 leading-relaxed">{item.overview}</p>
           </div>
 
           <div>
@@ -2216,9 +2216,9 @@ export default function ItemDetail() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {item.actors.map((actor) => (
               <Card key={actor.id} className="p-4 text-center">
-                <p className="font-semibold text-gray-900">{actor.name}</p>
-                {actor.character && (
-                  <p className="text-sm text-gray-600">as {actor.character}</p>
+                <p className="font-semibold text-gray-900">{actor.actorName}</p>
+                {actor.characterName && (
+                  <p className="text-sm text-gray-600">as {actor.characterName}</p>
                 )}
               </Card>
             ))}
@@ -2539,8 +2539,7 @@ export default function Profile() {
   const { mutate: updateUser, isPending } = useUpdateUser();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
+    name: user?.name || '',
   });
 
   if (!user) return <Loader />;
@@ -2582,14 +2581,9 @@ export default function Profile() {
           {isEditing ? (
             <div className="space-y-4">
               <Input
-                label="First Name"
-                value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              />
-              <Input
-                label="Last Name"
-                value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                label="Name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
               <div className="flex gap-2">
                 <Button variant="primary" onClick={handleSave} isLoading={isPending}>
@@ -2603,12 +2597,8 @@ export default function Profile() {
           ) : (
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">First Name</label>
-                <p className="text-gray-900">{user.firstName || '-'}</p>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Last Name</label>
-                <p className="text-gray-900">{user.lastName || '-'}</p>
+                <label className="block text-sm text-gray-600 mb-1">Name</label>
+                <p className="text-gray-900">{user.name || '-'}</p>
               </div>
               <Button variant="secondary" onClick={() => setIsEditing(true)}>
                 Edit
