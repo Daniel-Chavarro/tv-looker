@@ -48,3 +48,8 @@ export type ItemsListResponse = {
   data: Item[];
   count: number;
 }
+
+export type RecommendationResponse = {
+  data: Item[];
+  count: number;
+}

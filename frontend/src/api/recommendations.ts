@@ -1,10 +1,5 @@
 import { apiClient } from './client';
-import type { Item } from '../types';
-
-export type RecommendationResponse = {
-  data: Item[];
-  count: number;
-};
+import type { Item, RecommendationResponse } from '../types';
 
 export const recommendationsApi = {
   getRecommendations: async (params?: {
