@@ -10,7 +10,6 @@
     "rootDir": ".",
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
-    "composite": true,
     "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
