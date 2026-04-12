@@ -17,19 +17,4 @@ export const itemsApi = {
     const response = await apiClient.get<ItemsListResponse>('/items', { params });
     return response.data;
   },
-
-  getTrending: async (type?: 'MOVIE' | 'TV'): Promise<ItemsListResponse> => {
-    const response = await apiClient.get<ItemsListResponse>('/items/trending', { params: { type } });
-    return response.data;
-  },
-
-  getPopular: async (type?: 'MOVIE' | 'TV'): Promise<ItemsListResponse> => {
-    const response = await apiClient.get<ItemsListResponse>('/items/popular', { params: { type } });
-    return response.data;
-  },
-
-  getTopRated: async (type?: 'MOVIE' | 'TV'): Promise<ItemsListResponse> => {
-    const response = await apiClient.get<ItemsListResponse>('/items/top-rated', { params: { type } });
-    return response.data;
-  },
 };
