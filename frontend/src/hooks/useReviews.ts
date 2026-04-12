@@ -11,14 +11,6 @@ export const useReviews = (itemId?: number, params?: { page?: number; pageSize?:
   });
 };
 
-export const useUserReviews = (userId: string, params?: { page?: number; pageSize?: number }) => {
-  return useQuery({
-    queryKey: ['reviews', 'user', userId, params],
-    queryFn: () => reviewsApi.getUserReviews(userId, params),
-    staleTime: 3 * 60 * 1000,
-    enabled: !!userId,
-  });
-};
 
 export const useReview = (id: number) => {
   return useQuery({
