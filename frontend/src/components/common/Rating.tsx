@@ -105,6 +105,7 @@ interface RatingDisplayProps {
   value: number;
   max?: number;
   count?: number;
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
@@ -112,11 +113,12 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
   value,
   max = 5,
   count,
+  size = 'md',
   className = '',
 }) => {
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <Rating value={value} max={max} size="md" />
+      <Rating value={value} max={max} size={size} />
       <span className="text-neutral-400 text-sm">
         {value.toFixed(1)}
         {count !== undefined && (
