@@ -112,7 +112,7 @@ tv-looker/
 - Create: `frontend/.env.example`
 - Create: `frontend/Dockerfile`
 
-- [ ] **Step 1: Create frontend/package.json with all dependencies**
+- [x] **Step 1: Create frontend/package.json with all dependencies**
 
 ```json
 {
@@ -151,7 +151,7 @@ tv-looker/
 }
 ```
 
-- [ ] **Step 2: Create frontend/vite.config.ts**
+- [x] **Step 2: Create frontend/vite.config.ts**
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -170,7 +170,7 @@ export default defineConfig({
 })
 ```
 
-- [ ] **Step 3: Create frontend/tsconfig.json**
+- [x] **Step 3: Create frontend/tsconfig.json**
 
 ```json
 {
@@ -198,7 +198,7 @@ export default defineConfig({
 }
 ```
 
-- [ ] **Step 4: Create frontend/tsconfig.app.json**
+- [x] **Step 4: Create frontend/tsconfig.app.json**
 
 ```json
 {
@@ -213,7 +213,7 @@ export default defineConfig({
 }
 ```
 
-- [ ] **Step 5: Create frontend/tailwind.config.js**
+- [x] **Step 5: Create frontend/tailwind.config.js**
 
 ```javascript
 /** @type {import('tailwindcss').Config} */
@@ -234,7 +234,7 @@ export default {
 }
 ```
 
-- [ ] **Step 6: Create frontend/postcss.config.js**
+- [x] **Step 6: Create frontend/postcss.config.js**
 
 ```javascript
 export default {
@@ -245,7 +245,7 @@ export default {
 }
 ```
 
-- [ ] **Step 7: Create frontend/index.html**
+- [x] **Step 7: Create frontend/index.html**
 
 ```html
 <!doctype html>
@@ -263,13 +263,13 @@ export default {
 </html>
 ```
 
-- [ ] **Step 8: Create frontend/.env.example**
+- [x] **Step 8: add to .env.example:**
 
 ```bash
 VITE_API_URL=http://localhost:8080/api/v1
 ```
 
-- [ ] **Step 9: Create frontend/Dockerfile**
+- [x] **Step 9: Create frontend/Dockerfile** (modified using default vite builder)
 
 ```dockerfile
 # Development
@@ -297,7 +297,7 @@ EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-- [ ] **Step 10: Commit project setup**
+- [x] **Step 10: Commit project setup**
 
 ```bash
 git add frontend/package.json frontend/vite.config.ts frontend/tsconfig.json frontend/tsconfig.app.json frontend/tailwind.config.js frontend/postcss.config.js frontend/index.html frontend/.env.example frontend/Dockerfile
@@ -316,169 +316,186 @@ git commit -m "chore: setup frontend project structure and configuration"
 - Create: `frontend/src/types/list.ts`
 - Create: `frontend/src/types/user.ts`
 
-- [ ] **Step 1: Create frontend/src/types/api.ts**
+- [x] **Step 1: Create frontend/src/types/api.ts**
 
 ```typescript
-export interface ApiError {
+export type ApiError = {
   message: string;
   code?: string;
   statusCode: number;
 }
 
-export interface PaginatedResponse<T> {
+// Generic type for paginated API responses (future use)
+export type PaginatedResponse<T> = {
   data: T[];
   total: number;
   page: number;
   pageSize: number;
 }
+
 ```
 
-- [ ] **Step 2: Create frontend/src/types/item.ts**
+- [x] **Step 2: Create frontend/src/types/item.ts**
 
 ```typescript
-export interface Genre {
+export type Genre = {
   id: number;
+  tmdbId: number;
   name: string;
 }
 
-export interface Actor {
+export type Actor = {
   id: number;
-  name: string;
-  character?: string;
-}
-
-export interface Director {
-  id: number;
+  tmdbId: number;
   name: string;
 }
 
-export interface Item {
+export type ActorItem = {
+    id: number;
+    actorId: number;
+    actorName: string;
+    characterName: string;
+    billingOrder: number;
+}
+
+export type Director = {
+  id: number;
+  tmdbId: number;
+  name: string;
+}
+
+export type Item = {
   id: number;
   title: string;
-  type: 'MOVIE' | 'SERIES';
+  type: "MOVIE" | "TV";
   releaseDate: string;
-  synopsis: string;
+  overview: string;
   posterUrl?: string;
   backdropUrl?: string;
+  voteAverage: number;
+  popularity: number;
   tmdbId: number;
   genres: Genre[];
-  actors: Actor[];
+  actors: ActorItem[];
   directors: Director[];
-  averageRating?: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
-export interface ItemResponse {
+export type ItemResponse = {
   data: Item;
 }
 
-export interface ItemsListResponse {
+export type ItemsListResponse = {
   data: Item[];
   count: number;
 }
+
 ```
 
-- [ ] **Step 3: Create frontend/src/types/review.ts**
+- [x] **Step 3: Create frontend/src/types/review.ts**
 
 ```typescript
-export interface Review {
+import type { UUID } from "crypto";
+
+export type Review = {
   id: number;
-  userId: string;
+  userId: UUID;
   itemId: number;
-  rating: number; // 1-10
+  rating: number; // 1-5
   content: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
   userName?: string;
 }
 
-export interface CreateReviewRequest {
+export type CreateReviewRequest = {
+  userId: UUID;
   itemId: number;
   rating: number;
   content: string;
 }
 
-export interface UpdateReviewRequest {
-  rating: number;
-  content: string;
+export type UpdateReviewRequest = {
+  rating?: number;
+  content?: string;
 }
 
-export interface ReviewResponse {
+export type ReviewResponse = {
   data: Review;
 }
 
-export interface ReviewsListResponse {
+export type ReviewsListResponse = {
   data: Review[];
   count: number;
 }
+
+
 ```
 
-- [ ] **Step 4: Create frontend/src/types/list.ts**
+- [x] **Step 4: Create frontend/src/types/list.ts**
 
 ```typescript
-import { Item } from './item';
+import type { UUID } from "crypto";
+import type { Item } from "./item";
 
-export interface FavoriteList {
+export type FavoriteList = {
   id: number;
   userId: string;
   name: string;
   description?: string;
   items: Item[];
-  createdAt: string;
-  updatedAt: string;
 }
 
-export interface CreateListRequest {
+export type CreateListRequest = {
+  userId: UUID;
   name: string;
   description?: string;
 }
 
-export interface UpdateListRequest {
-  name: string;
+export type UpdateListRequest = {
+  name?: string;
   description?: string;
 }
 
-export interface ListResponse {
+export type ListResponse = {
   data: FavoriteList;
 }
 
-export interface ListsListResponse {
+export type ListsListResponse = {
   data: FavoriteList[];
   count: number;
 }
+
 ```
 
-- [ ] **Step 5: Create frontend/src/types/user.ts**
+- [x] **Step 5: Create frontend/src/types/user.ts**
 
 ```typescript
-export interface User {
+export type User = {
   id: string;
   username: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreateUserRequest {
+export type CreateUserRequest = {
   username: string;
   email: string;
   password: string;
-  firstName?: string;
-  lastName?: string;
+  name?: string;
 }
 
-export interface UpdateUserRequest {
-  firstName?: string;
-  lastName?: string;
+export type UpdateUserRequest = {
+  password?: string;
+  name?: string;
   email?: string;
 }
 
-export interface UserResponse {
+export type UserResponse = {
   data: User;
 }
+
 ```
 
 - [ ] **Step 6: Create frontend/src/types/index.ts**
