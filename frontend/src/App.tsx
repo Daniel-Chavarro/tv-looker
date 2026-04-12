@@ -1,9 +1,16 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
+import { Home } from './pages/Home';
+import { ItemDetail } from './pages/ItemDetail';
+import { Recommendations } from './pages/Recommendations';
+import { MyLists } from './pages/MyLists';
+import { ListDetail } from './pages/ListDetail';
+import { MyReviews } from './pages/MyReviews';
+import { Profile } from './pages/Profile';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,22 +27,22 @@ export function App() {
         <BrowserRouter>
           <Routes>
             <Route element={<Layout />}>
-              <Route path="/" element={<Navigate to="/items" replace />} />
+              <Route path="/" element={<Home />} />
               <Route path="/login" element={<div>Login Page</div>} />
               <Route path="/register" element={<div>Register Page</div>} />
-              <Route
-                path="/items"
-                element={
-                  <ProtectedRoute>
-                    <div>Items Page</div>
-                  </ProtectedRoute>
-                }
-              />
               <Route
                 path="/items/:id"
                 element={
                   <ProtectedRoute>
-                    <div>Item Detail Page</div>
+                    <ItemDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recommendations"
+                element={
+                  <ProtectedRoute>
+                    <Recommendations />
                   </ProtectedRoute>
                 }
               />
@@ -43,7 +50,7 @@ export function App() {
                 path="/lists"
                 element={
                   <ProtectedRoute>
-                    <div>Lists Page</div>
+                    <MyLists />
                   </ProtectedRoute>
                 }
               />
@@ -51,7 +58,15 @@ export function App() {
                 path="/lists/:id"
                 element={
                   <ProtectedRoute>
-                    <div>List Detail Page</div>
+                    <ListDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reviews"
+                element={
+                  <ProtectedRoute>
+                    <MyReviews />
                   </ProtectedRoute>
                 }
               />
@@ -59,7 +74,7 @@ export function App() {
                 path="/profile"
                 element={
                   <ProtectedRoute>
-                    <div>Profile Page</div>
+                    <Profile />
                   </ProtectedRoute>
                 }
               />
