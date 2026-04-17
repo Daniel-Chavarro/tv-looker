@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.function.Consumer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service for Item entity operations.
@@ -53,6 +55,17 @@ public class ItemService {
         return itemRepository.findAll().stream()
                 .map(ItemEntityMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all items with pagination.
+     *
+     * @param pageable pagination information
+     * @return page of items
+     */
+    public Page<Item> getAll(Pageable pageable) {
+        return itemRepository.findAll(pageable)
+                .map(ItemEntityMapper::toDomain);
     }
 
 
