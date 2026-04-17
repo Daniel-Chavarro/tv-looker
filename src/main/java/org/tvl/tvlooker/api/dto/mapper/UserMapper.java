@@ -35,7 +35,7 @@ public class UserMapper {
 
     public static User fromUpdateRequest(UpdateUserRequest request) {
         return User.builder()
-                .username(request.getUsername())
+                .username(request.getName())
                 .password(request.getPassword())
                 .email(request.getEmail())
                 .name(request.getName())
