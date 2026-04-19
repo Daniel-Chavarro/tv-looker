@@ -7,6 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.tvl.tvlooker.domain.exception.InteractionNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
 import org.tvl.tvlooker.domain.model.dto.Item;
@@ -168,6 +172,31 @@ class InteractionServiceTest {
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
         verify(interactionRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("getAll with Pageable - should return page of interactions")
+    void givenPageable_whenGetAll_thenReturnsPageOfInteractions() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<InteractionEntity> entities = List.of(testInteractionEntity, createInteractionEntityWithId(2L));
+        Page<InteractionEntity> entityPage = new PageImpl<>(entities, pageable, 2);
+
+        when(interactionRepository.findAll(pageable)).thenReturn(entityPage);
+
+        Page<Interaction> result = interactionService.getAll(pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTotalElements()).isEqualTo(2L);
+        verify(interactionRepository, times(1)).findAll(pageable);
+    }
+
+    private InteractionEntity createInteractionEntityWithId(Long id) {
+        return InteractionEntity.builder()
+                .id(id)
+                .user(UserEntity.builder().id(UUID.randomUUID()).username("user2").email("user2@test.com").name("User 2").build())
+                .item(ItemEntity.builder().id(2L).title("Movie 2").overview("Overview 2").build())
+                .interactionType(InteractionType.VIEW)
+                .build();
     }
 
     @Test

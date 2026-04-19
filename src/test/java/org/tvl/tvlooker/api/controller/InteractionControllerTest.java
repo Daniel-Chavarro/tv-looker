@@ -8,6 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -19,7 +24,9 @@ import org.tvl.tvlooker.service.InteractionService;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
@@ -47,6 +54,7 @@ class InteractionControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(interactionController)
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
         objectMapper = new ObjectMapper();
@@ -66,15 +74,42 @@ class InteractionControllerTest {
     class GetAllInteractions {
 
         @Test
-        void givenNoInteractions_whenGetAllInteractions_thenReturnsEmptyList() throws Exception {
-            when(interactionService.getAll()).thenReturn(Collections.emptyList());
+        void givenInteractionsExist_whenGetAllInteractions_thenReturnsPaginatedList() throws Exception {
+            Interaction secondInteraction = Interaction.builder()
+                    .id(2L)
+                    .userId(testUserId)
+                    .itemId(2L)
+                    .interactionType(InteractionType.VIEW)
+                    .build();
+            List<Interaction> interactions = Arrays.asList(testInteraction, secondInteraction);
+            Page<Interaction> interactionPage = new PageImpl<>(interactions, PageRequest.of(0, 50), interactions.size());
+
+            when(interactionService.getAll(any(Pageable.class))).thenReturn(interactionPage);
+
+            mockMvc.perform(get("/api/v1/interactions")
+                            .param("page", "0")
+                            .param("size", "50"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].id", is(1)))
+                    .andExpect(jsonPath("$.totalItems", is(2)))
+                    .andExpect(jsonPath("$.actualPage", is(0)));
+
+            verify(interactionService, times(1)).getAll(any(Pageable.class));
+        }
+
+        @Test
+        void givenNoInteractions_whenGetAllInteractions_thenReturnsEmptyPage() throws Exception {
+            Page<Interaction> emptyPage = new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 50), 0);
+            when(interactionService.getAll(any(Pageable.class))).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/v1/interactions"))
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(0)));
+                    .andExpect(jsonPath("$.content", hasSize(0)))
+                    .andExpect(jsonPath("$.totalItems", is(0)));
 
-            verify(interactionService, times(1)).getAll();
+            verify(interactionService, times(1)).getAll(any(Pageable.class));
         }
     }
 

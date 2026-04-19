@@ -1,5 +1,7 @@
 package org.tvl.tvlooker.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
 import org.tvl.tvlooker.domain.exception.InteractionNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.Item;
@@ -62,6 +64,17 @@ public class InteractionService {
         return interactionRepository.findAll().stream()
                 .map(InteractionEntityMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all interactions with pagination.
+     *
+     * @param pageable pagination information
+     * @return page of interactions
+     */
+    public Page<Interaction> getAll(Pageable pageable) {
+        return interactionRepository.findAll(pageable)
+                .map(InteractionEntityMapper::toDomain);
     }
 
     /**

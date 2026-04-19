@@ -1,6 +1,10 @@
 package org.tvl.tvlooker.api.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,6 +19,7 @@ import org.tvl.tvlooker.api.dto.mapper.InteractionMapper;
 import org.tvl.tvlooker.api.dto.request.CreateInteractionRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateInteractionRequest;
 import org.tvl.tvlooker.api.dto.response.InteractionResponse;
+import org.tvl.tvlooker.api.dto.response.PageResponse;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
 import org.tvl.tvlooker.service.InteractionService;
 
@@ -35,11 +40,21 @@ public class InteractionController {
      * @return list of interaction responses
      */
     @GetMapping
-    public ResponseEntity<List<InteractionResponse>> getAllInteractions(){
-        List<Interaction> interactions = interactionService.getAll();;
-        List<InteractionResponse> response = interactions.stream()
+    public ResponseEntity<PageResponse<InteractionResponse>> getAllInteractions(
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Interaction> interactionsPage = interactionService.getAll(pageable);
+
+        List<InteractionResponse> content = interactionsPage.getContent().stream()
                 .map(InteractionMapper::toResponse)
                 .toList();
+
+        PageResponse<InteractionResponse> response = new PageResponse<>(
+                content,
+                interactionsPage.getTotalElements(),
+                interactionsPage.getNumber(),
+                interactionsPage.getTotalPages(),
+                interactionsPage.isLast()
+        );
         return ResponseEntity.ok(response);
     }
 
