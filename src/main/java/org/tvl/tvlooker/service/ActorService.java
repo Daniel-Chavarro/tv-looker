@@ -1,6 +1,8 @@
 package org.tvl.tvlooker.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.model.dto.Actor;
 import org.tvl.tvlooker.domain.exception.ActorNotFoundException;
@@ -50,6 +52,17 @@ public class ActorService {
 		return actorRepository.findAll().stream()
 				.map(ActorEntityMapper::toDomain)
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Get all actors with pagination.
+	 *
+	 * @param pageable pagination information
+	 * @return page of actors
+	 */
+	public Page<Actor> getAll(Pageable pageable) {
+		return actorRepository.findAll(pageable)
+				.map(ActorEntityMapper::toDomain);
 	}
 
 	/**

@@ -7,6 +7,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -20,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -40,6 +46,7 @@ class ActorControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(actorController)
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -54,44 +61,41 @@ class ActorControllerTest {
     class GetAllActors {
 
         @Test
-        void givenActorsExist_whenGetAllActors_thenReturnsActorList() throws Exception {
+        void givenActorsExist_whenGetAllActors_thenReturnsPaginatedList() throws Exception {
             Actor secondActor = Actor.builder()
                     .id(2L)
-                    .tmdbId(200L)
-                    .name("Tom Hanks")
+                    .name("Actor Two")
+                    .tmdbId(22222L)
                     .build();
-            Actor thirdActor = Actor.builder()
-                    .id(3L)
-                    .tmdbId(300L)
-                    .name("Brad Pitt")
-                    .build();
-            List<Actor> actors = Arrays.asList(testActor, secondActor, thirdActor);
+            List<Actor> actors = Arrays.asList(testActor, secondActor);
+            Page<Actor> actorPage = new PageImpl<>(actors, PageRequest.of(0, 50), actors.size());
 
-            when(actorService.getAll()).thenReturn(actors);
+            when(actorService.getAll(any(Pageable.class))).thenReturn(actorPage);
 
-            mockMvc.perform(get("/api/v1/actors"))
+            mockMvc.perform(get("/api/v1/actors")
+                            .param("page", "0")
+                            .param("size", "50"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(3)))
-                    .andExpect(jsonPath("$[0].id", is(1)))
-                    .andExpect(jsonPath("$[0].name", is("Leonardo DiCaprio")))
-                    .andExpect(jsonPath("$[0].tmdbId", is(100)))
-                    .andExpect(jsonPath("$[1].name", is("Tom Hanks")))
-                    .andExpect(jsonPath("$[2].name", is("Brad Pitt")));
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].id", is(1)))
+                    .andExpect(jsonPath("$.totalItems", is(2)))
+                    .andExpect(jsonPath("$.actualPage", is(0)));
 
-            verify(actorService, times(1)).getAll();
+            verify(actorService, times(1)).getAll(any(Pageable.class));
         }
 
         @Test
-        void givenNoActors_whenGetAllActors_thenReturnsEmptyList() throws Exception {
-            when(actorService.getAll()).thenReturn(Collections.emptyList());
+        void givenNoActors_whenGetAllActors_thenReturnsEmptyPage() throws Exception {
+            Page<Actor> emptyPage = new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 50), 0);
+            when(actorService.getAll(any(Pageable.class))).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/v1/actors"))
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(0)));
+                    .andExpect(jsonPath("$.content", hasSize(0)))
+                    .andExpect(jsonPath("$.totalItems", is(0)));
 
-            verify(actorService, times(1)).getAll();
+            verify(actorService, times(1)).getAll(any(Pageable.class));
         }
     }
 
