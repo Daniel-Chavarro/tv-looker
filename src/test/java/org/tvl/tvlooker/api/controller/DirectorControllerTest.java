@@ -7,6 +7,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -40,6 +45,7 @@ class DirectorControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(directorController)
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -54,44 +60,41 @@ class DirectorControllerTest {
     class GetAllDirectors {
 
         @Test
-        void givenDirectorsExist_whenGetAllDirectors_thenReturnsDirectorList() throws Exception {
+        void givenDirectorsExist_whenGetAllDirectors_thenReturnsPaginatedList() throws Exception {
             Director secondDirector = Director.builder()
                     .id(2L)
                     .tmdbId(200L)
                     .name("Steven Spielberg")
                     .build();
-            Director thirdDirector = Director.builder()
-                    .id(3L)
-                    .tmdbId(300L)
-                    .name("Quentin Tarantino")
-                    .build();
-            List<Director> directors = Arrays.asList(testDirector, secondDirector, thirdDirector);
+            List<Director> directors = Arrays.asList(testDirector, secondDirector);
+            Page<Director> directorPage = new PageImpl<>(directors, PageRequest.of(0, 50), directors.size());
 
-            when(directorService.getAll()).thenReturn(directors);
+            when(directorService.getAll(org.mockito.ArgumentMatchers.any(Pageable.class))).thenReturn(directorPage);
 
-            mockMvc.perform(get("/api/v1/directors"))
+            mockMvc.perform(get("/api/v1/directors")
+                            .param("page", "0")
+                            .param("size", "50"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(3)))
-                    .andExpect(jsonPath("$[0].id", is(1)))
-                    .andExpect(jsonPath("$[0].name", is("Christopher Nolan")))
-                    .andExpect(jsonPath("$[0].tmdbId", is(100)))
-                    .andExpect(jsonPath("$[1].name", is("Steven Spielberg")))
-                    .andExpect(jsonPath("$[2].name", is("Quentin Tarantino")));
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].id", is(1)))
+                    .andExpect(jsonPath("$.totalItems", is(2)))
+                    .andExpect(jsonPath("$.actualPage", is(0)));
 
-            verify(directorService, times(1)).getAll();
+            verify(directorService, times(1)).getAll(org.mockito.ArgumentMatchers.any(Pageable.class));
         }
 
         @Test
-        void givenNoDirectors_whenGetAllDirectors_thenReturnsEmptyList() throws Exception {
-            when(directorService.getAll()).thenReturn(Collections.emptyList());
+        void givenNoDirectors_whenGetAllDirectors_thenReturnsEmptyPage() throws Exception {
+            Page<Director> emptyPage = new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 50), 0);
+            when(directorService.getAll(org.mockito.ArgumentMatchers.any(Pageable.class))).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/v1/directors"))
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(0)));
+                    .andExpect(jsonPath("$.content", hasSize(0)))
+                    .andExpect(jsonPath("$.totalItems", is(0)));
 
-            verify(directorService, times(1)).getAll();
+            verify(directorService, times(1)).getAll(org.mockito.ArgumentMatchers.any(Pageable.class));
         }
     }
 

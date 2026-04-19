@@ -2,6 +2,10 @@ package org.tvl.tvlooker.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.mapper.UserMapper;
 import org.tvl.tvlooker.api.dto.request.CreateUserRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateUserRequest;
+import org.tvl.tvlooker.api.dto.response.PageResponse;
 import org.tvl.tvlooker.api.dto.response.UserResponse;
 import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.service.UserService;
@@ -36,11 +41,21 @@ public class UserController {
      * @return A list of user responses.
      */
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        List<User> users = userService.getAll();
-        List<UserResponse> response = users.stream()
+    public ResponseEntity<PageResponse<UserResponse>> getAllUsers(
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<User> usersPage = userService.getAll(pageable);
+
+        List<UserResponse> content = usersPage.getContent().stream()
                 .map(UserMapper::toResponse)
                 .toList();
+
+        PageResponse<UserResponse> response = new PageResponse<>(
+                content,
+                usersPage.getTotalElements(),
+                usersPage.getNumber(),
+                usersPage.getTotalPages(),
+                usersPage.isLast()
+        );
         return ResponseEntity.ok(response);
     }
 

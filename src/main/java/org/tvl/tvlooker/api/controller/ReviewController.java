@@ -2,6 +2,10 @@ package org.tvl.tvlooker.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.mapper.ReviewMapper;
 import org.tvl.tvlooker.api.dto.request.CreateReviewRequest;
+import org.tvl.tvlooker.api.dto.response.PageResponse;
 import org.tvl.tvlooker.api.dto.response.ReviewResponse;
 import org.tvl.tvlooker.domain.model.dto.Review;
 import org.tvl.tvlooker.service.ReviewService;
@@ -34,11 +39,22 @@ public class ReviewController {
      * @return a list of review responses
      */
     @GetMapping
-    public ResponseEntity<List<ReviewResponse>> getAllReviews() {
-        List<Review> reviews = reviewService.getAll();
-        return ResponseEntity.ok(reviews.stream()
+    public ResponseEntity<PageResponse<ReviewResponse>> getAllReviews(
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Review> reviewsPage = reviewService.getAll(pageable);
+
+        List<ReviewResponse> content = reviewsPage.getContent().stream()
                 .map(ReviewMapper::toResponse)
-                .toList());
+                .toList();
+
+        PageResponse<ReviewResponse> response = new PageResponse<>(
+                content,
+                reviewsPage.getTotalElements(),
+                reviewsPage.getNumber(),
+                reviewsPage.getTotalPages(),
+                reviewsPage.isLast()
+        );
+        return ResponseEntity.ok(response);
     }
 
     /**

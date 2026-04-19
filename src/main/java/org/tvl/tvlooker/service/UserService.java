@@ -1,6 +1,8 @@
 package org.tvl.tvlooker.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.User;
@@ -54,6 +56,17 @@ public class UserService {
         return userRepository.findAll().stream()
                 .map(UserEntityMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all users with pagination.
+     *
+     * @param pageable pagination information
+     * @return page of users
+     */
+    public Page<User> getAll(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(UserEntityMapper::toDomain);
     }
 
     /**

@@ -1,6 +1,8 @@
 package org.tvl.tvlooker.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.ListFavoriteNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.ListFavorite;
@@ -57,6 +59,17 @@ public class ListFavoriteService {
         return listFavoriteRepository.findAll().stream()
                 .map(ListFavoriteEntityMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all list favorites with pagination.
+     *
+     * @param pageable pagination information
+     * @return page of list favorites
+     */
+    public Page<ListFavorite> getAll(Pageable pageable) {
+        return listFavoriteRepository.findAll(pageable)
+                .map(ListFavoriteEntityMapper::toDomain);
     }
 
     /**

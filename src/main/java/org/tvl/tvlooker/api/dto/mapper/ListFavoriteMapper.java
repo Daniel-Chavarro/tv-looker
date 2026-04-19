@@ -19,9 +19,11 @@ public class ListFavoriteMapper {
                 .name(listFavorite.getName())
                 .description(listFavorite.getDescription())
                 .userId(listFavorite.getUserId())
-                .items(listFavorite.getItems().stream()
-                        .map(ItemMapper::toResponse)
-                        .collect(Collectors.toSet()))
+                .items(listFavorite.getItems() == null
+                        ? null
+                        : listFavorite.getItems().stream()
+                                .map(ItemMapper::toResponse)
+                                .collect(Collectors.toSet()))
                 .build();
     }
 

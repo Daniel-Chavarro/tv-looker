@@ -7,6 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.tvl.tvlooker.domain.exception.ActorNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.Actor;
 import org.tvl.tvlooker.domain.model.entity.ActorEntity;
@@ -204,5 +208,34 @@ class ActorServiceTest {
                 .hasMessageContaining("Actor not found: " + nonExistentId);
         verify(actorRepository, times(1)).existsById(nonExistentId);
         verify(actorRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("getAll with Pageable - should return page of actors")
+    void givenPageable_whenGetAll_thenReturnsPageOfActors() {
+        Pageable pageable = PageRequest.of(0, 10);
+        ActorEntity actorEntity2 = ActorEntity.builder()
+                .id(2L)
+                .tmdbId(31L)
+                .name("Tom Hanks")
+                .build();
+        List<ActorEntity> entities = List.of(testActorEntity, actorEntity2);
+        Page<ActorEntity> entityPage = new PageImpl<>(entities, pageable, 2);
+
+        when(actorRepository.findAll(pageable)).thenReturn(entityPage);
+
+        Page<Actor> result = actorService.getAll(pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        verify(actorRepository, times(1)).findAll(pageable);
+    }
+
+    private ActorEntity createActorEntityWithId(Long id) {
+        return ActorEntity.builder()
+                .id(id)
+                .tmdbId(100L + id)
+                .name("Actor " + id)
+                .build();
     }
 }

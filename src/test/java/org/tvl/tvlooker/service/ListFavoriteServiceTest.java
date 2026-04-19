@@ -22,6 +22,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ListFavoriteService Unit Tests")
 class ListFavoriteServiceTest {
@@ -238,7 +243,7 @@ class ListFavoriteServiceTest {
         verify(listFavoriteRepository, times(1)).deleteById(testListId);
     }
 
-    @Test
+@Test
     @DisplayName("delete - should throw ListFavoriteNotFoundException when list does not exist")
     void deleteById_shouldThrowListFavoriteNotFoundException_whenListDoesNotExist() {
         Long nonExistentId = 999L;
@@ -249,5 +254,27 @@ class ListFavoriteServiceTest {
                 .hasMessageContaining("ListFavorite not found: " + nonExistentId);
         verify(listFavoriteRepository, times(1)).existsById(nonExistentId);
         verify(listFavoriteRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("getAll with Pageable - should return page of list favorites")
+    void givenPageable_whenGetAll_thenReturnsPageOfListFavorites() {
+        Pageable pageable = PageRequest.of(0, 10);
+        ListFavoriteEntity list2 = ListFavoriteEntity.builder()
+                .id(2L)
+                .user(UserEntity.builder().id(testUserId).username("testuser").email("test@test.com").name("Test User").build())
+                .name("Watchlist")
+                .description("Movies to watch")
+                .build();
+        List<ListFavoriteEntity> entities = List.of(testListEntity, list2);
+        Page<ListFavoriteEntity> entityPage = new PageImpl<>(entities, pageable, 2);
+        
+        when(listFavoriteRepository.findAll(pageable)).thenReturn(entityPage);
+
+        Page<ListFavorite> result = listFavoriteService.getAll(pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTotalElements()).isEqualTo(2);
+verify(listFavoriteRepository, times(1)).findAll(pageable);
     }
 }
