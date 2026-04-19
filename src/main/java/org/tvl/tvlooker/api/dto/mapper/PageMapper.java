@@ -3,7 +3,6 @@ package org.tvl.tvlooker.api.dto.mapper;
 import org.springframework.data.domain.Page;
 import org.tvl.tvlooker.api.dto.response.PageResponse;
 
-import java.util.List;
 
 public class PageMapper {
 
