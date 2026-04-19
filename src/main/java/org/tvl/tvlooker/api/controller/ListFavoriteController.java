@@ -116,13 +116,13 @@ public class ListFavoriteController {
      * @param idItem the item ID to add
      * @return the updated favorite list response
      */
-    @PutMapping("/{id-list}/add-item/{id-item}")
+    @PostMapping("/{id-list}/item/{id-item}")
     public ResponseEntity<ListFavoriteResponse> addItemToFavorite(
             @PathVariable(name = "id-list") Long idList,
             @PathVariable(name = "id-item") Long idItem){
         ListFavorite listFavorite = listFavoriteService.getById(idList);
         ListFavorite updated = listFavoriteService.addItemToFavorite(listFavorite, idItem);
-        return ResponseEntity.ok(ListFavoriteMapper.toResponse(updated));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ListFavoriteMapper.toResponse(updated));
     }
 
     /**
@@ -131,12 +131,12 @@ public class ListFavoriteController {
      * @param idItem the item ID to remove
      * @return the updated favorite list response
      */
-    @PutMapping("/{id-list}/remove-item/{id-item}")
-    public ResponseEntity<ListFavoriteResponse> removeItemFromFavorite(
+    @DeleteMapping("/{id-list}/item/{id-item}")
+    public ResponseEntity<Void> removeItemFromFavorite(
             @PathVariable(name = "id-list") Long idList,
             @PathVariable(name = "id-item") Long idItem){
         ListFavorite listFavorite = listFavoriteService.getById(idList);
-        ListFavorite updated = listFavoriteService.removeItemFromFavorite(listFavorite, idItem);
-        return ResponseEntity.ok(ListFavoriteMapper.toResponse(updated));
+        listFavoriteService.removeItemFromFavorite(listFavorite, idItem);
+        return ResponseEntity.noContent().build();
     }
 }
