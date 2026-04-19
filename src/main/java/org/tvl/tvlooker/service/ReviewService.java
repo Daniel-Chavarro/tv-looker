@@ -1,6 +1,8 @@
 package org.tvl.tvlooker.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.ReviewNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.Item;
@@ -60,6 +62,17 @@ public class ReviewService {
         return reviewRepository.findAll().stream()
                 .map(ReviewEntityMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all reviews with pagination.
+     *
+     * @param pageable pagination information
+     * @return page of reviews
+     */
+    public Page<Review> getAll(Pageable pageable) {
+        return reviewRepository.findAll(pageable)
+                .map(ReviewEntityMapper::toDomain);
     }
 
     /**
