@@ -16,7 +16,9 @@ import org.tvl.tvlooker.domain.exception.ListFavoriteNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.ListFavorite;
 import org.tvl.tvlooker.service.ListFavoriteService;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
@@ -25,6 +27,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 
 @ExtendWith(MockitoExtension.class)
 class ListFavoriteControllerTest {
@@ -39,31 +47,66 @@ class ListFavoriteControllerTest {
     private ObjectMapper objectMapper;
 
     private UUID testUserId;
+    private ListFavorite testListFavorite;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(listFavoriteController)
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
 
         testUserId = UUID.randomUUID();
+
+        testListFavorite = ListFavorite.builder()
+                .id(1L)
+                .userId(testUserId)
+                .name("My Favorites")
+                .description("My favorite movies")
+                .build();
     }
 
     @Nested
     class ListFavorites {
 
         @Test
-        void givenFavoritesExist_whenListFavorites_thenReturnsFavoriteLists() throws Exception {
-            when(listFavoriteService.getAll()).thenReturn(Collections.emptyList());
+        void givenListFavoritesExist_whenListFavorites_thenReturnsPaginatedList() throws Exception {
+            ListFavorite secondList = ListFavorite.builder()
+                    .id(2L)
+                    .userId(testUserId)
+                    .name("My Second List")
+                    .build();
+            List<ListFavorite> favorites = Arrays.asList(testListFavorite, secondList);
+            Page<ListFavorite> favoritesPage = new PageImpl<>(favorites, PageRequest.of(0, 50), favorites.size());
+
+            when(listFavoriteService.getAll(any(Pageable.class))).thenReturn(favoritesPage);
+
+            mockMvc.perform(get("/api/v1/lists")
+                            .param("page", "0")
+                            .param("size", "50"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].id", is(1)))
+                    .andExpect(jsonPath("$.totalItems", is(2)))
+                    .andExpect(jsonPath("$.actualPage", is(0)));
+
+            verify(listFavoriteService, times(1)).getAll(any(Pageable.class));
+        }
+
+        @Test
+        void givenNoListFavorites_whenListFavorites_thenReturnsEmptyPage() throws Exception {
+            Page<ListFavorite> emptyPage = new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 50), 0);
+            when(listFavoriteService.getAll(any(Pageable.class))).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/v1/lists"))
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(0)));
+                    .andExpect(jsonPath("$.content", hasSize(0)))
+                    .andExpect(jsonPath("$.totalItems", is(0)));
 
-            verify(listFavoriteService, times(1)).getAll();
+            verify(listFavoriteService, times(1)).getAll(any(Pageable.class));
         }
     }
 

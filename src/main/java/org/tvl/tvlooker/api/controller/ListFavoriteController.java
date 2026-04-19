@@ -2,6 +2,10 @@ package org.tvl.tvlooker.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,10 +20,9 @@ import org.tvl.tvlooker.api.dto.mapper.ListFavoriteMapper;
 import org.tvl.tvlooker.api.dto.request.CreateListFavoriteRequest;
 import org.tvl.tvlooker.api.dto.request.UpdateListFavoriteRequest;
 import org.tvl.tvlooker.api.dto.response.ListFavoriteResponse;
+import org.tvl.tvlooker.api.dto.response.PageResponse;
 import org.tvl.tvlooker.domain.model.dto.ListFavorite;
 import org.tvl.tvlooker.service.ListFavoriteService;
-
-import java.util.List;
 
 /**
  * REST controller for managing favorite lists.
@@ -31,15 +34,27 @@ public class ListFavoriteController {
     private final ListFavoriteService listFavoriteService;
 
     /**
-     * Retrieves all favorite lists.
-     * @return a list of favorite list responses
+     * Retrieves all favorite lists with pagination.
+     * @param pageable pagination information
+     * @return paginated list of favorite list responses
      */
     @GetMapping
-    public ResponseEntity<List<ListFavoriteResponse>> listFavorites() {
-        List<ListFavorite> favorites = listFavoriteService.getAll();
-        return ResponseEntity.ok(favorites.stream()
+    public ResponseEntity<PageResponse<ListFavoriteResponse>> listFavorites(
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<ListFavorite> favoritesPage = listFavoriteService.getAll(pageable);
+        
+        var content = favoritesPage.getContent().stream()
                 .map(ListFavoriteMapper::toResponse)
-                .toList());
+                .toList();
+        
+        PageResponse<ListFavoriteResponse> response = new PageResponse<>(
+                content,
+                favoritesPage.getTotalElements(),
+                favoritesPage.getNumber(),
+                favoritesPage.getTotalPages(),
+                favoritesPage.isLast()
+        );
+        return ResponseEntity.ok(response);
     }
 
     /**
