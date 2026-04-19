@@ -3,7 +3,7 @@ import type { Item } from "./item";
 
 export type FavoriteList = {
   id: number;
-  userId: string;
+  userId: UUID;
   name: string;
   description?: string;
   items: Item[];
@@ -18,13 +18,4 @@ export type CreateListRequest = {
 export type UpdateListRequest = {
   name?: string;
   description?: string;
-}
-
-export type ListResponse = {
-  data: FavoriteList;
-}
-
-export type ListsListResponse = {
-  data: FavoriteList[];
-  count: number;
 }

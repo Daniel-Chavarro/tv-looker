@@ -1,10 +1,13 @@
+import type { UUID } from "crypto";
+
 export type User = {
-  id: string;
+  id: UUID
   username: string;
   email: string;
   name?: string;
+  // Just meanwhile testing, will be removed in the future when we implement proper authentication
+  password: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 export type CreateUserRequest = {
@@ -18,8 +21,4 @@ export type UpdateUserRequest = {
   password?: string;
   name?: string;
   email?: string;
-}
-
-export type UserResponse = {
-  data: User;
 }

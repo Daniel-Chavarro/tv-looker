@@ -1,3 +1,5 @@
+import type { UUID } from "crypto";
+
 export type Genre = {
   id: number;
   tmdbId: number;
@@ -27,29 +29,21 @@ export type Director = {
 export type Item = {
   id: number;
   title: string;
-  type: "MOVIE" | "TV";
-  releaseDate: string;
   overview: string;
-  posterUrl?: string;
-  backdropUrl?: string;
-  voteAverage: number;
+  releaseDate: string;
   popularity: number;
+  voteAverage: number;
+  type: "MOVIE" | "TV";
   tmdbId: number;
   genres: Genre[];
   actors: ActorItem[];
   directors: Director[];
-}
-
-export type ItemResponse = {
-  data: Item;
-}
-
-export type ItemsListResponse = {
-  data: Item[];
-  count: number;
+  posterUrl?: string;
+  backdropUrl?: string;
 }
 
 export type RecommendationResponse = {
-  data: Item[];
+  userId: UUID;
+  items: Item[];
   count: number;
-}
+};
