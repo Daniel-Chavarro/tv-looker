@@ -1,9 +1,10 @@
 import { apiClient } from './client';
-import type { Item, ItemResponse, ItemsListResponse } from '../types';
+import type { Item } from '../types';
+import type { PaginatedResponse } from '../types';
 
 export const itemsApi = {
-  getItem: async (id: number): Promise<ItemResponse> => {
-    const response = await apiClient.get<ItemResponse>(`/items/${id}`);
+  getItem: async (id: number): Promise<Item> => {
+    const response = await apiClient.get<Item>(`/items/${id}`);
     return response.data;
   },
 
@@ -13,8 +14,8 @@ export const itemsApi = {
     search?: string;
     page?: number;
     pageSize?: number;
-  }): Promise<ItemsListResponse> => {
-    const response = await apiClient.get<ItemsListResponse>('/items', { params });
+  }): Promise<PaginatedResponse<Item>> => {
+    const response = await apiClient.get<PaginatedResponse<Item>>('/items', { params });
     return response.data;
   },
 };

@@ -1,14 +1,14 @@
 import { apiClient } from './client';
-import type { User, CreateUserRequest, UserResponse } from '../types';
+import type { User, CreateUserRequest} from '../types';
 
 export const authApi = {
-  login: async (email: string, password: string): Promise<UserResponse> => {
-    const response = await apiClient.post<UserResponse>('/auth/login', { email, password });
+  login: async (email: string, password: string): Promise<User> => {
+    const response = await apiClient.post<User>('/auth/login', { email, password });
     return response.data;
   },
 
-  register: async (data: CreateUserRequest): Promise<UserResponse> => {
-    const response = await apiClient.post<UserResponse>('/auth/register', data);
+  register: async (data: CreateUserRequest): Promise<User> => {
+    const response = await apiClient.post<User>('/auth/register', data);
     return response.data;
   },
 
@@ -17,8 +17,8 @@ export const authApi = {
     localStorage.removeItem('token');
   },
 
-  getCurrentUser: async (): Promise<UserResponse> => {
-    const response = await apiClient.get<UserResponse>('/auth/me');
+  getCurrentUser: async (): Promise<User> => {
+    const response = await apiClient.get<User>('/auth/me');
     return response.data;
   },
 };
