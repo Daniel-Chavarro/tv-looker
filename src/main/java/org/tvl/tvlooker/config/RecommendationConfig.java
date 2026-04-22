@@ -11,6 +11,7 @@ import org.tvl.tvlooker.domain.motor.RecommendationEngine;
 import org.tvl.tvlooker.domain.motor.utils.DataProvider;
 import org.tvl.tvlooker.domain.strategy.aggregation.AggregationStrategy;
 import org.tvl.tvlooker.domain.strategy.aggregation.ConstantConvexAggregation;
+import org.tvl.tvlooker.domain.strategy.aggregation.RankingBasedAggregation;
 import org.tvl.tvlooker.domain.strategy.recommendation.PopularityStrategy;
 import org.tvl.tvlooker.domain.strategy.recommendation.RecommendationStrategy;
 
@@ -64,9 +65,9 @@ public class RecommendationConfig {
         
         return switch (aggregationType) {
             case "constant" -> new ConstantConvexAggregation(weights);
+            case "ranking" -> new RankingBasedAggregation();
             // Add more aggregation types here in the future:
             // case "variable" -> new VariableConvexAggregation(weights);
-            // case "ranking" -> new RankingBasedAggregation();
             default -> new ConstantConvexAggregation(weights);
         };
     }
