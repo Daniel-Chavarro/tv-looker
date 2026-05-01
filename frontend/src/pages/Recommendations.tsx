@@ -21,7 +21,7 @@ export function Recommendations() {
     );
   }
 
-  const items = data?.data ?? [];
+  const items = data?.items ?? [];
 
   return (
     <div className="container mx-auto px-4 py-8">

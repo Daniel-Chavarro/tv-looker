@@ -24,6 +24,7 @@ import org.tvl.tvlooker.domain.model.dto.Review;
 import org.tvl.tvlooker.service.ReviewService;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * REST controller for managing reviews.
@@ -84,6 +85,46 @@ public class ReviewController {
         return ResponseEntity.ok(ReviewMapper.toResponse(review));
     }
 
+    @GetMapping("/item/{itemId}")
+    public ResponseEntity<PageResponse<ReviewResponse>> getItemReviews(
+            @PathVariable Long itemId,
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Review> reviewsPage = reviewService.getByItemId(itemId, pageable);
+
+        List<ReviewResponse> content = reviewsPage.getContent().stream()
+                .map(ReviewMapper::toResponse)
+                .toList();
+
+        PageResponse<ReviewResponse> response = new PageResponse<>(
+                content,
+                reviewsPage.getTotalElements(),
+                reviewsPage.getNumber(),
+                reviewsPage.getTotalPages(),
+                reviewsPage.isLast()
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<PageResponse<ReviewResponse>> getUserReviews(
+            @PathVariable UUID userId,
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Review> reviewsPage = reviewService.getByUserId(userId, pageable);
+
+        List<ReviewResponse> content = reviewsPage.getContent().stream()
+                .map(ReviewMapper::toResponse)
+                .toList();
+
+        PageResponse<ReviewResponse> response = new PageResponse<>(
+                content,
+                reviewsPage.getTotalElements(),
+                reviewsPage.getNumber(),
+                reviewsPage.getTotalPages(),
+                reviewsPage.isLast()
+        );
+        return ResponseEntity.ok(response);
+    }
+
     /**
      * Updates an existing review.
      * @param id the review ID
@@ -108,4 +149,6 @@ public class ReviewController {
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
         reviewService.deleteById(id);
         return ResponseEntity.noContent().build();}
+
+    
 }

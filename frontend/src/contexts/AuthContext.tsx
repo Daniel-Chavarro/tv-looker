@@ -25,7 +25,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (token) {
         try {
           const response = await authApi.getCurrentUser();
-          setUser(response.data);
+          setUser(response);
         } catch {
           localStorage.removeItem('token');
         }
@@ -38,8 +38,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string) => {
     try {
       const response = await authApi.login(email, password);
-      localStorage.setItem('token', response.data.id);
-      setUser(response.data);
+      localStorage.setItem('token', response.id);
+      setUser(response);
     } catch (error) {
       throw error;
     }
@@ -48,8 +48,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (email: string, password: string, username: string) => {
     try {
       const response = await authApi.register({ email, password, username });
-      localStorage.setItem('token', response.data.id);
-      setUser(response.data);
+      localStorage.setItem('token', response.id);
+      setUser(response);
     } catch (error) {
       throw error;
     }

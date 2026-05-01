@@ -122,9 +122,9 @@ const ItemDetailContent: React.FC<{ item: Item }> = ({ item }) => {
           </h2>
           {reviewsLoading ? (
             <PageLoader message="Loading reviews..." />
-          ) : reviewsData?.data && reviewsData.data.length > 0 ? (
+          ) : reviewsData?.content && reviewsData.content.length > 0 ? (
             <div className="grid gap-4">
-              {reviewsData.data.map((review) => (
+              {reviewsData.content.map((review) => (
                 <ReviewCard key={review.id} review={review} />
               ))}
             </div>
@@ -146,7 +146,7 @@ export function ItemDetail() {
     return <PageLoader message="Loading item details..." />;
   }
 
-  if (error || !data?.data) {
+  if (error || !data) {
     return (
       <ErrorMessage
         message="Failed to load item details. Please try again."
@@ -155,5 +155,5 @@ export function ItemDetail() {
     );
   }
 
-  return <ItemDetailContent item={data.data} />;
+  return <ItemDetailContent item={data} />;
 }

@@ -39,7 +39,7 @@ function ReviewItem({
         </div>
         <RatingDisplay value={review.rating} size="sm" />
       </div>
-      <p className="text-neutral-300 mb-4">{review.content}</p>
+      <p className="text-neutral-300 mb-4">{review.comment}</p>
       <div className="flex gap-2">
         <Button variant="secondary" onClick={onEdit} className="text-sm">
           Edit
@@ -65,7 +65,7 @@ export function MyReviews() {
   const handleEdit = (review: Review) => {
     setEditingReview(review);
     setEditRating(review.rating);
-    setEditContent(review.content);
+    setEditContent(review.comment);
   };
 
   const handleUpdateReview = async () => {
@@ -73,7 +73,7 @@ export function MyReviews() {
     try {
       await updateReview.mutateAsync({
         id: editingReview.id,
-        data: { rating: editRating, content: editContent.trim() },
+        data: { score: editRating, reviewText: editContent.trim() },
       });
       setEditingReview(null);
     } catch (err) {
@@ -103,7 +103,7 @@ export function MyReviews() {
     );
   }
 
-  const reviews = data?.data ?? [];
+  const reviews = data?.content ?? [];
 
   return (
     <div className="container mx-auto px-4 py-8">

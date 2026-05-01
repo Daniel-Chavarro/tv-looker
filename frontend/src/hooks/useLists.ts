@@ -25,7 +25,7 @@ export const useCreateList = () => {
   return useMutation({
     mutationFn: (data: CreateListRequest) => listsApi.createList(data),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['lists', data.data.userId] });
+      queryClient.invalidateQueries({ queryKey: ['lists', data.userId] });
     },
   });
 };

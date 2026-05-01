@@ -75,6 +75,16 @@ public class ReviewService {
                 .map(ReviewEntityMapper::toDomain);
     }
 
+    public Page<Review> getByItemId(Long itemId, Pageable pageable) {
+        return reviewRepository.findByItemId(itemId, pageable)
+                .map(ReviewEntityMapper::toDomain);
+    }
+
+    public Page<Review> getByUserId(UUID userId, Pageable pageable) {
+        return reviewRepository.findAllByUserId(userId, pageable)
+                .map(ReviewEntityMapper::toDomain);
+    }
+
     /**
      * Update a review.
      *

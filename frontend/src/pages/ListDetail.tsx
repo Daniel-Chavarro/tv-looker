@@ -24,9 +24,9 @@ export function ListDetail() {
   const [description, setDescription] = useState('');
 
   const handleEdit = () => {
-    if (!data?.data) return;
-    setName(data.data.name);
-    setDescription(data.data.description || '');
+    if (!data) return;
+    setName(data.name);
+    setDescription(data.description || '');
     setShowEditModal(true);
   };
 
@@ -68,7 +68,7 @@ export function ListDetail() {
     return <PageLoader message="Loading list..." />;
   }
 
-  if (error || !data?.data) {
+  if (error || !data) {
     return (
       <ErrorMessage
         message="Failed to load list. Please try again."
@@ -77,7 +77,7 @@ export function ListDetail() {
     );
   }
 
-  const list = data.data;
+  const list = data;
   const items = list.items;
 
   return (

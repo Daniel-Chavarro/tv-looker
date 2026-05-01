@@ -22,12 +22,12 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, className = '' }
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center">
               <span className="text-amber-500 text-lg font-medium">
-                {(review.userName || 'U')[0].toUpperCase()}
+                {'U'[0].toUpperCase()}
               </span>
             </div>
             <div>
               <p className="text-neutral-200 font-medium">
-                {review.userName || 'Anonymous'}
+                {'Anonymous'}
               </p>
               <p className="text-neutral-600 text-sm">{formattedDate}</p>
             </div>
@@ -35,7 +35,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, className = '' }
           <RatingDisplay value={review.rating} size="sm" />
         </div>
         <div className="mt-4">
-          <p className="text-neutral-300 leading-relaxed">{review.content}</p>
+          <p className="text-neutral-300 leading-relaxed">{review.comment}</p>
         </div>
       </CardBody>
     </Card>

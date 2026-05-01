@@ -7,7 +7,7 @@ export const useRecommendations = (
 ) => {
   return useQuery({
     queryKey: ['recommendations', userId, limit],
-    queryFn: () => recommendationsApi.getRecommendations({ userId, limit }),
+    queryFn: () => recommendationsApi.getRecommendations(userId as import('crypto').UUID),
     staleTime: 5 * 60 * 1000,
     enabled: !!userId,
   });

@@ -24,6 +24,8 @@ import org.tvl.tvlooker.api.dto.response.PageResponse;
 import org.tvl.tvlooker.domain.model.dto.ListFavorite;
 import org.tvl.tvlooker.service.ListFavoriteService;
 
+import java.util.UUID;
+
 /**
  * REST controller for managing favorite lists.
  */
@@ -84,6 +86,26 @@ public class ListFavoriteController {
         return ResponseEntity.ok(ListFavoriteMapper.toResponse(listFavorite));
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<PageResponse<ListFavoriteResponse>> getUserLists(
+            @PathVariable UUID userId,
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<ListFavorite> favoritesPage = listFavoriteService.getByUserId(userId, pageable);
+        
+        var content = favoritesPage.getContent().stream()
+                .map(ListFavoriteMapper::toResponse)
+                .toList();
+        
+        PageResponse<ListFavoriteResponse> response = new PageResponse<>(
+                content,
+                favoritesPage.getTotalElements(),
+                favoritesPage.getNumber(),
+                favoritesPage.getTotalPages(),
+                favoritesPage.isLast()
+        );
+        return ResponseEntity.ok(response);
+    }
+
     /**
      * Updates an existing favorite list.
      * @param id the favorite list ID
@@ -116,27 +138,28 @@ public class ListFavoriteController {
      * @param idItem the item ID to add
      * @return the updated favorite list response
      */
-    @PostMapping("/{id-list}/item/{id-item}")
+    @PostMapping("/{id}/items")
     public ResponseEntity<ListFavoriteResponse> addItemToFavorite(
-            @PathVariable(name = "id-list") Long idList,
-            @PathVariable(name = "id-item") Long idItem){
-        ListFavorite listFavorite = listFavoriteService.getById(idList);
-        ListFavorite updated = listFavoriteService.addItemToFavorite(listFavorite, idItem);
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Long> body){
+        Long itemId = body.get("itemId");
+        ListFavorite listFavorite = listFavoriteService.getById(id);
+        ListFavorite updated = listFavoriteService.addItemToFavorite(listFavorite, itemId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ListFavoriteMapper.toResponse(updated));
     }
 
     /**
      * Removes an item from a favorite list.
-     * @param idList the favorite list ID
-     * @param idItem the item ID to remove
+     * @param id the favorite list ID
+     * @param itemId the item ID to remove
      * @return the updated favorite list response
      */
-    @DeleteMapping("/{id-list}/item/{id-item}")
+    @DeleteMapping("/{id}/items/{itemId}")
     public ResponseEntity<Void> removeItemFromFavorite(
-            @PathVariable(name = "id-list") Long idList,
-            @PathVariable(name = "id-item") Long idItem){
-        ListFavorite listFavorite = listFavoriteService.getById(idList);
-        listFavoriteService.removeItemFromFavorite(listFavorite, idItem);
+            @PathVariable Long id,
+            @PathVariable Long itemId){
+        ListFavorite listFavorite = listFavoriteService.getById(id);
+        listFavoriteService.removeItemFromFavorite(listFavorite, itemId);
         return ResponseEntity.noContent().build();
     }
 }

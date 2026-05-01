@@ -84,6 +84,11 @@ public class ListFavoriteService {
                 .collect(Collectors.toList());
     }
 
+    public Page<ListFavorite> getByUserId(UUID userId, Pageable pageable) {
+        return listFavoriteRepository.findAllByUserId(userId, pageable)
+                .map(ListFavoriteEntityMapper::toDomain);
+    }
+
     /**
      * Update a favorite list.
      *

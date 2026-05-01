@@ -19,9 +19,9 @@ export function Profile() {
   const [email, setEmail] = useState('');
 
   const handleEdit = () => {
-    if (!data?.data) return;
-    setName(data.data.name || '');
-    setEmail(data.data.email);
+    if (!data) return;
+    setName(data.name || '');
+    setEmail(data.email);
     setShowEditModal(true);
   };
 
@@ -55,7 +55,7 @@ export function Profile() {
     return <PageLoader message="Loading profile..." />;
   }
 
-  if (error || !data?.data) {
+  if (error || !data) {
     return (
       <ErrorMessage
         message="Failed to load profile. Please try again."
@@ -64,7 +64,7 @@ export function Profile() {
     );
   }
 
-  const user = data.data;
+  const user = data;
   const joinDate = new Date(user.createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',

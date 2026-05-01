@@ -106,7 +106,7 @@ export function MyLists() {
     );
   }
 
-  const lists = data?.data ?? [];
+  const lists = data?.content ?? [];
 
   return (
     <div className="container mx-auto px-4 py-8">
