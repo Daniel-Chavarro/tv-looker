@@ -44,6 +44,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+                        // JUST FOR DEBUGGING PURPOSES, REMOVE IN PRODUCTION
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html").permitAll()
+
                         .requestMatchers(HttpMethod.GET,
                                 ITEMS_PATTERN,
                                 GENRES_PATTERN,
