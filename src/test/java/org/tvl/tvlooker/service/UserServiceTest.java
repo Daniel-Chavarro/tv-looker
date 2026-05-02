@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -11,9 +12,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
+import org.tvl.tvlooker.domain.model.enums.UserAuthority;
 import org.tvl.tvlooker.persistence.repository.UserRepository;
 
 import java.util.List;
@@ -32,6 +35,9 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserService userService;
 
@@ -48,6 +54,7 @@ class UserServiceTest {
                 .email("test@test.com")
                 .name("Test User")
                 .password("password123")
+                .authority(UserAuthority.USER)
                 .build();
 
         testUserEntity = UserEntity.builder()
@@ -56,12 +63,14 @@ class UserServiceTest {
                 .email("test@test.com")
                 .name("Test User")
                 .password("password123")
+                .authority(UserAuthority.USER)
                 .build();
     }
 
     @Test
     @DisplayName("create - should save and return user")
     void createUser_shouldSaveAndReturn() {
+        when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
         when(userRepository.save(any(UserEntity.class))).thenReturn(testUserEntity);
 
         User result = userService.create(testUser);
@@ -69,7 +78,21 @@ class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testUserId);
         assertThat(result.getUsername()).isEqualTo("testuser");
+        verify(passwordEncoder, times(1)).encode("password123");
         verify(userRepository, times(1)).save(any(UserEntity.class));
+    }
+
+    @Test
+    @DisplayName("create - should hash password before saving")
+    void createUser_shouldHashPasswordBeforeSaving() {
+        when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        userService.create(testUser);
+
+        ArgumentCaptor<UserEntity> userCaptor = ArgumentCaptor.forClass(UserEntity.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getPassword()).isEqualTo("hashed-password");
     }
 
     @Test
@@ -82,6 +105,18 @@ class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testUserId);
         assertThat(result.getUsername()).isEqualTo("testuser");
+        verify(userRepository, times(1)).findById(testUserId);
+    }
+
+    @Test
+    @DisplayName("getById - should default null entity authority to user")
+    void getById_shouldDefaultNullEntityAuthorityToUser() {
+        testUserEntity.setAuthority(null);
+        when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUserEntity));
+
+        User result = userService.getById(testUserId);
+
+        assertThat(result.getAuthority()).isEqualTo(UserAuthority.USER);
         verify(userRepository, times(1)).findById(testUserId);
     }
 
@@ -106,6 +141,7 @@ class UserServiceTest {
                 .email("test2@test.com")
                 .name("Test User 2")
                 .password("password456")
+                .authority(UserAuthority.USER)
                 .build();
         List<UserEntity> users = List.of(testUserEntity, user2);
         when(userRepository.findAll()).thenReturn(users);
@@ -137,17 +173,20 @@ class UserServiceTest {
                 .email("updated@test.com")
                 .name("Updated User")
                 .password("newpassword")
+                .authority(UserAuthority.USER)
                 .build();
         UserEntity savedUser = UserEntity.builder()
                 .id(testUserId)
                 .username("updateduser")
                 .email("updated@test.com")
                 .name("Updated User")
-                .password("newpassword")
+                .password("hashed-newpassword")
+                .authority(UserAuthority.USER)
                 .build();
 
         when(userRepository.existsById(testUserId)).thenReturn(true);
         when(userRepository.getReferenceById(testUserId)).thenReturn(testUserEntity);
+        when(passwordEncoder.encode("newpassword")).thenReturn("hashed-newpassword");
         when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
 
         User result = userService.update(testUserId, updatedUser);
@@ -155,6 +194,7 @@ class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testUserId);
         assertThat(result.getUsername()).isEqualTo("updateduser");
+        verify(passwordEncoder, times(1)).encode("newpassword");
         verify(userRepository, times(1)).existsById(testUserId);
         verify(userRepository, times(1)).save(any(UserEntity.class));
     }
@@ -233,6 +273,7 @@ class UserServiceTest {
                 .email("second@test.com")
                 .name("Second User")
                 .password("password456")
+                .authority(UserAuthority.USER)
                 .build();
         List<UserEntity> entities = List.of(testUserEntity, user2Entity);
         Page<UserEntity> entityPage = new PageImpl<>(entities, pageable, 2);

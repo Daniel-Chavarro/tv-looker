@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -25,6 +26,7 @@ import org.tvl.tvlooker.service.InteractionService;
 
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/interactions")
@@ -65,13 +67,35 @@ public class InteractionController {
      *         invalid
      */
     @PostMapping
-    public ResponseEntity<InteractionResponse> createInteraction(@RequestBody CreateInteractionRequest request) {
+    public ResponseEntity<InteractionResponse> createInteraction(
+            @RequestBody CreateInteractionRequest request,
+            Authentication authentication) {
         Interaction interaction = InteractionMapper.fromCreateRequest(request);
-        Interaction created = interactionService.create(interaction);
+        Interaction created = interactionService.createForUser(interaction, currentUserId(authentication));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header("Location", "/api/v1/users/" + created.getId())
                 .body(InteractionMapper.toResponse(created));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<PageResponse<InteractionResponse>> getMyInteractions(
+            Authentication authentication,
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Interaction> interactionsPage = interactionService.getByUserId(currentUserId(authentication), pageable);
+
+        List<InteractionResponse> content = interactionsPage.getContent().stream()
+                .map(InteractionMapper::toResponse)
+                .toList();
+
+        PageResponse<InteractionResponse> response = new PageResponse<>(
+                content,
+                interactionsPage.getTotalElements(),
+                interactionsPage.getNumber(),
+                interactionsPage.getTotalPages(),
+                interactionsPage.isLast()
+        );
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -80,8 +104,10 @@ public class InteractionController {
      * @return the interaction response
      */
     @GetMapping("/{id}")
-    public ResponseEntity<InteractionResponse> getInteractionById(@PathVariable Long id) {
-        Interaction interaction = interactionService.getById(id);
+    public ResponseEntity<InteractionResponse> getInteractionById(
+            @PathVariable Long id,
+            Authentication authentication) {
+        Interaction interaction = interactionService.getByIdForUser(id, currentUserId(authentication));
         return ResponseEntity.ok(InteractionMapper.toResponse(interaction));
     }
 
@@ -95,9 +121,10 @@ public class InteractionController {
     @PatchMapping("/{id}")
     public ResponseEntity<InteractionResponse> updateInteraction(
             @PathVariable Long id,
-            @RequestBody UpdateInteractionRequest request) {
+            @RequestBody UpdateInteractionRequest request,
+            Authentication authentication) {
         Interaction interaction = InteractionMapper.fromUpdateRequest(request);
-        Interaction updated = interactionService.update(id, interaction);
+        Interaction updated = interactionService.updateForUser(id, interaction, currentUserId(authentication));
         return ResponseEntity.ok(InteractionMapper.toResponse(updated));
     }
 
@@ -107,8 +134,12 @@ public class InteractionController {
      * @return empty response with status 204 No Content
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteInteraction(@PathVariable Long id) {
-        interactionService.delete(id);
+    public ResponseEntity<Void> deleteInteraction(@PathVariable Long id, Authentication authentication) {
+        interactionService.deleteForUser(id, currentUserId(authentication));
         return ResponseEntity.noContent().build();
+    }
+
+    private UUID currentUserId(Authentication authentication) {
+        return UUID.fromString(authentication.getName());
     }
 }

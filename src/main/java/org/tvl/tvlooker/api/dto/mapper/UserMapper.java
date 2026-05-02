@@ -16,21 +16,9 @@ public class UserMapper {
                 .id(user.getId())
                 .username(user.getUsername())
                 .createdAt(user.getCreatedAt())
-                .password(user.getPassword())
+                .authority(user.getAuthority())
                 .email(user.getEmail())
                 .name(user.getName())
-                .build();
-    }
-
-
-    public static User toModel(UserResponse userResponse) {
-        return User.builder()
-                .id(userResponse.getId())
-                .username(userResponse.getUsername())
-                .password(userResponse.getPassword())
-                .createdAt(userResponse.getCreatedAt())
-                .email(userResponse.getEmail())
-                .name(userResponse.getName())
                 .build();
     }
 
@@ -51,4 +39,3 @@ public class UserMapper {
                 .build();
     }
 }
-

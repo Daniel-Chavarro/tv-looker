@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
@@ -50,6 +52,14 @@ class InteractionControllerTest {
 
     private UUID testUserId;
     private Interaction testInteraction;
+
+    private UsernamePasswordAuthenticationToken userAuthentication() {
+        return new UsernamePasswordAuthenticationToken(
+                testUserId.toString(),
+                null,
+                List.of(new SimpleGrantedAuthority("USER"))
+        );
+    }
 
     @BeforeEach
     void setUp() {
@@ -134,9 +144,10 @@ class InteractionControllerTest {
                     .createdAt(Timestamp.from(Instant.now()))
                     .build();
 
-            when(interactionService.create(any(Interaction.class))).thenReturn(createdInteraction);
+            when(interactionService.createForUser(any(Interaction.class), eq(testUserId))).thenReturn(createdInteraction);
 
             mockMvc.perform(post("/api/v1/interactions")
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isCreated())
@@ -146,7 +157,8 @@ class InteractionControllerTest {
                     .andExpect(jsonPath("$.itemId", is(100)))
                     .andExpect(jsonPath("$.interactionType", is("VIEW")));
 
-            verify(interactionService, times(1)).create(any(Interaction.class));
+            verify(interactionService, times(1)).createForUser(any(Interaction.class), eq(testUserId));
+            verify(interactionService, never()).create(any(Interaction.class));
         }
 
         @Test
@@ -159,15 +171,35 @@ class InteractionControllerTest {
                 }
                 """.formatted(testUserId);
 
-            when(interactionService.create(any(Interaction.class)))
+            when(interactionService.createForUser(any(Interaction.class), eq(testUserId)))
                     .thenThrow(new RuntimeException("Database error"));
 
             mockMvc.perform(post("/api/v1/interactions")
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isInternalServerError());
 
-            verify(interactionService, times(1)).create(any(Interaction.class));
+            verify(interactionService, times(1)).createForUser(any(Interaction.class), eq(testUserId));
+        }
+    }
+
+    @Nested
+    class GetMyInteractions {
+
+        @Test
+        void givenCurrentUser_whenGetMyInteractions_thenReturnsCurrentUserInteractions() throws Exception {
+            Page<Interaction> interactionsPage = new PageImpl<>(List.of(testInteraction), PageRequest.of(0, 50), 1);
+            when(interactionService.getByUserId(eq(testUserId), any(Pageable.class))).thenReturn(interactionsPage);
+
+            mockMvc.perform(get("/api/v1/interactions/me")
+                            .principal(userAuthentication()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content", hasSize(1)))
+                    .andExpect(jsonPath("$.content[0].userId", is(testUserId.toString())));
+
+            verify(interactionService, times(1)).getByUserId(eq(testUserId), any(Pageable.class));
         }
     }
 
@@ -176,29 +208,33 @@ class InteractionControllerTest {
 
         @Test
         void givenInteractionExists_whenGetInteractionById_thenReturnsInteraction() throws Exception {
-            when(interactionService.getById(1L)).thenReturn(testInteraction);
+            when(interactionService.getByIdForUser(1L, testUserId)).thenReturn(testInteraction);
 
-            mockMvc.perform(get("/api/v1/interactions/{id}", 1L))
+            mockMvc.perform(get("/api/v1/interactions/{id}", 1L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.id", is(1)))
                     .andExpect(jsonPath("$.itemId", is(100)))
                     .andExpect(jsonPath("$.interactionType", is("VIEW")));
 
-            verify(interactionService, times(1)).getById(1L);
+            verify(interactionService, times(1)).getByIdForUser(1L, testUserId);
+            verify(interactionService, never()).getById(1L);
         }
 
         @Test
         void givenInteractionNotExists_whenGetInteractionById_thenReturns404() throws Exception {
-            when(interactionService.getById(999L))
+            when(interactionService.getByIdForUser(999L, testUserId))
                     .thenThrow(new InteractionNotFoundException("Interaction not found with id: 999"));
 
-            mockMvc.perform(get("/api/v1/interactions/{id}", 999L))
+            mockMvc.perform(get("/api/v1/interactions/{id}", 999L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.body.title", is("Interaction Not Found")))
                     .andExpect(jsonPath("$.body.detail", containsString("Interaction not found with id: 999")));
 
-            verify(interactionService, times(1)).getById(999L);
+            verify(interactionService, times(1)).getByIdForUser(999L, testUserId);
+            verify(interactionService, never()).getById(999L);
         }
     }
 
@@ -221,9 +257,10 @@ class InteractionControllerTest {
                     .createdAt(Timestamp.from(Instant.now()))
                     .build();
 
-            when(interactionService.update(eq(1L), any(Interaction.class))).thenReturn(updatedInteraction);
+            when(interactionService.updateForUser(eq(1L), any(Interaction.class), eq(testUserId))).thenReturn(updatedInteraction);
 
-            mockMvc.perform(put("/api/v1/interactions/{id}", 1L)
+            mockMvc.perform(patch("/api/v1/interactions/{id}", 1L)
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isOk())
@@ -231,7 +268,8 @@ class InteractionControllerTest {
                     .andExpect(jsonPath("$.id", is(1)))
                     .andExpect(jsonPath("$.interactionType", is("LIKE")));
 
-            verify(interactionService, times(1)).update(eq(1L), any(Interaction.class));
+            verify(interactionService, times(1)).updateForUser(eq(1L), any(Interaction.class), eq(testUserId));
+            verify(interactionService, never()).update(eq(1L), any(Interaction.class));
         }
 
         @Test
@@ -242,16 +280,17 @@ class InteractionControllerTest {
                 }
                 """;
 
-            when(interactionService.update(eq(999L), any(Interaction.class)))
+            when(interactionService.updateForUser(eq(999L), any(Interaction.class), eq(testUserId)))
                     .thenThrow(new InteractionNotFoundException("Interaction not found with id: 999"));
 
-            mockMvc.perform(put("/api/v1/interactions/{id}", 999L)
+            mockMvc.perform(patch("/api/v1/interactions/{id}", 999L)
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.body.title", is("Interaction Not Found")));
 
-            verify(interactionService, times(1)).update(eq(999L), any(Interaction.class));
+            verify(interactionService, times(1)).updateForUser(eq(999L), any(Interaction.class), eq(testUserId));
         }
     }
 
@@ -260,24 +299,27 @@ class InteractionControllerTest {
 
         @Test
         void givenInteractionExists_whenDeleteInteraction_thenReturns204() throws Exception {
-            doNothing().when(interactionService).delete(1L);
+            doNothing().when(interactionService).deleteForUser(1L, testUserId);
 
-            mockMvc.perform(delete("/api/v1/interactions/{id}", 1L))
+            mockMvc.perform(delete("/api/v1/interactions/{id}", 1L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isNoContent());
 
-            verify(interactionService, times(1)).delete(1L);
+            verify(interactionService, times(1)).deleteForUser(1L, testUserId);
+            verify(interactionService, never()).delete(1L);
         }
 
         @Test
         void givenInteractionNotExists_whenDeleteInteraction_thenReturns404() throws Exception {
             doThrow(new InteractionNotFoundException("Interaction not found with id: 999"))
-                    .when(interactionService).delete(999L);
+                    .when(interactionService).deleteForUser(999L, testUserId);
 
-            mockMvc.perform(delete("/api/v1/interactions/{id}", 999L))
+            mockMvc.perform(delete("/api/v1/interactions/{id}", 999L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.body.title", is("Interaction Not Found")));
 
-            verify(interactionService, times(1)).delete(999L);
+            verify(interactionService, times(1)).deleteForUser(999L, testUserId);
         }
     }
 }

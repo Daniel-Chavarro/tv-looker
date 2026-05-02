@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
+import org.tvl.tvlooker.domain.model.enums.UserAuthority;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,17 +38,22 @@ class UserRepositoryTest {
         userRepository.deleteAll();
     }
 
+    private UserEntity user(String username, String password, String email) {
+        return UserEntity.builder()
+                .username(username)
+                .password(password)
+                .email(email)
+                .authority(UserAuthority.USER)
+                .build();
+    }
+
     // ==================== CREATE/SAVE TESTS ====================
 
     @Test
     @DisplayName("Should save a new user and generate UUID")
     void testSaveUser() {
         // Given
-        UserEntity user = UserEntity.builder()
-                .username("testuser")
-                .password("password123")
-                .email("test@test.com")
-                .build();
+        UserEntity user = user("testuser", "password123", "test@test.com");
 
         // When
         UserEntity savedUser = userRepository.saveAndFlush(user);
@@ -64,9 +70,9 @@ class UserRepositoryTest {
     @DisplayName("Should save multiple users")
     void testSaveMultipleUsers() {
         // Given
-        UserEntity user1 = UserEntity.builder().username("user1").password("pass1").email("user1@example.com").build();
-        UserEntity user2 = UserEntity.builder().username("user2").password("pass2").email("user2@example.com").build();
-        UserEntity user3 = UserEntity.builder().username("user3").password("pass3").email("user3@example.com").build();
+        UserEntity user1 = user("user1", "pass1", "user1@example.com");
+        UserEntity user2 = user("user2", "pass2", "user2@example.com");
+        UserEntity user3 = user("user3", "pass3", "user3@example.com");
 
         // When
         List<UserEntity> savedUsers = userRepository.saveAll(List.of(user1, user2, user3));
@@ -81,8 +87,8 @@ class UserRepositoryTest {
     @DisplayName("Should generate unique UUID for each user")
     void testUniqueUUIDGeneration() {
         // Given
-        UserEntity user1 = UserEntity.builder().username("user1").password("pass1").email("user1@example.com").build();
-        UserEntity user2 = UserEntity.builder().username("user2").password("pass2").email("user2@example.com").build();
+        UserEntity user1 = user("user1", "pass1", "user1@example.com");
+        UserEntity user2 = user("user2", "pass2", "user2@example.com");
 
         // When
         UserEntity savedUser1 = userRepository.save(user1);
@@ -98,7 +104,7 @@ class UserRepositoryTest {
     @DisplayName("Should find user by ID")
     void testFindById() {
         // Given
-        UserEntity user = UserEntity.builder().username("findme").password("password").email("test@test.com").build();
+        UserEntity user = user("findme", "password", "test@test.com");
         UserEntity savedUser = userRepository.save(user);
 
         // When
@@ -108,6 +114,36 @@ class UserRepositoryTest {
         assertThat(foundUser).isPresent();
         assertThat(foundUser.get().getUsername()).isEqualTo("findme");
         assertThat(foundUser.get().getId()).isEqualTo(savedUser.getId());
+    }
+
+    @Test
+    @DisplayName("Should find user by username")
+    void testFindByUsername() {
+        // Given
+        UserEntity user = user("username-search", "password", "username-search@example.com");
+        userRepository.save(user);
+
+        // When
+        Optional<UserEntity> foundUser = userRepository.findByUsername("username-search");
+
+        // Then
+        assertThat(foundUser).isPresent();
+        assertThat(foundUser.get().getEmail()).isEqualTo("username-search@example.com");
+    }
+
+    @Test
+    @DisplayName("Should find user by email")
+    void testFindByEmail() {
+        // Given
+        UserEntity user = user("email-search", "password", "email-search@example.com");
+        userRepository.save(user);
+
+        // When
+        Optional<UserEntity> foundUser = userRepository.findByEmail("email-search@example.com");
+
+        // Then
+        assertThat(foundUser).isPresent();
+        assertThat(foundUser.get().getUsername()).isEqualTo("email-search");
     }
 
     @Test
@@ -127,9 +163,9 @@ class UserRepositoryTest {
     @DisplayName("Should find all users")
     void testFindAll() {
         // Given
-        UserEntity user1 = UserEntity.builder().username("user1").password("pass1").email("user1@example.com").build();
-        UserEntity user2 = UserEntity.builder().username("user2").password("pass2").email("user2@example.com").build();
-        UserEntity user3 = UserEntity.builder().username("user3").password("pass3").email("user3@example.com").build();
+        UserEntity user1 = user("user1", "pass1", "user1@example.com");
+        UserEntity user2 = user("user2", "pass2", "user2@example.com");
+        UserEntity user3 = user("user3", "pass3", "user3@example.com");
         userRepository.saveAll(List.of(user1, user2, user3));
 
         // When
@@ -143,7 +179,7 @@ class UserRepositoryTest {
     @DisplayName("Should check if user exists by ID")
     void testExistsById() {
         // Given
-        UserEntity user = UserEntity.builder().username("exists").password("password").email("exists@example.com").build();
+        UserEntity user = user("exists", "password", "exists@example.com");
         UserEntity savedUser = userRepository.save(user);
 
         // When
@@ -159,8 +195,8 @@ class UserRepositoryTest {
     @DisplayName("Should count all users")
     void testCount() {
         // Given
-        UserEntity user1 = UserEntity.builder().username("user1").password("pass1").email("user1@example.com").build();
-        UserEntity user2 = UserEntity.builder().username("user2").password("pass2").email("user2@example.com").build();
+        UserEntity user1 = user("user1", "pass1", "user1@example.com");
+        UserEntity user2 = user("user2", "pass2", "user2@example.com");
         userRepository.saveAll(List.of(user1, user2));
 
         // When
@@ -174,9 +210,9 @@ class UserRepositoryTest {
     @DisplayName("Should find all users by IDs")
     void testFindAllById() {
         // Given
-        UserEntity user1 = UserEntity.builder().username("user1").password("pass1").email("user1@example.com").build();
-        UserEntity user2 = UserEntity.builder().username("user2").password("pass2").email("user2@example.com").build();
-        UserEntity user3 = UserEntity.builder().username("user3").password("pass3").email("user3@example.com").build();
+        UserEntity user1 = user("user1", "pass1", "user1@example.com");
+        UserEntity user2 = user("user2", "pass2", "user2@example.com");
+        UserEntity user3 = user("user3", "pass3", "user3@example.com");
         UserEntity savedUser1 = userRepository.save(user1);
         UserEntity savedUser2 = userRepository.save(user2);
         userRepository.save(user3);
@@ -196,7 +232,7 @@ class UserRepositoryTest {
     @DisplayName("Should update existing user")
     void testUpdateUser() {
         // Given
-        UserEntity user = UserEntity.builder().username("oldname").password("oldpass").email("oldname@example.com").build();
+        UserEntity user = user("oldname", "oldpass", "oldname@example.com");
         UserEntity savedUser = userRepository.save(user);
 
         // When
@@ -216,7 +252,7 @@ class UserRepositoryTest {
     @DisplayName("Should update user and persist changes")
     void testUpdateUserPersisted() {
         // Given
-        UserEntity user = UserEntity.builder().username("original").password("password").email("original@example.com").build();
+        UserEntity user = user("original", "password", "original@example.com");
         UserEntity savedUser = userRepository.save(user);
         UUID userId = savedUser.getId();
 
@@ -237,7 +273,7 @@ class UserRepositoryTest {
     @DisplayName("Should delete user by ID")
     void testDeleteById() {
         // Given
-        UserEntity user = UserEntity.builder().username("deleteme").password("password").email("deleteme@example.com").build();
+        UserEntity user = user("deleteme", "password", "deleteme@example.com");
         UserEntity savedUser = userRepository.save(user);
 
         // When
@@ -252,7 +288,7 @@ class UserRepositoryTest {
     @DisplayName("Should delete user entity")
     void testDelete() {
         // Given
-        UserEntity user = UserEntity.builder().username("deleteme").password("password").email("deleteme@example.com").build();
+        UserEntity user = user("deleteme", "password", "deleteme@example.com");
         UserEntity savedUser = userRepository.save(user);
 
         // When
@@ -267,8 +303,8 @@ class UserRepositoryTest {
     @DisplayName("Should delete all users")
     void testDeleteAll() {
         // Given
-        UserEntity user1 = UserEntity.builder().username("user1").password("pass1").email("user1@example.com").build();
-        UserEntity user2 = UserEntity.builder().username("user2").password("pass2").email("user2@example.com").build();
+        UserEntity user1 = user("user1", "pass1", "user1@example.com");
+        UserEntity user2 = user("user2", "pass2", "user2@example.com");
         userRepository.saveAll(List.of(user1, user2));
 
         // When
@@ -282,9 +318,9 @@ class UserRepositoryTest {
     @DisplayName("Should delete all users by IDs")
     void testDeleteAllById() {
         // Given
-        UserEntity user1 = UserEntity.builder().username("user1").password("pass1").email("user1@example.com").build();
-        UserEntity user2 = UserEntity.builder().username("user2").password("pass2").email("user2@example.com").build();
-        UserEntity user3 = UserEntity.builder().username("user3").password("pass3").email("user3@example.com").build();
+        UserEntity user1 = user("user1", "pass1", "user1@example.com");
+        UserEntity user2 = user("user2", "pass2", "user2@example.com");
+        UserEntity user3 = user("user3", "pass3", "user3@example.com");
         UserEntity savedUser1 = userRepository.save(user1);
         UserEntity savedUser2 = userRepository.save(user2);
         UserEntity savedUser3 = userRepository.save(user3);
@@ -304,11 +340,11 @@ class UserRepositoryTest {
     @DisplayName("Should enforce username uniqueness constraint")
     void testUsernameUniqueConstraint() {
         // Given
-        UserEntity user1 = UserEntity.builder().username("duplicate").password("pass1").email("duplicate@example.com").build();
+        UserEntity user1 = user("duplicate", "pass1", "duplicate@example.com");
         userRepository.save(user1);
         userRepository.flush();
 
-        UserEntity user2 = UserEntity.builder().username("duplicate").password("pass2").email("duplicate2@example.com").build();
+        UserEntity user2 = user("duplicate", "pass2", "duplicate2@example.com");
         // When & Then
         try {
             userRepository.save(user2);
@@ -324,7 +360,12 @@ class UserRepositoryTest {
     @DisplayName("Should not allow null username")
     void testNullUsername() {
         // Given
-        UserEntity user = UserEntity.builder().username(null).password("password").email("nullusername@example.com").build();
+        UserEntity user = UserEntity.builder()
+                .username(null)
+                .password("password")
+                .email("nullusername@example.com")
+                .authority(UserAuthority.USER)
+                .build();
 
         // When & Then
         try {
@@ -341,7 +382,12 @@ class UserRepositoryTest {
     @DisplayName("Should not allow null password")
     void testNullPassword() {
         // Given
-        UserEntity user = UserEntity.builder().username("validuser").password(null).email("validuser@example.com").build();
+        UserEntity user = UserEntity.builder()
+                .username("validuser")
+                .password(null)
+                .email("validuser@example.com")
+                .authority(UserAuthority.USER)
+                .build();
 
         // When & Then
         try {
@@ -358,7 +404,11 @@ class UserRepositoryTest {
     @DisplayName("Should not allow null email")
     void testNullEmail() {
         // Given
-        UserEntity user = UserEntity.builder().username("validuser").password("password").build();
+        UserEntity user = UserEntity.builder()
+                .username("validuser")
+                .password("password")
+                .authority(UserAuthority.USER)
+                .build();
         try {
             userRepository.save(user);
             userRepository.flush();
@@ -375,7 +425,7 @@ class UserRepositoryTest {
     @DisplayName("Should automatically set createdAt timestamp on save")
     void testCreatedAtTimestamp() {
         // Given
-        UserEntity user = UserEntity.builder().username("timestamptest").password("password").email("timestamptest@example.com").build();
+        UserEntity user = user("timestamptest", "password", "timestamptest@example.com");
 
         // When
         UserEntity savedUser = userRepository.saveAndFlush(user);
@@ -388,7 +438,7 @@ class UserRepositoryTest {
     @DisplayName("Should not modify createdAt on update")
     void testCreatedAtImmutable() {
         // Given
-        UserEntity user = UserEntity.builder().username("immutable").password("password").email("immutable@example.com").build();
+        UserEntity user = user("immutable", "password", "immutable@example.com");
         UserEntity savedUser = userRepository.save(user);
         userRepository.flush();
 

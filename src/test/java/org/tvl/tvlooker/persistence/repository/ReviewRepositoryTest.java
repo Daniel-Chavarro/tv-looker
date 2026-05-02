@@ -243,6 +243,31 @@ class ReviewRepositoryTest {
         assertThat(reviews).isEmpty();
     }
 
+    @Test
+    @DisplayName("Should find review by ID and owner ID only")
+    void testFindByIdAndUserId() {
+        // Given
+        UserEntity owner = createUserEntity("owner");
+        UserEntity otherUser = createUserEntity("otheruser");
+        ItemEntity item = createItemEntity(700L, "Owner Movie");
+        ReviewEntity review = ReviewEntity.builder()
+                .reviewText("Owner review")
+                .score(5)
+                .item(item)
+                .user(owner)
+                .build();
+        ReviewEntity savedReview = reviewRepository.saveAndFlush(review);
+
+        // When
+        Optional<ReviewEntity> ownerReview = reviewRepository.findByIdAndUserId(savedReview.getId(), owner.getId());
+        Optional<ReviewEntity> otherUserReview = reviewRepository.findByIdAndUserId(savedReview.getId(), otherUser.getId());
+
+        // Then
+        assertThat(ownerReview).isPresent();
+        assertThat(ownerReview.get().getReviewText()).isEqualTo("Owner review");
+        assertThat(otherUserReview).isEmpty();
+    }
+
     // ==================== UPDATE TESTS ====================
 
     @Test

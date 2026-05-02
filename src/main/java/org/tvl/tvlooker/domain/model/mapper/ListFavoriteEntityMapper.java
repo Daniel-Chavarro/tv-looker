@@ -49,6 +49,7 @@ public class ListFavoriteEntityMapper {
         return ListFavoriteEntity.builder()
                 .id(domain.getId())
                 .name(domain.getName())
+                .description(domain.getDescription())
                 .user(domain.getUserId() != null ? UserEntity.builder().id(domain.getUserId()).build() : null)
                 .items(domain.getItems() != null
                         ? domain.getItems()

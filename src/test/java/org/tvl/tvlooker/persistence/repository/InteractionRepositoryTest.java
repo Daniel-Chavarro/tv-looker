@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Assertions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.tvl.tvlooker.domain.model.entity.InteractionEntity;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
@@ -265,6 +267,50 @@ class InteractionRepositoryTest {
 
         // Then
         assertThat(interactions).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should find interaction by ID and user ID only for owner")
+    void testFindByIdAndUserId() {
+        UserEntity user1 = createAndSaveUserEntity("user1");
+        UserEntity user2 = createAndSaveUserEntity("user2");
+        ItemEntity item = createAndSaveItemEntity(1L, "Movie 1");
+
+        InteractionEntity savedInteraction = interactionRepository.save(InteractionEntity.builder()
+                .id(1L)
+                .interactionType(InteractionType.VIEW)
+                .user(user1)
+                .item(item)
+                .build());
+
+        Optional<InteractionEntity> ownedInteraction = interactionRepository.findByIdAndUserId(
+                savedInteraction.getId(), user1.getId());
+        Optional<InteractionEntity> unownedInteraction = interactionRepository.findByIdAndUserId(
+                savedInteraction.getId(), user2.getId());
+
+        assertThat(ownedInteraction).isPresent();
+        assertThat(unownedInteraction).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should find paged interactions by user ID")
+    void testFindAllByUserId() {
+        UserEntity user1 = createAndSaveUserEntity("user1");
+        UserEntity user2 = createAndSaveUserEntity("user2");
+        ItemEntity item1 = createAndSaveItemEntity(1L, "Movie 1");
+        ItemEntity item2 = createAndSaveItemEntity(2L, "Movie 2");
+        ItemEntity item3 = createAndSaveItemEntity(3L, "Movie 3");
+
+        interactionRepository.saveAll(List.of(
+                InteractionEntity.builder().id(1L).interactionType(InteractionType.VIEW).user(user1).item(item1).build(),
+                InteractionEntity.builder().id(2L).interactionType(InteractionType.LIKE).user(user1).item(item2).build(),
+                InteractionEntity.builder().id(3L).interactionType(InteractionType.CLICK).user(user2).item(item3).build()
+        ));
+
+        Page<InteractionEntity> user1Interactions = interactionRepository.findAllByUserId(user1.getId(), PageRequest.of(0, 10));
+
+        assertThat(user1Interactions.getTotalElements()).isEqualTo(2L);
+        assertThat(user1Interactions.getContent()).allMatch(interaction -> user1.getId().equals(interaction.getUser().getId()));
     }
 
     // ==================== UPDATE TESTS ====================

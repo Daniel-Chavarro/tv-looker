@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -65,9 +66,10 @@ public class ReviewController {
      */
     @PostMapping
     public ResponseEntity<ReviewResponse> createReview(
-            @Valid @RequestBody CreateReviewRequest request) {
+            @Valid @RequestBody CreateReviewRequest request,
+            Authentication authentication) {
         Review review = ReviewMapper.fromCreateRequest(request);
-        Review created = reviewService.create(review);
+        Review created = reviewService.createForUser(review, currentUserId(authentication));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header("Location", "/api/v1/users/" + created.getId())
@@ -80,9 +82,31 @@ public class ReviewController {
      * @return the review response
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ReviewResponse> getReviewById(@PathVariable Long id) {
-        Review review = reviewService.getById(id);
+    public ResponseEntity<ReviewResponse> getReviewById(@PathVariable Long id, Authentication authentication) {
+        Review review = isAdmin(authentication)
+                ? reviewService.getByIdForAdmin(id)
+                : reviewService.getByIdForUser(id, currentUserId(authentication));
         return ResponseEntity.ok(ReviewMapper.toResponse(review));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<PageResponse<ReviewResponse>> getMyReviews(
+            Authentication authentication,
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Review> reviewsPage = reviewService.getByUserId(currentUserId(authentication), pageable);
+
+        List<ReviewResponse> content = reviewsPage.getContent().stream()
+                .map(ReviewMapper::toResponse)
+                .toList();
+
+        PageResponse<ReviewResponse> response = new PageResponse<>(
+                content,
+                reviewsPage.getTotalElements(),
+                reviewsPage.getNumber(),
+                reviewsPage.getTotalPages(),
+                reviewsPage.isLast()
+        );
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/item/{itemId}")
@@ -134,9 +158,10 @@ public class ReviewController {
     @PatchMapping("/{id}")
     public ResponseEntity<ReviewResponse> updateReview(
             @PathVariable Long id,
-            @Valid @RequestBody CreateReviewRequest request){
+            @Valid @RequestBody CreateReviewRequest request,
+            Authentication authentication){
         Review review = ReviewMapper.fromCreateRequest(request);
-        Review updated = reviewService.update(id, review);
+        Review updated = reviewService.updateForUser(id, review, currentUserId(authentication));
         return ResponseEntity.ok(ReviewMapper.toResponse(updated));
     }
 
@@ -146,9 +171,16 @@ public class ReviewController {
      * @return empty response with status 204 No Content
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-        reviewService.deleteById(id);
+    public ResponseEntity<Void> deleteReview(@PathVariable Long id, Authentication authentication) {
+        reviewService.deleteByIdForUser(id, currentUserId(authentication));
         return ResponseEntity.noContent().build();}
 
-    
+    private UUID currentUserId(Authentication authentication) {
+        return UUID.fromString(authentication.getName());
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ADMIN".equals(authority.getAuthority()));
+    }
 }

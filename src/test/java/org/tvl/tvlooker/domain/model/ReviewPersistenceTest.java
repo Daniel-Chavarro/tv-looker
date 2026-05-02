@@ -84,8 +84,9 @@ public class ReviewPersistenceTest {
 
 
         jdbcTemplate.update(
-                "INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, ?, ?)",
-                UUID.randomUUID(), username, password, createdAt, email
+                "INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                UUID.randomUUID(), username, password, createdAt, email, "USER"
         );
 
 
@@ -169,8 +170,9 @@ public class ReviewPersistenceTest {
         Timestamp userCreatedAt = new Timestamp(System.currentTimeMillis());
 
         jdbcTemplate.update(
-                "INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, ?, ?)",
-                userId, username, password, userCreatedAt, email
+                "INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                userId, username, password, userCreatedAt, email, "USER"
         );
 
 
@@ -266,15 +268,15 @@ public class ReviewPersistenceTest {
 
         Timestamp userCreatedAt = new Timestamp(System.currentTimeMillis());
 
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
-                        "?, ?)",
-                userId1, "user1", "pass1", userCreatedAt, email1);
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
-                        "?, ?)",
-                userId2, "user2", "pass2", userCreatedAt, email2);
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
-                        "?, ?)",
-                userId3, "user3", "pass3", userCreatedAt, email3);
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                userId1, "user1", "pass1", userCreatedAt, email1, "USER");
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                userId2, "user2", "pass2", userCreatedAt, email2, "USER");
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                userId3, "user3", "pass3", userCreatedAt, email3, "USER");
         
         jdbcTemplate.update("INSERT INTO reviews (review_text, score, item_id_fk, user_id_fk, review_date) VALUES (?," +
                         " ?, ?, ?, ?)",
@@ -315,9 +317,9 @@ public class ReviewPersistenceTest {
         UUID userId = UUID.randomUUID();
         String email = "testemail@test.com";
 
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
-                        "?, ?)",
-                userId, "quickrater", "pass", new Timestamp(System.currentTimeMillis()), email);
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                userId, "quickrater", "pass", new Timestamp(System.currentTimeMillis()), email, "USER");
 
         Long tmdbId = 155L;
         jdbcTemplate.update(
@@ -398,12 +400,12 @@ public class ReviewPersistenceTest {
         UUID userId2 = UUID.randomUUID();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
-                        "?, ?)",
-                userId1, "critic1", "pass", timestamp, "testemail1@test.com");
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
-                        "?, ?)",
-                userId2, "critic2", "pass", timestamp, "testemail2@test.com");
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                userId1, "critic1", "pass", timestamp, "testemail1@test.com", "USER");
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                userId2, "critic2", "pass", timestamp, "testemail2@test.com", "USER");
 
 
         jdbcTemplate.update(
@@ -458,9 +460,9 @@ public class ReviewPersistenceTest {
     void testUpdateReview() {
         UUID userId = UUID.randomUUID();
         String email = "testemail@test.com";
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
-                        "?, ?)",
-                userId, "updater", "pass", new Timestamp(System.currentTimeMillis()), email);
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                userId, "updater", "pass", new Timestamp(System.currentTimeMillis()), email, "USER");
 
         Long tmdbId = 999L;
         jdbcTemplate.update(
@@ -508,9 +510,9 @@ public class ReviewPersistenceTest {
         
         UUID userId = UUID.randomUUID();
         String email = "testemail@test.com";
-        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email) VALUES (?, ?, ?, " +
-                        "?, ?)",
-                userId, "deleter", "pass", new Timestamp(System.currentTimeMillis()),  email);
+        jdbcTemplate.update("INSERT INTO users (user_id_pk, username, password, created_at, email, authority) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                userId, "deleter", "pass", new Timestamp(System.currentTimeMillis()), email, "USER");
 
         Long tmdbId = 888L;
         jdbcTemplate.update(

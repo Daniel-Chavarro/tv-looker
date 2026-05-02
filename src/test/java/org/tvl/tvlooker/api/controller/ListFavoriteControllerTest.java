@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
@@ -48,6 +50,14 @@ class ListFavoriteControllerTest {
 
     private UUID testUserId;
     private ListFavorite testListFavorite;
+
+    private UsernamePasswordAuthenticationToken userAuthentication() {
+        return new UsernamePasswordAuthenticationToken(
+                testUserId.toString(),
+                null,
+                List.of(new SimpleGrantedAuthority("USER"))
+        );
+    }
 
     @BeforeEach
     void setUp() {
@@ -131,9 +141,10 @@ class ListFavoriteControllerTest {
                     .items(new java.util.HashSet<>())
                     .build();
 
-            when(listFavoriteService.create(any(ListFavorite.class))).thenReturn(createdList);
+            when(listFavoriteService.createForUser(any(ListFavorite.class), eq(testUserId))).thenReturn(createdList);
 
             mockMvc.perform(post("/api/v1/lists")
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isCreated())
@@ -142,7 +153,8 @@ class ListFavoriteControllerTest {
                     .andExpect(jsonPath("$.id", is(1)))
                     .andExpect(jsonPath("$.name", is("My Favorites")));
 
-            verify(listFavoriteService, times(1)).create(any(ListFavorite.class));
+            verify(listFavoriteService, times(1)).createForUser(any(ListFavorite.class), eq(testUserId));
+            verify(listFavoriteService, never()).create(any(ListFavorite.class));
         }
 
         @Test
@@ -155,15 +167,35 @@ class ListFavoriteControllerTest {
                 }
                 """.formatted(testUserId);
 
-            when(listFavoriteService.create(any(ListFavorite.class)))
+            when(listFavoriteService.createForUser(any(ListFavorite.class), eq(testUserId)))
                     .thenThrow(new RuntimeException("Database error"));
 
             mockMvc.perform(post("/api/v1/lists")
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isInternalServerError());
 
-            verify(listFavoriteService, times(1)).create(any(ListFavorite.class));
+            verify(listFavoriteService, times(1)).createForUser(any(ListFavorite.class), eq(testUserId));
+        }
+    }
+
+    @Nested
+    class GetMyLists {
+
+        @Test
+        void givenCurrentUser_whenGetMyLists_thenReturnsCurrentUserLists() throws Exception {
+            Page<ListFavorite> favoritesPage = new PageImpl<>(List.of(testListFavorite), PageRequest.of(0, 50), 1);
+            when(listFavoriteService.getByUserId(eq(testUserId), any(Pageable.class))).thenReturn(favoritesPage);
+
+            mockMvc.perform(get("/api/v1/lists/me")
+                            .principal(userAuthentication()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content", hasSize(1)))
+                    .andExpect(jsonPath("$.content[0].userId", is(testUserId.toString())));
+
+            verify(listFavoriteService, times(1)).getByUserId(eq(testUserId), any(Pageable.class));
         }
     }
 
@@ -172,15 +204,17 @@ class ListFavoriteControllerTest {
 
         @Test
         void givenListFavoriteNotExists_whenGetListFavoriteById_thenReturns404() throws Exception {
-            when(listFavoriteService.getById(999L))
+            when(listFavoriteService.getByIdForUser(999L, testUserId))
                     .thenThrow(new ListFavoriteNotFoundException("ListFavorite not found with id: 999"));
 
-            mockMvc.perform(get("/api/v1/lists/{id}", 999L))
+            mockMvc.perform(get("/api/v1/lists/{id}", 999L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.body.title", is("List Favorite Not Found")))
                     .andExpect(jsonPath("$.body.detail", containsString("ListFavorite not found with id: 999")));
 
-            verify(listFavoriteService, times(1)).getById(999L);
+            verify(listFavoriteService, times(1)).getByIdForUser(999L, testUserId);
+            verify(listFavoriteService, never()).getById(999L);
         }
     }
 
@@ -195,16 +229,17 @@ class ListFavoriteControllerTest {
                 }
                 """;
 
-            when(listFavoriteService.update(eq(999L), any(ListFavorite.class)))
+            when(listFavoriteService.updateForUser(eq(999L), any(ListFavorite.class), eq(testUserId)))
                     .thenThrow(new ListFavoriteNotFoundException("ListFavorite not found with id: 999"));
 
-            mockMvc.perform(put("/api/v1/lists/{id}", 999L)
+            mockMvc.perform(patch("/api/v1/lists/{id}", 999L)
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.body.title", is("List Favorite Not Found")));
 
-            verify(listFavoriteService, times(1)).update(eq(999L), any(ListFavorite.class));
+            verify(listFavoriteService, times(1)).updateForUser(eq(999L), any(ListFavorite.class), eq(testUserId));
         }
     }
 
@@ -213,24 +248,65 @@ class ListFavoriteControllerTest {
 
         @Test
         void givenListFavoriteExists_whenDeleteListFavorite_thenReturns204() throws Exception {
-            doNothing().when(listFavoriteService).deleteById(1L);
+            doNothing().when(listFavoriteService).deleteByIdForUser(1L, testUserId);
 
-            mockMvc.perform(delete("/api/v1/lists/{id}", 1L))
+            mockMvc.perform(delete("/api/v1/lists/{id}", 1L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isNoContent());
 
-            verify(listFavoriteService, times(1)).deleteById(1L);
+            verify(listFavoriteService, times(1)).deleteByIdForUser(1L, testUserId);
+            verify(listFavoriteService, never()).deleteById(1L);
         }
 
         @Test
         void givenListFavoriteNotExists_whenDeleteListFavorite_thenReturns404() throws Exception {
             doThrow(new ListFavoriteNotFoundException("ListFavorite not found with id: 999"))
-                    .when(listFavoriteService).deleteById(999L);
+                    .when(listFavoriteService).deleteByIdForUser(999L, testUserId);
 
-            mockMvc.perform(delete("/api/v1/lists/{id}", 999L))
+            mockMvc.perform(delete("/api/v1/lists/{id}", 999L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.body.title", is("List Favorite Not Found")));
 
-            verify(listFavoriteService, times(1)).deleteById(999L);
+            verify(listFavoriteService, times(1)).deleteByIdForUser(999L, testUserId);
+        }
+    }
+
+    @Nested
+    class ModifyFavoriteItems {
+
+        @Test
+        void givenCurrentUser_whenAddItemToFavorite_thenLoadsListForCurrentUser() throws Exception {
+            ListFavorite updatedList = ListFavorite.builder()
+                    .id(1L)
+                    .userId(testUserId)
+                    .name("My Favorites")
+                    .items(new java.util.HashSet<>())
+                    .build();
+            when(listFavoriteService.getByIdForUser(1L, testUserId)).thenReturn(testListFavorite);
+            when(listFavoriteService.addItemToFavorite(testListFavorite, 100L)).thenReturn(updatedList);
+
+            mockMvc.perform(post("/api/v1/lists/{id}/items", 1L)
+                            .principal(userAuthentication())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"itemId\":100}"))
+                    .andExpect(status().isCreated());
+
+            verify(listFavoriteService, times(1)).getByIdForUser(1L, testUserId);
+            verify(listFavoriteService, never()).getById(1L);
+        }
+
+        @Test
+        void givenCurrentUser_whenRemoveItemFromFavorite_thenLoadsListForCurrentUser() throws Exception {
+            when(listFavoriteService.getByIdForUser(1L, testUserId)).thenReturn(testListFavorite);
+            when(listFavoriteService.removeItemFromFavorite(testListFavorite, 100L)).thenReturn(testListFavorite);
+
+            mockMvc.perform(delete("/api/v1/lists/{id}/items/{itemId}", 1L, 100L)
+                            .principal(userAuthentication()))
+                    .andExpect(status().isNoContent());
+
+            verify(listFavoriteService, times(1)).getByIdForUser(1L, testUserId);
+            verify(listFavoriteService, never()).getById(1L);
         }
     }
 }
