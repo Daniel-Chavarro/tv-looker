@@ -8,6 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -48,6 +53,7 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(userController)
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
         objectMapper = new ObjectMapper();
@@ -68,40 +74,41 @@ class UserControllerTest {
     class GetAllUsers {
 
         @Test
-        void givenUsersExist_whenGetAllUsers_thenReturnsUserList() throws Exception {
+        void givenUsersExist_whenGetAllUsers_thenReturnsPaginatedList() throws Exception {
             User secondUser = User.builder()
-                    .id(UUID.randomUUID())
-                    .username("anotheruser")
-                    .email("another@example.com")
-                    .name("Another User")
-                    .password("pass456")
-                    .createdAt(Timestamp.from(Instant.now()))
+                    .id(testUserId)
+                    .username("seconduser")
+                    .email("second@test.com")
                     .build();
             List<User> users = Arrays.asList(testUser, secondUser);
+            Page<User> usersPage = new PageImpl<>(users, PageRequest.of(0, 50), users.size());
 
-            when(userService.getAll()).thenReturn(users);
+            when(userService.getAll(any(Pageable.class))).thenReturn(usersPage);
 
-            mockMvc.perform(get("/api/v1/users"))
+            mockMvc.perform(get("/api/v1/users")
+                            .param("page", "0")
+                            .param("size", "50"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(2)))
-                    .andExpect(jsonPath("$[0].username", is("testuser")))
-                    .andExpect(jsonPath("$[0].email", is("test@example.com")))
-                    .andExpect(jsonPath("$[1].username", is("anotheruser")));
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].id", is(testUserId.toString())))
+                    .andExpect(jsonPath("$.totalItems", is(2)))
+                    .andExpect(jsonPath("$.actualPage", is(0)));
 
-            verify(userService, times(1)).getAll();
+            verify(userService, times(1)).getAll(any(Pageable.class));
         }
 
         @Test
-        void givenNoUsers_whenGetAllUsers_thenReturnsEmptyList() throws Exception {
-            when(userService.getAll()).thenReturn(Collections.emptyList());
+        void givenNoUsers_whenGetAllUsers_thenReturnsEmptyPage() throws Exception {
+            Page<User> emptyPage = new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 50), 0);
+            when(userService.getAll(any(Pageable.class))).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/v1/users"))
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(0)));
+                    .andExpect(jsonPath("$.content", hasSize(0)))
+                    .andExpect(jsonPath("$.totalItems", is(0)));
 
-            verify(userService, times(1)).getAll();
+            verify(userService, times(1)).getAll(any(Pageable.class));
         }
     }
 

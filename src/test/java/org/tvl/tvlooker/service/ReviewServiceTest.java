@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -254,5 +259,29 @@ class ReviewServiceTest {
                 .hasMessageContaining("Review not found: " + nonExistentId);
         verify(reviewRepository, times(1)).existsById(nonExistentId);
         verify(reviewRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("getAll - with pagination should return page of reviews")
+    void givenPageable_whenGetAll_thenReturnsPageOfReviews() {
+        Pageable pageable = PageRequest.of(0, 10);
+        UUID userId2 = UUID.randomUUID();
+        ReviewEntity reviewEntity2 = ReviewEntity.builder()
+                .id(2L)
+                .user(UserEntity.builder().id(userId2).username("user2").email("user2@test.com").name("User 2").build())
+                .item(ItemEntity.builder().id(2L).title("Movie 2").overview("Overview 2").build())
+                .reviewText("Excellent!")
+                .score(9)
+                .build();
+        List<ReviewEntity> entities = List.of(testReviewEntity, reviewEntity2);
+        Page<ReviewEntity> entityPage = new PageImpl<>(entities, pageable, 2);
+
+        when(reviewRepository.findAll(pageable)).thenReturn(entityPage);
+
+        Page<Review> result = reviewService.getAll(pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        verify(reviewRepository, times(1)).findAll(pageable);
     }
 }

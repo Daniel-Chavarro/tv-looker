@@ -16,6 +16,10 @@ import org.tvl.tvlooker.persistence.repository.ItemRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -225,5 +229,31 @@ class ItemServiceTest {
                 .hasMessageContaining("Item not found: " + nonExistentId);
         verify(itemRepository, times(1)).existsById(nonExistentId);
         verify(itemRepository, never()).deleteById(any(Long.class));
+    }
+
+    @Test
+    @DisplayName("getAll with Pageable - should return page of items")
+    void givenPageable_whenGetAll_thenReturnsPageOfItems() {
+        Pageable pageable = PageRequest.of(0, 10);
+        ItemEntity itemEntity2 = ItemEntity.builder()
+                .id(2L)
+                .title("Test Title 2")
+                .overview("Test overview 2")
+                .popularity(BigDecimal.valueOf(7.5))
+                .tmdbType(TmdbType.MOVIE)
+                .tmdbId(551L)
+                .build();
+        List<ItemEntity> entities = List.of(testItemEntity, itemEntity2);
+        Page<ItemEntity> entityPage = new PageImpl<>(entities, pageable, 2);
+        
+        when(itemRepository.findAll(pageable)).thenReturn(entityPage);
+
+        Page<Item> result = itemService.getAll(pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("Test Movie");
+        verify(itemRepository, times(1)).findAll(pageable);
     }
 }

@@ -1,6 +1,10 @@
 package org.tvl.tvlooker.api.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,8 +15,6 @@ import org.tvl.tvlooker.api.dto.mapper.ItemMapper;
 import org.tvl.tvlooker.api.dto.response.ItemResponse;
 import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.service.ItemService;
-
-import java.util.List;
 
 /**
  * REST controller for managing items.
@@ -27,15 +29,15 @@ public class ItemController {
     private final ItemService ITEM_SERVICE;
     
     /**
-     * Retrieves all items.
-     * @return A list of item responses.
+     * Retrieves all items with pagination.
+     * @param pageable Pagination configuration.
+     * @return A paginated list of item responses.
      */
     @GetMapping
-    public ResponseEntity<List<ItemResponse>> getAllItems() {
-        List<Item> items = ITEM_SERVICE.getAll();
-        List<ItemResponse> response = items.stream()
-                .map(ItemMapper::toResponse)
-                .toList();
+    public ResponseEntity<Page<ItemResponse>> getAllItems(
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Item> itemsPage = ITEM_SERVICE.getAll(pageable);
+        Page<ItemResponse> response = itemsPage.map(ItemMapper::toResponse);
         return ResponseEntity.ok(response);
     }
 

@@ -7,6 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
@@ -217,5 +221,28 @@ class UserServiceTest {
                 .hasMessageContaining("User not found with id: " + nonExistentId);
         verify(userRepository, times(1)).existsById(nonExistentId);
         verify(userRepository, never()).deleteById(any(UUID.class));
+    }
+
+    @Test
+    @DisplayName("getAll with Pageable - should return page of users")
+    void givenPageable_whenGetAll_thenReturnsPageOfUsers() {
+        Pageable pageable = PageRequest.of(0, 10);
+        UserEntity user2Entity = UserEntity.builder()
+                .id(testUserId)
+                .username("seconduser")
+                .email("second@test.com")
+                .name("Second User")
+                .password("password456")
+                .build();
+        List<UserEntity> entities = List.of(testUserEntity, user2Entity);
+        Page<UserEntity> entityPage = new PageImpl<>(entities, pageable, 2);
+
+        when(userRepository.findAll(pageable)).thenReturn(entityPage);
+
+        Page<User> result = userService.getAll(pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        verify(userRepository, times(1)).findAll(pageable);
     }
 }

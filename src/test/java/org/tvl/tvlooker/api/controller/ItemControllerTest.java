@@ -7,6 +7,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -24,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -44,6 +50,7 @@ class ItemControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(itemController)
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -66,7 +73,7 @@ class ItemControllerTest {
     class GetAllItems {
 
         @Test
-        void givenItemsExist_whenGetAllItems_thenReturnsItemList() throws Exception {
+        void givenItemsExist_whenGetAllItems_thenReturnsPaginatedList() throws Exception {
             Item secondItem = Item.builder()
                     .id(2L)
                     .title("Test TV Show")
@@ -78,62 +85,42 @@ class ItemControllerTest {
                     .tmdbId(67890L)
                     .genres(new HashSet<>())
                     .directors(new HashSet<>())
-                    .actorsInItem(new HashSet<>())         .build();
-            List<Item> items = Arrays.asList(testItem, secondItem);
-
-            when(itemService.getAll()).thenReturn(items);
-
-            mockMvc.perform(get("/api/v1/items"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(2)))
-                    .andExpect(jsonPath("$[0].id", is(1)))
-                    .andExpect(jsonPath("$[0].title", is("Test Movie")))
-                    .andExpect(jsonPath("$[0].overview", is("This is a test movie overview")))
-                    .andExpect(jsonPath("$[0].tmdbType", is("MOVIE")))
-                    .andExpect(jsonPath("$[1].title", is("Test TV Show")));
-
-            verify(itemService, times(1)).getAll();
-        }
-
-        @Test
-        void givenNoItems_whenGetAllItems_thenReturnsEmptyList() throws Exception {
-            when(itemService.getAll()).thenReturn(Collections.emptyList());
-
-            mockMvc.perform(get("/api/v1/items"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(0)));
-
-            verify(itemService, times(1)).getAll();
-        }
-
-        @Test
-        void givenItemsWithNullReleaseDate_whenGetAllItems_thenReturnsItemList() throws Exception {
-            Item itemWithNullDate = Item.builder()
-                    .id(3L)
-                    .title("Movie Without Date")
-                    .overview("No release date")
-                    .releaseDate(null)
-                    .popularity(new BigDecimal("5.0"))
-                    .voteAverage(new BigDecimal("6.0"))
-                    .tmdbType(TmdbType.MOVIE)
-                    .tmdbId(11111L)
-                    .genres(new HashSet<>())
-                    .directors(new HashSet<>())
                     .actorsInItem(new HashSet<>())
                     .build();
+            List<Item> items = Arrays.asList(testItem, secondItem);
+            Page<Item> itemPage = new PageImpl<>(items, PageRequest.of(0, 50), items.size());
 
-            when(itemService.getAll()).thenReturn(Collections.singletonList(itemWithNullDate));
+            when(itemService.getAll(org.mockito.ArgumentMatchers.any(Pageable.class))).thenReturn(itemPage);
+
+            mockMvc.perform(get("/api/v1/items")
+                            .param("page", "0")
+                            .param("size", "50"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].id", is(1)))
+                    .andExpect(jsonPath("$.content[0].title", is("Test Movie")))
+                    .andExpect(jsonPath("$.content[1].title", is("Test TV Show")))
+                    .andExpect(jsonPath("$.totalElements", is(2)))
+                    .andExpect(jsonPath("$.totalPages", is(1)))
+                    .andExpect(jsonPath("$.size", is(50)))
+                    .andExpect(jsonPath("$.number", is(0)));
+
+            verify(itemService, times(1)).getAll(org.mockito.ArgumentMatchers.any(Pageable.class));
+        }
+
+        @Test
+        void givenNoItems_whenGetAllItems_thenReturnsEmptyPage() throws Exception {
+            Page<Item> emptyPage = new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 50), 0);
+            when(itemService.getAll(org.mockito.ArgumentMatchers.any(Pageable.class))).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/v1/items"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$", hasSize(1)))
-                    .andExpect(jsonPath("$[0].title", is("Movie Without Date")))
-                    .andExpect(jsonPath("$[0].releaseDate").doesNotExist());
+                    .andExpect(jsonPath("$.content", hasSize(0)))
+                    .andExpect(jsonPath("$.totalElements", is(0)));
 
-            verify(itemService, times(1)).getAll();
+            verify(itemService, times(1)).getAll(org.mockito.ArgumentMatchers.any(Pageable.class));
         }
     }
 

@@ -1,6 +1,8 @@
 package org.tvl.tvlooker.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.DirectorNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.Director;
@@ -53,6 +55,17 @@ public class DirectorService {
 		return directorRepository.findAll().stream()
 				.map(DirectorEntityMapper::toDomain)
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Get all directors with pagination.
+	 *
+	 * @param pageable pagination information
+	 * @return page of directors
+	 */
+	public Page<Director> getAll(Pageable pageable) {
+		return directorRepository.findAll(pageable)
+				.map(DirectorEntityMapper::toDomain);
 	}
 
 	/**

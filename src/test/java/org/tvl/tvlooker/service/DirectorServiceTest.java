@@ -7,6 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.tvl.tvlooker.domain.exception.DirectorNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.Director;
 import org.tvl.tvlooker.domain.model.entity.DirectorEntity;
@@ -204,5 +208,26 @@ class DirectorServiceTest {
                 .hasMessageContaining("Director not found: " + nonExistentId);
         verify(directorRepository, times(1)).existsById(nonExistentId);
         verify(directorRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("getAll with Pageable - should return page of directors")
+    void givenPageable_whenGetAll_thenReturnsPageOfDirectors() {
+        Pageable pageable = PageRequest.of(0, 10);
+        DirectorEntity directorEntity2 = DirectorEntity.builder()
+                .id(2L)
+                .tmdbId(488L)
+                .name("Steven Spielberg")
+                .build();
+        List<DirectorEntity> entities = List.of(testDirectorEntity, directorEntity2);
+        Page<DirectorEntity> entityPage = new PageImpl<>(entities, pageable, 2);
+
+        when(directorRepository.findAll(pageable)).thenReturn(entityPage);
+
+        Page<Director> result = directorService.getAll(pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        verify(directorRepository, times(1)).findAll(pageable);
     }
 }
