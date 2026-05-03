@@ -13,6 +13,7 @@ import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.motor.utils.DataProvider;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +63,25 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
      * Builds the user-item rating matrix and performs SVD decomposition.
      */
     private SVDFactors computeSVDFactors(List<Interaction> interactions, RecommendationContext context) {
-        // Build index mappings
+        IndexMappings mappings = buildIndexMappings(interactions);
+        
+        if (mappings.isEmpty()) {
+            logger.warn("No rating interactions found for SVD computation");
+            return buildEmptyFactors();
+        }
+
+        logger.info("Building rating matrix: {} users × {} items, k={}", 
+                mappings.numUsers(), mappings.numItems(), latentFactors);
+
+        RatingData ratingData = collectAndNormalizeRatings(interactions, context, mappings);
+        
+        return performSVDAndBuildFactors(ratingData, mappings);
+    }
+
+    /**
+     * Builds index mappings from user UUIDs and item IDs to matrix indices.
+     */
+    private IndexMappings buildIndexMappings(List<Interaction> interactions) {
         Map<String, Integer> userIdToIndex = new HashMap<>();
         Map<Long, Integer> itemIdToIndex = new HashMap<>();
         Map<Integer, Long> indexToItemId = new HashMap<>();
@@ -70,7 +89,6 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
         int userIndex = 0;
         int itemIndex = 0;
 
-        // First pass: collect unique users and items from RATING interactions
         for (Interaction interaction : interactions) {
             if (interaction.getInteractionType() != InteractionType.RATING) {
                 continue;
@@ -78,35 +96,52 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
             String userUuid = interaction.getUserId().toString();
             Long itemId = interaction.getItemId();
 
-            if (!userIdToIndex.containsKey(userUuid)) {
-                userIdToIndex.put(userUuid, userIndex++);
-            }
-            if (!itemIdToIndex.containsKey(itemId)) {
-                itemIdToIndex.put(itemId, itemIndex);
-                indexToItemId.put(itemIndex, itemId);
-                itemIndex++;
-            }
+            userIndex = addUserIfAbsent(userIdToIndex, userUuid, userIndex);
+            itemIndex = addItemIfAbsent(itemIdToIndex, indexToItemId, itemId, itemIndex);
         }
 
-        if (userIdToIndex.isEmpty() || itemIdToIndex.isEmpty()) {
-            logger.warn("No rating interactions found for SVD computation");
-            return buildEmptyFactors();
+        return new IndexMappings(userIdToIndex, itemIdToIndex, indexToItemId);
+    }
+
+    private int addUserIfAbsent(Map<String, Integer> userIdToIndex, String userUuid, int currentIndex) {
+        if (!userIdToIndex.containsKey(userUuid)) {
+            userIdToIndex.put(userUuid, currentIndex);
+            return currentIndex + 1;
         }
+        return currentIndex;
+    }
 
-        int numUsers = userIdToIndex.size();
-        int numItems = itemIdToIndex.size();
+    private int addItemIfAbsent(Map<Long, Integer> itemIdToIndex, Map<Integer, Long> indexToItemId, 
+                                 Long itemId, int currentIndex) {
+        if (!itemIdToIndex.containsKey(itemId)) {
+            itemIdToIndex.put(itemId, currentIndex);
+            indexToItemId.put(currentIndex, itemId);
+            return currentIndex + 1;
+        }
+        return currentIndex;
+    }
 
-        logger.info("Building rating matrix: {} users × {} items, k={}", numUsers, numItems, latentFactors);
-
-        // Build rating matrix (users × items)
-        // Use average rating as default for sparse matrix filling
-        double[][] ratingData = new double[numUsers][numItems];
-
-        // Collect ratings from RATING interactions
-        // Aggregate multiple ratings for same user-item pair by averaging
+    /**
+     * Collects ratings from interactions and normalizes them.
+     */
+    private RatingData collectAndNormalizeRatings(List<Interaction> interactions, 
+                                                   RecommendationContext context,
+                                                   IndexMappings mappings) {
         Map<String, Map<Integer, Double>> ratingAccumulator = new HashMap<>();
         Map<String, Map<Integer, Integer>> ratingCounts = new HashMap<>();
 
+        accumulateRatings(interactions, context, mappings, ratingAccumulator, ratingCounts);
+
+        double globalMean = computeGlobalMean(ratingAccumulator, ratingCounts);
+        double[][] ratingMatrix = fillRatingMatrix(ratingAccumulator, ratingCounts, mappings, globalMean);
+
+        return new RatingData(ratingMatrix, globalMean);
+    }
+
+    private void accumulateRatings(List<Interaction> interactions, RecommendationContext context,
+                                      IndexMappings mappings,
+                                      Map<String, Map<Integer, Double>> ratingAccumulator,
+                                      Map<String, Map<Integer, Integer>> ratingCounts) {
         for (Interaction interaction : interactions) {
             if (interaction.getInteractionType() != InteractionType.RATING) {
                 continue;
@@ -114,19 +149,13 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
             String userUuid = interaction.getUserId().toString();
             Long itemId = interaction.getItemId();
 
-            Integer uIdx = userIdToIndex.get(userUuid);
-            Integer iIdx = itemIdToIndex.get(itemId);
+            Integer uIdx = mappings.userIdToIndex().get(userUuid);
+            Integer iIdx = mappings.itemIdToIndex().get(itemId);
             if (uIdx == null || iIdx == null) {
                 continue;
             }
 
-            // Use review score if available, otherwise default to 3.0 (neutral)
-            // Since Interaction doesn't carry the score directly, we look for it via reviewId
-            double rating = 3.0;
-            if (interaction.getReviewId() != null) {
-                // Look up score from reviews in context
-                rating = lookupReviewScore(context, interaction.getReviewId());
-            }
+            double rating = extractRating(interaction, context);
 
             ratingAccumulator
                     .computeIfAbsent(userUuid, k -> new HashMap<>())
@@ -135,67 +164,73 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
                     .computeIfAbsent(userUuid, k -> new HashMap<>())
                     .merge(iIdx, 1, Integer::sum);
         }
+    }
 
-        // Compute average rating for mean-centering
-        double globalMean = computeGlobalMean(ratingAccumulator, ratingCounts, numUsers, numItems);
+    private double extractRating(Interaction interaction, RecommendationContext context) {
+        if (interaction.getReviewId() != null) {
+            return lookupReviewScore(context, interaction.getReviewId());
+        }
+        return 3.0;
+    }
 
-        // Fill rating matrix with mean-centered values
-        for (Map.Entry<String, Integer> userEntry : userIdToIndex.entrySet()) {
+    private double[][] fillRatingMatrix(Map<String, Map<Integer, Double>> ratingAccumulator,
+                                         Map<String, Map<Integer, Integer>> ratingCounts,
+                                         IndexMappings mappings, double globalMean) {
+        double[][] ratingData = new double[mappings.numUsers()][mappings.numItems()];
+
+        for (Map.Entry<String, Integer> userEntry : mappings.userIdToIndex().entrySet()) {
             String userUuid = userEntry.getKey();
             int uIdx = userEntry.getValue();
 
             Map<Integer, Double> userRatings = ratingAccumulator.getOrDefault(userUuid, Map.of());
             Map<Integer, Integer> userCounts = ratingCounts.getOrDefault(userUuid, Map.of());
+            double userMean = computeUserMean(userRatings, userCounts, globalMean);
 
-            // Compute user mean
-            double userMean = userRatings.isEmpty() ? globalMean :
-                    userRatings.values().stream().mapToDouble(Double::doubleValue).sum()
-                            / userCounts.values().stream().mapToInt(Integer::intValue).sum();
-
-            for (Map.Entry<Long, Integer> itemEntry : itemIdToIndex.entrySet()) {
-                int iIdx = itemEntry.getValue();
-                Double totalRating = userRatings.get(iIdx);
-                Integer count = userCounts.get(iIdx);
-
-                if (totalRating != null && count != null) {
-                    double avgRating = totalRating / count;
-                    ratingData[uIdx][iIdx] = avgRating - userMean;
-                } else {
-                    // Unobserved entries: fill with 0 (mean-centered neutral)
-                    ratingData[uIdx][iIdx] = 0.0;
-                }
-            }
+            fillUserRow(ratingData, uIdx, userRatings, userCounts, mappings, userMean);
         }
 
-        // Perform SVD
-        RealMatrix ratingMatrix = new Array2DRowRealMatrix(ratingData, false);
+        return ratingData;
+    }
+
+    private double computeUserMean(Map<Integer, Double> userRatings, 
+                                    Map<Integer, Integer> userCounts, double globalMean) {
+        if (userRatings.isEmpty()) {
+            return globalMean;
+        }
+        double sum = userRatings.values().stream().mapToDouble(Double::doubleValue).sum();
+        int count = userCounts.values().stream().mapToInt(Integer::intValue).sum();
+        return count > 0 ? sum / count : globalMean;
+    }
+
+    private void fillUserRow(double[][] ratingData, int uIdx,
+                              Map<Integer, Double> userRatings,
+                              Map<Integer, Integer> userCounts,
+                              IndexMappings mappings, double userMean) {
+        for (Map.Entry<Long, Integer> itemEntry : mappings.itemIdToIndex().entrySet()) {
+            int iIdx = itemEntry.getValue();
+            Double totalRating = userRatings.get(iIdx);
+            Integer count = userCounts.get(iIdx);
+
+            if (totalRating != null && count != null) {
+                ratingData[uIdx][iIdx] = (totalRating / count) - userMean;
+            } else {
+                ratingData[uIdx][iIdx] = 0.0;
+            }
+        }
+    }
+
+    /**
+     * Performs SVD and builds the factor matrices.
+     */
+    private SVDFactors performSVDAndBuildFactors(RatingData ratingData, IndexMappings mappings) {
+        RealMatrix ratingMatrix = new Array2DRowRealMatrix(ratingData.matrix(), false);
         SingularValueDecomposition svd = new SingularValueDecomposition(ratingMatrix);
 
-        // Reduce to k dimensions
-        int k = Math.min(latentFactors, Math.min(numUsers, numItems));
+        int k = Math.min(latentFactors, Math.min(mappings.numUsers(), mappings.numItems()));
 
-        RealMatrix uMatrix = svd.getU();
-        RealMatrix vMatrix = svd.getV();
-        double[] singularValues = svd.getSingularValues();
-
-        // Build reduced factors: userFactors = U_k × Σ_k, itemFactors = V_k × Σ_k
-        double[][] userFactors = new double[numUsers][k];
-        double[][] itemFactors = new double[numItems][k];
-        double[] reducedSingularValues = new double[k];
-
-        for (int i = 0; i < numUsers; i++) {
-            for (int j = 0; j < k; j++) {
-                userFactors[i][j] = uMatrix.getEntry(i, j) * singularValues[j];
-            }
-        }
-
-        for (int i = 0; i < numItems; i++) {
-            for (int j = 0; j < k; j++) {
-                itemFactors[i][j] = vMatrix.getEntry(i, j) * singularValues[j];
-            }
-        }
-
-        System.arraycopy(singularValues, 0, reducedSingularValues, 0, k);
+        double[][] userFactors = extractUserFactors(svd, mappings.numUsers(), k);
+        double[][] itemFactors = extractItemFactors(svd, mappings.numItems(), k);
+        double[] reducedSingularValues = Arrays.copyOf(svd.getSingularValues(), k);
 
         logger.info("SVD computation complete: {} latent factors extracted", k);
 
@@ -203,12 +238,38 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
                 .userFactors(userFactors)
                 .itemFactors(itemFactors)
                 .singularValues(reducedSingularValues)
-                .userIdToIndex(userIdToIndex)
-                .itemIdToIndex(itemIdToIndex)
-                .indexToItemId(indexToItemId)
+                .userIdToIndex(mappings.userIdToIndex())
+                .itemIdToIndex(mappings.itemIdToIndex())
+                .indexToItemId(mappings.indexToItemId())
                 .computedAt(System.currentTimeMillis())
                 .latentFactors(k)
                 .build();
+    }
+
+    private double[][] extractUserFactors(SingularValueDecomposition svd, int numUsers, int k) {
+        double[][] userFactors = new double[numUsers][k];
+        RealMatrix uMatrix = svd.getU();
+        double[] singularValues = svd.getSingularValues();
+
+        for (int i = 0; i < numUsers; i++) {
+            for (int j = 0; j < k; j++) {
+                userFactors[i][j] = uMatrix.getEntry(i, j) * singularValues[j];
+            }
+        }
+        return userFactors;
+    }
+
+    private double[][] extractItemFactors(SingularValueDecomposition svd, int numItems, int k) {
+        double[][] itemFactors = new double[numItems][k];
+        RealMatrix vMatrix = svd.getV();
+        double[] singularValues = svd.getSingularValues();
+
+        for (int i = 0; i < numItems; i++) {
+            for (int j = 0; j < k; j++) {
+                itemFactors[i][j] = vMatrix.getEntry(i, j) * singularValues[j];
+            }
+        }
+        return itemFactors;
     }
 
     /**
@@ -226,8 +287,7 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
      */
     private double computeGlobalMean(
             Map<String, Map<Integer, Double>> ratingAccumulator,
-            Map<String, Map<Integer, Integer>> ratingCounts,
-            int numUsers, int numItems) {
+            Map<String, Map<Integer, Integer>> ratingCounts) {
 
         double totalSum = 0.0;
         int totalCount = 0;
@@ -235,16 +295,25 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
         for (Map.Entry<String, Map<Integer, Double>> userEntry : ratingAccumulator.entrySet()) {
             String userUuid = userEntry.getKey();
             Map<Integer, Integer> counts = ratingCounts.getOrDefault(userUuid, Map.of());
-            for (Map.Entry<Integer, Double> ratingEntry : userEntry.getValue().entrySet()) {
-                Integer count = counts.get(ratingEntry.getKey());
-                if (count != null) {
-                    totalSum += ratingEntry.getValue();
-                    totalCount += count;
-                }
-            }
+            double[] userSums = accumulateUserSums(userEntry.getValue(), counts);
+            totalSum += userSums[0];
+            totalCount += (int) userSums[1];
         }
 
         return totalCount > 0 ? totalSum / totalCount : 3.0;
+    }
+
+    private double[] accumulateUserSums(Map<Integer, Double> ratings, Map<Integer, Integer> counts) {
+        double sum = 0.0;
+        int count = 0;
+        for (Map.Entry<Integer, Double> ratingEntry : ratings.entrySet()) {
+            Integer itemCount = counts.get(ratingEntry.getKey());
+            if (itemCount != null) {
+                sum += ratingEntry.getValue();
+                count += itemCount;
+            }
+        }
+        return new double[]{sum, count};
     }
 
     /**
@@ -261,5 +330,32 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
                 .computedAt(System.currentTimeMillis())
                 .latentFactors(0)
                 .build();
+    }
+
+    /**
+     * Record holding index mappings for users and items.
+     */
+    private record IndexMappings(
+            Map<String, Integer> userIdToIndex,
+            Map<Long, Integer> itemIdToIndex,
+            Map<Integer, Long> indexToItemId) {
+
+        boolean isEmpty() {
+            return userIdToIndex.isEmpty() || itemIdToIndex.isEmpty();
+        }
+
+        int numUsers() {
+            return userIdToIndex.size();
+        }
+
+        int numItems() {
+            return itemIdToIndex.size();
+        }
+    }
+
+    /**
+     * Record holding the rating matrix data.
+     */
+    private record RatingData(double[][] matrix, double globalMean) {
     }
 }
