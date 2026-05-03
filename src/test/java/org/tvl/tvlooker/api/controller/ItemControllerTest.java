@@ -87,6 +87,7 @@ class ItemControllerTest {
                     .directors(new HashSet<>())
                     .actorsInItem(new HashSet<>())
                     .build();
+
             List<Item> items = Arrays.asList(testItem, secondItem);
             Page<Item> itemPage = new PageImpl<>(items, PageRequest.of(0, 50), items.size());
 

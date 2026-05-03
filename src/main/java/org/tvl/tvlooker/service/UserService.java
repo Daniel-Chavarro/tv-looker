@@ -3,6 +3,7 @@ package org.tvl.tvlooker.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.User;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Create a new user.
@@ -31,6 +33,9 @@ public class UserService {
      */
     public User create(User user) {
         UserEntity entity = UserEntityMapper.toEntity(user);
+        if (entity.getPassword() != null) {
+            entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+        }
         return UserEntityMapper.toDomain(userRepository.save(entity));
     }
 
@@ -91,7 +96,7 @@ public class UserService {
             actual.setName(update.getName());
         }
         if (update.getPassword() != null) {
-            actual.setPassword(update.getPassword());
+            actual.setPassword(passwordEncoder.encode(update.getPassword()));
         }
         if (update.getUsername() != null) {
             actual.setUsername(update.getUsername());

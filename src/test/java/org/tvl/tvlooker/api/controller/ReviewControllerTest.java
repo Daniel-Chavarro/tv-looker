@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
@@ -48,6 +50,7 @@ class ReviewControllerTest {
     private ObjectMapper objectMapper;
 
     private UUID testUserId;
+    private UUID otherUserId;
     private Review testReview;
 
     @BeforeEach
@@ -60,6 +63,7 @@ class ReviewControllerTest {
         objectMapper.findAndRegisterModules();
 
         testUserId = UUID.randomUUID();
+        otherUserId = UUID.randomUUID();
         testReview = Review.builder()
                 .id(1L)
                 .userId(testUserId)
@@ -68,6 +72,22 @@ class ReviewControllerTest {
                 .reviewText("Great movie!")
                 .reviewDate(Timestamp.from(Instant.now()))
                 .build();
+    }
+
+    private UsernamePasswordAuthenticationToken userAuthentication() {
+        return new UsernamePasswordAuthenticationToken(
+                testUserId.toString(),
+                null,
+                List.of(new SimpleGrantedAuthority("USER"))
+        );
+    }
+
+    private UsernamePasswordAuthenticationToken adminAuthentication() {
+        return new UsernamePasswordAuthenticationToken(
+                otherUserId.toString(),
+                null,
+                List.of(new SimpleGrantedAuthority("ADMIN"))
+        );
     }
 
     @Nested
@@ -138,9 +158,10 @@ class ReviewControllerTest {
                     .reviewDate(Timestamp.from(Instant.now()))
                     .build();
 
-            when(reviewService.create(any(Review.class))).thenReturn(createdReview);
+            when(reviewService.createForUser(any(Review.class), eq(testUserId))).thenReturn(createdReview);
 
             mockMvc.perform(post("/api/v1/reviews")
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isCreated())
@@ -149,7 +170,8 @@ class ReviewControllerTest {
                     .andExpect(jsonPath("$.id", is(1)))
                     .andExpect(jsonPath("$.itemId", is(100)));
 
-            verify(reviewService, times(1)).create(any(Review.class));
+            verify(reviewService, times(1)).createForUser(any(Review.class), eq(testUserId));
+            verify(reviewService, never()).create(any(Review.class));
         }
 
         @Test
@@ -163,15 +185,16 @@ class ReviewControllerTest {
                 }
                 """.formatted(testUserId);
 
-            when(reviewService.create(any(Review.class)))
+            when(reviewService.createForUser(any(Review.class), eq(testUserId)))
                     .thenThrow(new RuntimeException("Database error"));
 
             mockMvc.perform(post("/api/v1/reviews")
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isInternalServerError());
 
-            verify(reviewService, times(1)).create(any(Review.class));
+            verify(reviewService, times(1)).createForUser(any(Review.class), eq(testUserId));
         }
     }
 
@@ -179,29 +202,65 @@ class ReviewControllerTest {
     class GetReviewById {
 
         @Test
-        void givenReviewExists_whenGetReviewById_thenReturnsReview() throws Exception {
-            when(reviewService.getById(1L)).thenReturn(testReview);
+        void givenUserOwnsReview_whenGetReviewById_thenReturnsReview() throws Exception {
+            when(reviewService.getByIdForUser(1L, testUserId)).thenReturn(testReview);
 
-            mockMvc.perform(get("/api/v1/reviews/{id}", 1L))
+            mockMvc.perform(get("/api/v1/reviews/{id}", 1L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.id", is(1)))
                     .andExpect(jsonPath("$.itemId", is(100)));
 
-            verify(reviewService, times(1)).getById(1L);
+            verify(reviewService, times(1)).getByIdForUser(1L, testUserId);
+            verify(reviewService, never()).getByIdForAdmin(1L);
+        }
+
+        @Test
+        void givenAdmin_whenGetReviewById_thenUsesAdminPath() throws Exception {
+            when(reviewService.getByIdForAdmin(1L)).thenReturn(testReview);
+
+            mockMvc.perform(get("/api/v1/reviews/{id}", 1L)
+                            .principal(adminAuthentication()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id", is(1)));
+
+            verify(reviewService, times(1)).getByIdForAdmin(1L);
+            verify(reviewService, never()).getByIdForUser(eq(1L), any(UUID.class));
         }
 
         @Test
         void givenReviewNotExists_whenGetReviewById_thenReturns404() throws Exception {
-            when(reviewService.getById(999L))
+            when(reviewService.getByIdForUser(999L, testUserId))
                     .thenThrow(new ReviewNotFoundException("Review not found with id: 999"));
 
-            mockMvc.perform(get("/api/v1/reviews/{id}", 999L))
+            mockMvc.perform(get("/api/v1/reviews/{id}", 999L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.body.title", is("Review Not Found")))
                     .andExpect(jsonPath("$.body.detail", containsString("Review not found with id: 999")));
 
-            verify(reviewService, times(1)).getById(999L);
+            verify(reviewService, times(1)).getByIdForUser(999L, testUserId);
+        }
+    }
+
+    @Nested
+    class GetMyReviews {
+
+        @Test
+        void givenCurrentUser_whenGetMyReviews_thenReturnsCurrentUserReviews() throws Exception {
+            Page<Review> reviewsPage = new PageImpl<>(List.of(testReview), PageRequest.of(0, 50), 1);
+            when(reviewService.getByUserId(eq(testUserId), any(Pageable.class))).thenReturn(reviewsPage);
+
+            mockMvc.perform(get("/api/v1/reviews/me")
+                            .principal(userAuthentication()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content", hasSize(1)))
+                    .andExpect(jsonPath("$.content[0].userId", is(testUserId.toString())));
+
+            verify(reviewService, times(1)).getByUserId(eq(testUserId), any(Pageable.class));
         }
     }
 
@@ -228,16 +287,18 @@ class ReviewControllerTest {
                     .reviewDate(Timestamp.from(Instant.now()))
                     .build();
 
-            when(reviewService.update(eq(1L), any(Review.class))).thenReturn(updatedReview);
+            when(reviewService.updateForUser(eq(1L), any(Review.class), eq(testUserId))).thenReturn(updatedReview);
 
-            mockMvc.perform(put("/api/v1/reviews/{id}", 1L)
+            mockMvc.perform(patch("/api/v1/reviews/{id}", 1L)
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.id", is(1)));
 
-            verify(reviewService, times(1)).update(eq(1L), any(Review.class));
+            verify(reviewService, times(1)).updateForUser(eq(1L), any(Review.class), eq(testUserId));
+            verify(reviewService, never()).update(eq(1L), any(Review.class));
         }
 
         @Test
@@ -251,16 +312,17 @@ class ReviewControllerTest {
                 }
                 """.formatted(testUserId);
 
-            when(reviewService.update(eq(999L), any(Review.class)))
+            when(reviewService.updateForUser(eq(999L), any(Review.class), eq(testUserId)))
                     .thenThrow(new ReviewNotFoundException("Review not found with id: 999"));
 
-            mockMvc.perform(put("/api/v1/reviews/{id}", 999L)
+            mockMvc.perform(patch("/api/v1/reviews/{id}", 999L)
+                            .principal(userAuthentication())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.body.title", is("Review Not Found")));
 
-            verify(reviewService, times(1)).update(eq(999L), any(Review.class));
+            verify(reviewService, times(1)).updateForUser(eq(999L), any(Review.class), eq(testUserId));
         }
     }
 
@@ -269,24 +331,27 @@ class ReviewControllerTest {
 
         @Test
         void givenReviewExists_whenDeleteReview_thenReturns204() throws Exception {
-            doNothing().when(reviewService).deleteById(1L);
+            doNothing().when(reviewService).deleteByIdForUser(1L, testUserId);
 
-            mockMvc.perform(delete("/api/v1/reviews/{id}", 1L))
+            mockMvc.perform(delete("/api/v1/reviews/{id}", 1L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isNoContent());
 
-            verify(reviewService, times(1)).deleteById(1L);
+            verify(reviewService, times(1)).deleteByIdForUser(1L, testUserId);
+            verify(reviewService, never()).deleteById(1L);
         }
 
         @Test
         void givenReviewNotExists_whenDeleteReview_thenReturns404() throws Exception {
             doThrow(new ReviewNotFoundException("Review not found with id: 999"))
-                    .when(reviewService).deleteById(999L);
+                    .when(reviewService).deleteByIdForUser(999L, testUserId);
 
-            mockMvc.perform(delete("/api/v1/reviews/{id}", 999L))
+            mockMvc.perform(delete("/api/v1/reviews/{id}", 999L)
+                            .principal(userAuthentication()))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.body.title", is("Review Not Found")));
 
-            verify(reviewService, times(1)).deleteById(999L);
+            verify(reviewService, times(1)).deleteByIdForUser(999L, testUserId);
         }
     }
 }

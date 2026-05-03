@@ -54,3 +54,4 @@ skills-lock.json
 .agent
 .claude
 
+/frontend/dist

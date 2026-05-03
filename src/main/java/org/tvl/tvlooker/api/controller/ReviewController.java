@@ -8,11 +8,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +25,7 @@ import org.tvl.tvlooker.domain.model.dto.Review;
 import org.tvl.tvlooker.service.ReviewService;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * REST controller for managing reviews.
@@ -64,9 +66,10 @@ public class ReviewController {
      */
     @PostMapping
     public ResponseEntity<ReviewResponse> createReview(
-            @Valid @RequestBody CreateReviewRequest request) {
+            @Valid @RequestBody CreateReviewRequest request,
+            Authentication authentication) {
         Review review = ReviewMapper.fromCreateRequest(request);
-        Review created = reviewService.create(review);
+        Review created = reviewService.createForUser(review, currentUserId(authentication));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header("Location", "/api/v1/users/" + created.getId())
@@ -79,9 +82,71 @@ public class ReviewController {
      * @return the review response
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ReviewResponse> getReviewById(@PathVariable Long id) {
-        Review review = reviewService.getById(id);
+    public ResponseEntity<ReviewResponse> getReviewById(@PathVariable Long id, Authentication authentication) {
+        Review review = isAdmin(authentication)
+                ? reviewService.getByIdForAdmin(id)
+                : reviewService.getByIdForUser(id, currentUserId(authentication));
         return ResponseEntity.ok(ReviewMapper.toResponse(review));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<PageResponse<ReviewResponse>> getMyReviews(
+            Authentication authentication,
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Review> reviewsPage = reviewService.getByUserId(currentUserId(authentication), pageable);
+
+        List<ReviewResponse> content = reviewsPage.getContent().stream()
+                .map(ReviewMapper::toResponse)
+                .toList();
+
+        PageResponse<ReviewResponse> response = new PageResponse<>(
+                content,
+                reviewsPage.getTotalElements(),
+                reviewsPage.getNumber(),
+                reviewsPage.getTotalPages(),
+                reviewsPage.isLast()
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/item/{itemId}")
+    public ResponseEntity<PageResponse<ReviewResponse>> getItemReviews(
+            @PathVariable Long itemId,
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Review> reviewsPage = reviewService.getByItemId(itemId, pageable);
+
+        List<ReviewResponse> content = reviewsPage.getContent().stream()
+                .map(ReviewMapper::toResponse)
+                .toList();
+
+        PageResponse<ReviewResponse> response = new PageResponse<>(
+                content,
+                reviewsPage.getTotalElements(),
+                reviewsPage.getNumber(),
+                reviewsPage.getTotalPages(),
+                reviewsPage.isLast()
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<PageResponse<ReviewResponse>> getUserReviews(
+            @PathVariable UUID userId,
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Review> reviewsPage = reviewService.getByUserId(userId, pageable);
+
+        List<ReviewResponse> content = reviewsPage.getContent().stream()
+                .map(ReviewMapper::toResponse)
+                .toList();
+
+        PageResponse<ReviewResponse> response = new PageResponse<>(
+                content,
+                reviewsPage.getTotalElements(),
+                reviewsPage.getNumber(),
+                reviewsPage.getTotalPages(),
+                reviewsPage.isLast()
+        );
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -90,12 +155,13 @@ public class ReviewController {
      * @param request the request containing updated review details
      * @return the updated review response
      */
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ReviewResponse> updateReview(
             @PathVariable Long id,
-            @Valid @RequestBody CreateReviewRequest request){
+            @Valid @RequestBody CreateReviewRequest request,
+            Authentication authentication){
         Review review = ReviewMapper.fromCreateRequest(request);
-        Review updated = reviewService.update(id, review);
+        Review updated = reviewService.updateForUser(id, review, currentUserId(authentication));
         return ResponseEntity.ok(ReviewMapper.toResponse(updated));
     }
 
@@ -105,7 +171,16 @@ public class ReviewController {
      * @return empty response with status 204 No Content
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-        reviewService.deleteById(id);
+    public ResponseEntity<Void> deleteReview(@PathVariable Long id, Authentication authentication) {
+        reviewService.deleteByIdForUser(id, currentUserId(authentication));
         return ResponseEntity.noContent().build();}
+
+    private UUID currentUserId(Authentication authentication) {
+        return UUID.fromString(authentication.getName());
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ADMIN".equals(authority.getAuthority()));
+    }
 }

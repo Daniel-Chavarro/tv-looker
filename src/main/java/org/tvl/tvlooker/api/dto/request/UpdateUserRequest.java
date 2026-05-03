@@ -11,9 +11,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateUserRequest {
-    @Size(min = 3, max = 50)
-    private String username;
-
     @Email(message = "Invalid email format")
     private String email;
 

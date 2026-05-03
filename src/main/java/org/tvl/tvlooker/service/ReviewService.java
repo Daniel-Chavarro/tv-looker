@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+
+    private static final String REVIEW_NOT_FOUND_MESSAGE = "Review not found: ";
+
     private final ReviewRepository reviewRepository;
     private final UserService userService;
     private final ItemService itemService;
@@ -40,6 +43,17 @@ public class ReviewService {
         return ReviewEntityMapper.toDomain(reviewRepository.save(entity));
     }
 
+    public Review createForUser(Review review, UUID userId) {
+        Review ownedReview = Review.builder()
+                .userId(userId)
+                .itemId(review.getItemId())
+                .reviewText(review.getReviewText())
+                .score(review.getScore())
+                .reviewDate(review.getReviewDate())
+                .build();
+        return create(ownedReview);
+    }
+
     /**
      * Get a review by id.
      *
@@ -50,7 +64,17 @@ public class ReviewService {
     public Review getById(Long id) {
         return reviewRepository.findById(id)
                 .map(ReviewEntityMapper::toDomain)
-                .orElseThrow(() -> new ReviewNotFoundException("Review not found: " + id));
+                .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND_MESSAGE + id));
+    }
+
+    public Review getByIdForUser(Long id, UUID userId) {
+        return reviewRepository.findByIdAndUserId(id, userId)
+                .map(ReviewEntityMapper::toDomain)
+                .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND_MESSAGE + id));
+    }
+
+    public Review getByIdForAdmin(Long id) {
+        return getById(id);
     }
 
     /**
@@ -75,6 +99,16 @@ public class ReviewService {
                 .map(ReviewEntityMapper::toDomain);
     }
 
+    public Page<Review> getByItemId(Long itemId, Pageable pageable) {
+        return reviewRepository.findByItemId(itemId, pageable)
+                .map(ReviewEntityMapper::toDomain);
+    }
+
+    public Page<Review> getByUserId(UUID userId, Pageable pageable) {
+        return reviewRepository.findAllByUserId(userId, pageable)
+                .map(ReviewEntityMapper::toDomain);
+    }
+
     /**
      * Update a review.
      *
@@ -85,7 +119,7 @@ public class ReviewService {
      */
     public Review update(Long id, Review review) {
         if (!reviewRepository.existsById(id)) {
-            throw new ReviewNotFoundException("Review not found: " + id);
+            throw new ReviewNotFoundException(REVIEW_NOT_FOUND_MESSAGE + id);
         }
 
         User user = userService.getById(review.getUserId());
@@ -108,6 +142,22 @@ public class ReviewService {
         return ReviewEntityMapper.toDomain(reviewRepository.save(actual));
     }
 
+    public Review updateForUser(Long id, Review review, UUID userId) {
+        ReviewEntity actual = reviewRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND_MESSAGE + id));
+
+        if (review.getReviewText() != null) {
+            actual.setReviewText(review.getReviewText());
+        }
+
+        Integer score = review.getScore();
+        if (score != null && 0 <= score && score <= 5) {
+            actual.setScore(score);
+        }
+
+        return ReviewEntityMapper.toDomain(reviewRepository.save(actual));
+    }
+
     /**
      * Delete a review by id.
      *
@@ -116,7 +166,14 @@ public class ReviewService {
      */
     public void deleteById(Long id) {
         if (!reviewRepository.existsById(id)) {
-            throw new ReviewNotFoundException("Review not found: " + id);
+            throw new ReviewNotFoundException(REVIEW_NOT_FOUND_MESSAGE + id);
+        }
+        reviewRepository.deleteById(id);
+    }
+
+    public void deleteByIdForUser(Long id, UUID userId) {
+        if (reviewRepository.findByIdAndUserId(id, userId).isEmpty()) {
+            throw new ReviewNotFoundException(REVIEW_NOT_FOUND_MESSAGE + id);
         }
         reviewRepository.deleteById(id);
     }

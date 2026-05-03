@@ -2,6 +2,8 @@ package org.tvl.tvlooker.domain.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -12,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.tvl.tvlooker.domain.model.enums.UserAuthority;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -61,6 +64,11 @@ public class UserEntity {
      */
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "authority", nullable = false)
+    private UserAuthority authority = UserAuthority.USER;
 
     /**
      * The timestamp when the user was created, stored as a Timestamp.

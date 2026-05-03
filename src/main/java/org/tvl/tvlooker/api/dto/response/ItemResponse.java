@@ -26,4 +26,5 @@ public class ItemResponse {
     private Long tmdbId;
     private Set<GenreResponse> genreResponses;
     private Set<ActorItemResponse> actorItemResponses;
+    private Set<DirectorResponse> directorResponses;
 }
