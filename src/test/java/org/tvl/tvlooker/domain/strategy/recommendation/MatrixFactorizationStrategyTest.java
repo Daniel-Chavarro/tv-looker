@@ -11,6 +11,7 @@ import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 import org.tvl.tvlooker.domain.motor.utils.provider.MatrixFactorizationProvider;
+import org.tvl.tvlooker.domain.motor.utils.provider.SVDMatrixProcessor;
 import org.tvl.tvlooker.testutil.TestDataFactory;
 
 import java.math.BigDecimal;
@@ -25,11 +26,13 @@ class MatrixFactorizationStrategyTest {
 
     private MatrixFactorizationStrategy strategy;
     private MatrixFactorizationProvider provider;
+    private SVDMatrixProcessor svdProcessor;
 
     @BeforeEach
     void setUp() {
         strategy = new MatrixFactorizationStrategy();
-        provider = new MatrixFactorizationProvider(3); // Small k for tests
+        svdProcessor = new SVDMatrixProcessor();
+        provider = new MatrixFactorizationProvider(3, svdProcessor); // Small k for tests
     }
 
     @Test
@@ -46,9 +49,9 @@ class MatrixFactorizationStrategyTest {
         RecommendationContext context = TestDataFactory.createContext(
                 List.of(user), items, new ArrayList<>());
 
-        // No provider registered - getData throws NoDataProviderException
-        assertThrows(org.tvl.tvlooker.domain.exception.NoDataProviderException.class,
-                () -> strategy.recommend(user, items, context));
+        // No provider registered - strategy returns empty list
+        List<ScoredItem> result = strategy.recommend(user, items, context);
+        assertTrue(result.isEmpty());
     }
 
     @Test

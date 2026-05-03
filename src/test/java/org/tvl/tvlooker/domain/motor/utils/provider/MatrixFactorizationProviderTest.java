@@ -23,10 +23,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class MatrixFactorizationProviderTest {
 
     private MatrixFactorizationProvider provider;
+    private SVDMatrixProcessor svdProcessor;
 
     @BeforeEach
     void setUp() {
-        provider = new MatrixFactorizationProvider(3);
+        svdProcessor = new SVDMatrixProcessor();
+        provider = new MatrixFactorizationProvider(3, svdProcessor);
     }
 
     @Test
@@ -151,7 +153,8 @@ class MatrixFactorizationProviderTest {
     @DisplayName("Should reduce to k latent factors")
     void shouldReduceToKLatentFactors() {
         int k = 2;
-        MatrixFactorizationProvider providerK2 = new MatrixFactorizationProvider(k);
+        SVDMatrixProcessor processorK2 = new SVDMatrixProcessor();
+        MatrixFactorizationProvider providerK2 = new MatrixFactorizationProvider(k, processorK2);
 
         User user1 = TestDataFactory.createUser("user1");
         User user2 = TestDataFactory.createUser("user2");
