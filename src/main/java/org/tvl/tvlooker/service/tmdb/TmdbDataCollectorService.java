@@ -56,6 +56,9 @@ public class TmdbDataCollectorService {
     @Value("${tmdb.collector.max-pages:50}")
     private int maxPages;
 
+    @Value("${tmdb.collector.page-window-size:10}")
+    private int pageWindowSize;
+
     @Value("${tmdb.persistence.batch-size:50}")
     private int batchSize;
 
@@ -208,31 +211,33 @@ public class TmdbDataCollectorService {
 
         log.info("Pipelining movies pages from 2 to {}...", pagesToFetch);
 
-        List<CompletableFuture<Void>> pageTasks = new ArrayList<>();
+        for (int windowStart = 2; windowStart <= pagesToFetch; windowStart += effectivePageWindowSize()) {
+            int windowEnd = Math.min(windowStart + effectivePageWindowSize() - 1, pagesToFetch);
+            List<CompletableFuture<Void>> pageTasks = new ArrayList<>();
 
-        //Fetch asynchronously the remaining pages
-        for (int page = 2; page <= pagesToFetch; page++) {
-            int currentPage = page;
-            CompletableFuture<Void> pageTask = dataFetcher.fetchPopularMoviesAsync(currentPage)
-                    .thenAccept(response -> {
-                        if (response != null && response.results() != null && !response.results().isEmpty()) {
-                            int collectedResult = persistenceService.discoverAndPersistNewMovies(response.results());
-                            totalCollected.addAndGet(collectedResult);
-                            totalSkipped.addAndGet(response.results().size() - collectedResult);
-                            log.info("Movies progress: page {}/{}, collected={}, skipped={}",
-                                    currentPage, pagesToFetch, totalCollected.get(), totalSkipped.get());
-                        } else {
-                            log.warn("No movies found on page {}", currentPage);
-                        }
-                    })
-                    .exceptionally(ex -> {
-                        log.error("Error fetching or persisting movies for page {}: {}", currentPage, ex.getMessage());
-                        return null;
-                    });
-            pageTasks.add(pageTask);
+            for (int page = windowStart; page <= windowEnd; page++) {
+                int currentPage = page;
+                CompletableFuture<Void> pageTask = dataFetcher.fetchPopularMoviesAsync(currentPage)
+                        .thenAccept(response -> {
+                            if (response != null && response.results() != null && !response.results().isEmpty()) {
+                                int collectedResult = persistenceService.discoverAndPersistNewMovies(response.results());
+                                totalCollected.addAndGet(collectedResult);
+                                totalSkipped.addAndGet(response.results().size() - collectedResult);
+                                log.info("Movies progress: page {}/{}, collected={}, skipped={}",
+                                        currentPage, pagesToFetch, totalCollected.get(), totalSkipped.get());
+                            } else {
+                                log.warn("No movies found on page {}", currentPage);
+                            }
+                        })
+                        .exceptionally(ex -> {
+                            log.error("Error fetching or persisting movies for page {}: {}", currentPage, ex.getMessage());
+                            return null;
+                        });
+                pageTasks.add(pageTask);
+            }
+
+            CompletableFuture.allOf(pageTasks.toArray(new CompletableFuture[0])).join();
         }
-
-        CompletableFuture.allOf(pageTasks.toArray(new CompletableFuture[0])).join();
 
         log.info("Popular movies collected, collected={}, skipped={}", totalCollected.get(), totalSkipped.get());
     }
@@ -274,34 +279,40 @@ public class TmdbDataCollectorService {
 
         log.info("Pipelining TV shows pages from 2 to {}...", pagesToFetch);
 
-        List<CompletableFuture<Void>> pageTasks = new ArrayList<>();
+        for (int windowStart = 2; windowStart <= pagesToFetch; windowStart += effectivePageWindowSize()) {
+            int windowEnd = Math.min(windowStart + effectivePageWindowSize() - 1, pagesToFetch);
+            List<CompletableFuture<Void>> pageTasks = new ArrayList<>();
 
-        // Fetch asynchronously the remaining pages
-        for (int page = 2; page <= pagesToFetch; page++) {
-            int currentPage = page;
-            CompletableFuture<Void> pageTask = dataFetcher.fetchPopularTvShowsAsync(currentPage)
-                    .thenAccept(response -> {
-                        if (response != null && response.results() != null && !response.results().isEmpty()) {
-                            int collectedResult = persistenceService.discoverAndPersistNewTvShows(response.results());
-                            totalCollected.addAndGet(collectedResult);
-                            totalSkipped.addAndGet(response.results().size() - collectedResult);
-                            log.info("TV shows progress: page {}/{}, collected={}, skipped={}",
-                                    currentPage, pagesToFetch, totalCollected.get(), totalSkipped.get());
-                        } else {
-                            log.warn("No TV shows found on page {}", currentPage);
-                        }
-                    })
-                    .exceptionally(ex -> {
-                        log.error("Error fetching or persisting TV shows for page {}: {}",
-                                currentPage, ex.getMessage());
-                        return null;
-                    });
-            pageTasks.add(pageTask);
+            for (int page = windowStart; page <= windowEnd; page++) {
+                int currentPage = page;
+                CompletableFuture<Void> pageTask = dataFetcher.fetchPopularTvShowsAsync(currentPage)
+                        .thenAccept(response -> {
+                            if (response != null && response.results() != null && !response.results().isEmpty()) {
+                                int collectedResult = persistenceService.discoverAndPersistNewTvShows(response.results());
+                                totalCollected.addAndGet(collectedResult);
+                                totalSkipped.addAndGet(response.results().size() - collectedResult);
+                                log.info("TV shows progress: page {}/{}, collected={}, skipped={}",
+                                        currentPage, pagesToFetch, totalCollected.get(), totalSkipped.get());
+                            } else {
+                                log.warn("No TV shows found on page {}", currentPage);
+                            }
+                        })
+                        .exceptionally(ex -> {
+                            log.error("Error fetching or persisting TV shows for page {}: {}",
+                                    currentPage, ex.getMessage());
+                            return null;
+                        });
+                pageTasks.add(pageTask);
+            }
+
+            CompletableFuture.allOf(pageTasks.toArray(new CompletableFuture[0])).join();
         }
 
-        CompletableFuture.allOf(pageTasks.toArray(new CompletableFuture[0])).join();
-
         log.info("Popular TV shows collected, collected={}, skipped={}", totalCollected.get(), totalSkipped.get());
+    }
+
+    private int effectivePageWindowSize() {
+        return Math.max(1, pageWindowSize);
     }
 }
 

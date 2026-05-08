@@ -43,7 +43,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.intThat;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -56,6 +58,8 @@ class TmdbCollectorExecutorStarvationTest {
             ".sisyphus/evidence/collector-thread-blocking/task-3");
     private static final Path TASK_4_EVIDENCE_DIR = Path.of(
             ".sisyphus/evidence/collector-thread-blocking/task-4");
+    private static final Path TASK_5_EVIDENCE_DIR = Path.of(
+            ".sisyphus/evidence/collector-thread-blocking/task-5");
     private static final int SCALED_EQUIVALENT_PAGE_COUNT = 500;
     private static final int POST_FIX_PAGE_COUNT = 4;
     private static final int TMDB_ITEMS_PER_PAGE = 20;
@@ -93,7 +97,7 @@ class TmdbCollectorExecutorStarvationTest {
     @DisplayName("separate orchestration executor lets child fetches complete while parents wait")
     void collectPopularMoviesWithSharedBoundedExecutorShouldReachTerminalState() throws Exception {
         boundedTmdbExecutor = newBoundedTmdbExecutor(2, 32, "tmdb-fetch-proof-");
-        TmdbDataFetcher realFetcher = new TmdbDataFetcher(tmdbClient, boundedTmdbExecutor, 35.0);
+        TmdbDataFetcher realFetcher = new TmdbDataFetcher(tmdbClient, boundedTmdbExecutor, 35.0, 100);
         TmdbDataCollectorService collectorService = newCollector(realFetcher, POST_FIX_PAGE_COUNT);
         TmdbPhaseMetrics phases = new TmdbPhaseMetrics();
         stubSharedExecutorWorkload(phases);
@@ -143,7 +147,7 @@ class TmdbCollectorExecutorStarvationTest {
     @DisplayName("capture current-state task 3 evidence from the shared-executor stall")
     void captureTask3CurrentStateEvidenceFromSharedExecutorStall() throws Exception {
         boundedTmdbExecutor = newBoundedTmdbExecutor(2, 32, "tmdb-starvation-");
-        TmdbDataFetcher realFetcher = new TmdbDataFetcher(tmdbClient, boundedTmdbExecutor, 35.0);
+        TmdbDataFetcher realFetcher = new TmdbDataFetcher(tmdbClient, boundedTmdbExecutor, 35.0, 100);
         TmdbDataCollectorService collectorService = newCollector(realFetcher);
         TmdbPhaseMetrics phases = new TmdbPhaseMetrics();
         stubSharedExecutorWorkload(phases);
@@ -176,14 +180,90 @@ class TmdbCollectorExecutorStarvationTest {
 
     }
 
+    @Test
+    @Timeout(5)
+    @DisplayName("bounded page and detail windows cap observed in-flight work")
+    void boundedWindowsShouldCapObservedInFlightWork() throws Exception {
+        int pageWindowSize = 2;
+        int detailWindowSize = 2;
+        int totalPages = 6;
+        AtomicInteger pagesInFlight = new AtomicInteger();
+        AtomicInteger maxPagesInFlight = new AtomicInteger();
+        java.util.concurrent.ScheduledExecutorService pageReleaser = Executors.newSingleThreadScheduledExecutor(
+                daemonThreadFactory("tmdb-page-window-release-"));
+        TmdbDataCollectorService collectorService = newCollector(mockedDataFetcher, totalPages, pageWindowSize);
+        when(mockedDataFetcher.fetchPopularMoviesAsync(1))
+                .thenReturn(CompletableFuture.completedFuture(moviePage(1, totalPages)));
+        when(mockedDataFetcher.fetchPopularMoviesAsync(intThat(page -> page > 1))).thenAnswer(invocation -> {
+            int page = invocation.getArgument(0, Integer.class);
+            CompletableFuture<TmdbPagedResponseDto<TmdbMovieDto>> future = new CompletableFuture<>();
+            int active = pagesInFlight.incrementAndGet();
+            maxPagesInFlight.accumulateAndGet(active, Math::max);
+            pageReleaser.schedule(() -> future.complete(moviePage(page, totalPages)), 60, TimeUnit.MILLISECONDS);
+            return future.whenComplete((response, error) -> pagesInFlight.decrementAndGet());
+        });
+        when(persistenceService.discoverAndPersistNewMovies(anyList())).thenAnswer(invocation ->
+                invocation.getArgument(0, List.class).size());
+
+        try {
+            collectorService.collectPopularMovies();
+        } finally {
+            pageReleaser.shutdownNow();
+            pageReleaser.awaitTermination(1, TimeUnit.SECONDS);
+        }
+
+        ExecutorService detailExecutor = Executors.newFixedThreadPool(6, daemonThreadFactory("tmdb-detail-window-"));
+        TmdbDataFetcher detailFetcher = new TmdbDataFetcher(tmdbClient, detailExecutor, 35.0, detailWindowSize);
+        AtomicInteger detailsInFlight = new AtomicInteger();
+        AtomicInteger maxDetailsInFlight = new AtomicInteger();
+        when(tmdbClient.getDetailsWithCredits(eq(TmdbMediaType.MOVIE), anyLong())).thenAnswer(invocation -> {
+            int active = detailsInFlight.incrementAndGet();
+            maxDetailsInFlight.accumulateAndGet(active, Math::max);
+            try {
+                TimeUnit.MILLISECONDS.sleep(60);
+                return TmdbFakeDtoFactory.movieDetails(invocation.getArgument(1, Long.class));
+            } finally {
+                detailsInFlight.decrementAndGet();
+            }
+        });
+
+        List<?> detailResults;
+        try {
+            detailResults = detailFetcher.fetchMoviesDetailsBatch(List.of(1L, 2L, 3L, 4L, 5L));
+        } finally {
+            detailExecutor.shutdownNow();
+            detailExecutor.awaitTermination(1, TimeUnit.SECONDS);
+        }
+
+        String evidence = "# Task 5 Window Metrics" + System.lineSeparator()
+                + System.lineSeparator()
+                + "configuredPageWindowSize=" + pageWindowSize + System.lineSeparator()
+                + "observedMaxInFlightPages=" + maxPagesInFlight.get() + System.lineSeparator()
+                + "configuredDetailWindowSize=" + detailWindowSize + System.lineSeparator()
+                + "observedMaxInFlightDetails=" + maxDetailsInFlight.get() + System.lineSeparator()
+                + "detailResults=" + detailResults.size() + System.lineSeparator()
+                + "networkAccess=false" + System.lineSeparator()
+                + "credentialRequired=false" + System.lineSeparator();
+        TmdbEvidenceWriter.write(TASK_5_EVIDENCE_DIR.resolve("task-5-window-metrics.md"), evidence);
+
+        assertTrue(maxPagesInFlight.get() <= pageWindowSize, evidence);
+        assertTrue(maxDetailsInFlight.get() <= detailWindowSize, evidence);
+    }
+
     private TmdbDataCollectorService newCollector(TmdbDataFetcher dataFetcher) {
-        return newCollector(dataFetcher, SCALED_EQUIVALENT_PAGE_COUNT);
+        return newCollector(dataFetcher, SCALED_EQUIVALENT_PAGE_COUNT, 10);
     }
 
     private TmdbDataCollectorService newCollector(TmdbDataFetcher dataFetcher, int configuredMaxPages) {
+        return newCollector(dataFetcher, configuredMaxPages, 10);
+    }
+
+    private TmdbDataCollectorService newCollector(
+            TmdbDataFetcher dataFetcher, int configuredMaxPages, int configuredPageWindowSize) {
         TmdbDataCollectorService collectorService = new TmdbDataCollectorService(
                 itemRepository, dataFetcher, persistenceService);
         ReflectionTestUtils.setField(collectorService, "maxPages", configuredMaxPages);
+        ReflectionTestUtils.setField(collectorService, "pageWindowSize", configuredPageWindowSize);
         ReflectionTestUtils.setField(collectorService, "batchSize", 50);
         return collectorService;
     }
