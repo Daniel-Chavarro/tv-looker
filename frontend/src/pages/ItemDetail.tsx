@@ -8,7 +8,7 @@ import { useReviews } from '../hooks/useReviews';
 import type { Item } from '../types/item';
 
 const ItemDetailContent: React.FC<{ item: Item }> = ({ item }) => {
-  const { data: reviewsData, isLoading: reviewsLoading } = useReviews(item.id, { pageSize: 5 });
+  const { data: reviewsData, isLoading: reviewsLoading, error: reviewsError } = useReviews(item.id, { pageSize: 5 });
 
   return (
     <div className="min-h-screen">
@@ -122,6 +122,13 @@ const ItemDetailContent: React.FC<{ item: Item }> = ({ item }) => {
           </h2>
           {reviewsLoading ? (
             <PageLoader message="Loading reviews..." />
+          ) : reviewsError ? (
+            <div role="alert" aria-live="assertive">
+              <ErrorMessage
+                message="Failed to load reviews. Please try again."
+                className="items-start text-left p-4"
+              />
+            </div>
           ) : reviewsData?.content && reviewsData.content.length > 0 ? (
             <div className="grid gap-4">
               {reviewsData.content.map((review) => (

@@ -25,11 +25,6 @@ export const Footer: React.FC = () => {
                   Home
                 </Link>
               </li>
-              <li>
-                <Link to="/search" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
-                  Search
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -76,12 +71,12 @@ export const Footer: React.FC = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/my-lists" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
+                  <Link to="/lists" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
                     My Lists
                   </Link>
                 </li>
                 <li>
-                  <Link to="/my-reviews" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
+                  <Link to="/reviews" className="text-neutral-400 hover:text-amber-400 transition-colors text-sm">
                     My Reviews
                   </Link>
                 </li>

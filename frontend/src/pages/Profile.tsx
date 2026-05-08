@@ -17,16 +17,35 @@ export function Profile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleEdit = () => {
     if (!data) return;
+    setUpdateError(null);
     setName(data.name || '');
     setEmail(data.email);
     setShowEditModal(true);
   };
 
+  const closeEditModal = () => {
+    setUpdateError(null);
+    setShowEditModal(false);
+  };
+
+  const openDeleteModal = () => {
+    setDeleteError(null);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteError(null);
+    setShowDeleteModal(false);
+  };
+
   const handleUpdateProfile = async () => {
     if (!authUser?.id) return;
+    setUpdateError(null);
     try {
       await updateUser.mutateAsync({
         id: authUser.id,
@@ -35,18 +54,21 @@ export function Profile() {
           email: email.trim() || undefined,
         },
       });
-      setShowEditModal(false);
+      closeEditModal();
     } catch (err) {
+      setUpdateError('Failed to update profile. Please try again.');
       console.error('Failed to update profile:', err);
     }
   };
 
   const handleDeleteProfile = async () => {
     if (!authUser?.id) return;
+    setDeleteError(null);
     try {
       await deleteUser.mutateAsync(authUser.id);
       logout();
     } catch (err) {
+      setDeleteError('Failed to delete profile. Please try again.');
       console.error('Failed to delete profile:', err);
     }
   };
@@ -142,7 +164,7 @@ export function Profile() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-neutral-800">
-          <Button variant="danger" onClick={() => setShowDeleteModal(true)}>
+          <Button variant="danger" onClick={openDeleteModal}>
             Delete Account
           </Button>
           <p className="text-neutral-600 text-sm mt-2">
@@ -151,7 +173,7 @@ export function Profile() {
         </div>
       </div>
 
-      <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Profile">
+      <Modal isOpen={showEditModal} onClose={closeEditModal} title="Edit Profile">
         <div className="space-y-4">
           <Input
             label="Name (optional)"
@@ -166,10 +188,18 @@ export function Profile() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
           />
+          {updateError && (
+            <div
+              role="alert"
+              className="rounded-sm border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300"
+            >
+              {updateError}
+            </div>
+          )}
           <div className="flex gap-3 pt-4">
             <Button
               variant="secondary"
-              onClick={() => setShowEditModal(false)}
+              onClick={closeEditModal}
               className="flex-1"
             >
               Cancel
@@ -186,16 +216,24 @@ export function Profile() {
         </div>
       </Modal>
 
-      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Delete Account">
+      <Modal isOpen={showDeleteModal} onClose={closeDeleteModal} title="Delete Account">
         <div className="space-y-4">
           <p className="text-neutral-300">
             Are you sure you want to delete your account? This action cannot be
             undone.
           </p>
+          {deleteError && (
+            <div
+              role="alert"
+              className="rounded-sm border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300"
+            >
+              {deleteError}
+            </div>
+          )}
           <div className="flex gap-3 pt-4">
             <Button
               variant="secondary"
-              onClick={() => setShowDeleteModal(false)}
+              onClick={closeDeleteModal}
               className="flex-1"
             >
               Cancel

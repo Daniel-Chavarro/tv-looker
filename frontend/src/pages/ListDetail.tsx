@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useList, useUpdateList, useDeleteList, useRemoveItemFromList } from '../hooks/useLists';
 import { PageLoader } from '../components/common/Loader';
 import { ErrorMessage } from '../components/common/ErrorMessage';
@@ -22,16 +22,36 @@ export function ListDetail() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [removeItemError, setRemoveItemError] = useState<string | null>(null);
 
   const handleEdit = () => {
     if (!data) return;
+    setUpdateError(null);
     setName(data.name);
     setDescription(data.description || '');
     setShowEditModal(true);
   };
 
+  const closeEditModal = () => {
+    setUpdateError(null);
+    setShowEditModal(false);
+  };
+
+  const openDeleteModal = () => {
+    setDeleteError(null);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteError(null);
+    setShowDeleteModal(false);
+  };
+
   const handleUpdateList = async () => {
     if (!name.trim()) return;
+    setUpdateError(null);
     try {
       await updateList.mutateAsync({
         id: listId,
@@ -40,26 +60,31 @@ export function ListDetail() {
           description: description.trim() || undefined,
         },
       });
-      setShowEditModal(false);
+      closeEditModal();
     } catch (err) {
+      setUpdateError('Failed to update list. Please try again.');
       console.error('Failed to update list:', err);
     }
   };
 
   const handleDeleteList = async () => {
+    setDeleteError(null);
     try {
       await deleteList.mutateAsync(listId);
       navigate('/lists');
     } catch (err) {
+      setDeleteError('Failed to delete list. Please try again.');
       console.error('Failed to delete list:', err);
     }
   };
 
   const handleRemoveItem = async (itemId: number) => {
     if (!confirm('Remove this item from the list?')) return;
+    setRemoveItemError(null);
     try {
       await removeItem.mutateAsync({ listId, itemId });
     } catch (err) {
+      setRemoveItemError('Failed to remove item from list. Please try again.');
       console.error('Failed to remove item:', err);
     }
   };
@@ -95,17 +120,26 @@ export function ListDetail() {
           <Button variant="secondary" onClick={handleEdit}>
             Edit
           </Button>
-          <Button variant="danger" onClick={() => setShowDeleteModal(true)}>
+          <Button variant="danger" onClick={openDeleteModal}>
             Delete
           </Button>
         </div>
       </div>
 
+      {removeItemError && (
+        <div
+          role="alert"
+          className="mb-6 rounded-sm border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300"
+        >
+          {removeItemError}
+        </div>
+      )}
+
       {items.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {items.map((item) => (
             <div key={item.id} className="relative group">
-              <a href={`/items/${item.id}`} className="block">
+              <Link to={`/items/${item.id}`} className="block">
                 <div className="aspect-[2/3] rounded-sm overflow-hidden bg-neutral-900">
                   {item.posterUrl ? (
                     <img
@@ -122,8 +156,9 @@ export function ListDetail() {
                 <p className="text-neutral-200 text-sm mt-2 line-clamp-2">
                   {item.title}
                 </p>
-              </a>
+              </Link>
               <button
+                aria-label={`Remove ${item.title} from list`}
                 onClick={() => handleRemoveItem(item.id)}
                 className="absolute top-2 right-2 p-2 bg-neutral-900/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-900/80"
               >
@@ -147,13 +182,16 @@ export function ListDetail() {
       ) : (
         <div className="text-center py-16">
           <p className="text-neutral-500 mb-4">This list is empty.</p>
-          <a href="/items">
-            <Button>Browse Items</Button>
-          </a>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-sm text-sm tracking-wide uppercase transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none hover:transform hover:-translate-y-0.5 bg-amber-500 hover:bg-amber-400 text-neutral-900 font-semibold shadow-lg shadow-amber-500/20"
+          >
+            Browse Items
+          </Link>
         </div>
       )}
 
-      <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="Edit List">
+      <Modal isOpen={showEditModal} onClose={closeEditModal} title="Edit List">
         <div className="space-y-4">
           <Input
             label="List Name"
@@ -167,10 +205,18 @@ export function ListDetail() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter description"
           />
+          {updateError && (
+            <div
+              role="alert"
+              className="rounded-sm border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300"
+            >
+              {updateError}
+            </div>
+          )}
           <div className="flex gap-3 pt-4">
             <Button
               variant="secondary"
-              onClick={() => setShowEditModal(false)}
+              onClick={closeEditModal}
               className="flex-1"
             >
               Cancel
@@ -187,15 +233,23 @@ export function ListDetail() {
         </div>
       </Modal>
 
-      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Delete List">
+      <Modal isOpen={showDeleteModal} onClose={closeDeleteModal} title="Delete List">
         <div className="space-y-4">
           <p className="text-neutral-300">
             Are you sure you want to delete "{list.name}"? This action cannot be undone.
           </p>
+          {deleteError && (
+            <div
+              role="alert"
+              className="rounded-sm border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300"
+            >
+              {deleteError}
+            </div>
+          )}
           <div className="flex gap-3 pt-4">
             <Button
               variant="secondary"
-              onClick={() => setShowDeleteModal(false)}
+              onClick={closeDeleteModal}
               className="flex-1"
             >
               Cancel

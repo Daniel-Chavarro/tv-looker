@@ -1,14 +1,15 @@
 import { apiClient } from './client';
-import type { Item, RecommendationResponse } from '../types';
-import type { UUID } from 'crypto';
+import type { RecommendationResponse, UUID } from '../types';
+
+type RecommendationParams = {
+  limit?: number;
+};
 
 export const recommendationsApi = {
-  getRecommendations: async (userId: UUID, params?: {
-    // itemId?: number;
-    // type?: 'MOVIE' | 'TV';
-    // limit?: number;
-  }): Promise<RecommendationResponse> => {
-    const response = await apiClient.get<RecommendationResponse>(`/users/${userId}/recommendations`, { params });
+  getRecommendations: async (userId: UUID, params?: RecommendationParams): Promise<RecommendationResponse> => {
+    const response = params?.limit && params.limit > 0
+      ? await apiClient.get<RecommendationResponse>(`/users/${userId}/recommendations`, { params })
+      : await apiClient.get<RecommendationResponse>(`/users/${userId}/recommendations`);
     return response.data;
   },
 };

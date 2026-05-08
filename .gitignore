@@ -55,3 +55,7 @@ skills-lock.json
 .claude
 
 /frontend/dist
+/.sisyphus
+/.playwright-cli
+/.playwright-mcp
+/frontend/.playwright-cli

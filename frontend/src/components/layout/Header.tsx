@@ -45,13 +45,13 @@ export const Header: React.FC = () => {
                   Recommendations
                 </Link>
                 <Link
-                  to="/my-lists"
+                  to="/lists"
                   className="px-4 py-2 text-neutral-400 hover:text-amber-400 hover:bg-neutral-800/50 rounded-sm transition-colors duration-200 text-sm font-medium"
                 >
                   My Lists
                 </Link>
                 <Link
-                  to="/my-reviews"
+                  to="/reviews"
                   className="px-4 py-2 text-neutral-400 hover:text-amber-400 hover:bg-neutral-800/50 rounded-sm transition-colors duration-200 text-sm font-medium"
                 >
                   My Reviews

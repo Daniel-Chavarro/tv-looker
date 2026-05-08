@@ -67,9 +67,22 @@ export function MyLists() {
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const openCreateModal = () => {
+    setCreateError(null);
+    setShowModal(true);
+  };
+
+  const closeCreateModal = () => {
+    setCreateError(null);
+    setShowModal(false);
+  };
 
   const handleCreateList = async () => {
     if (!user?.id || !name.trim()) return;
+    setCreateError(null);
     try {
       await createList.mutateAsync({
         userId: user.id as import('crypto').UUID,
@@ -80,15 +93,18 @@ export function MyLists() {
       setName('');
       setDescription('');
     } catch (err) {
+      setCreateError('Failed to create list. Please try again.');
       console.error('Failed to create list:', err);
     }
   };
 
   const handleDeleteList = async (id: number) => {
     if (!confirm('Are you sure you want to delete this list?')) return;
+    setDeleteError(null);
     try {
       await deleteList.mutateAsync(id);
     } catch (err) {
+      setDeleteError('Failed to delete list. Please try again.');
       console.error('Failed to delete list:', err);
     }
   };
@@ -117,8 +133,17 @@ export function MyLists() {
           </h1>
           <p className="text-neutral-500">Manage your favorite lists</p>
         </div>
-        <Button onClick={() => setShowModal(true)}>Create List</Button>
+        <Button onClick={openCreateModal}>Create List</Button>
       </div>
+
+      {deleteError && (
+        <div
+          role="alert"
+          className="mb-6 rounded-sm border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300"
+        >
+          {deleteError}
+        </div>
+      )}
 
       {lists.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -129,11 +154,11 @@ export function MyLists() {
       ) : (
         <div className="text-center py-16">
           <p className="text-neutral-500 mb-4">You haven't created any lists yet.</p>
-          <Button onClick={() => setShowModal(true)}>Create Your First List</Button>
+          <Button onClick={openCreateModal}>Create Your First List</Button>
         </div>
       )}
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create New List">
+      <Modal isOpen={showModal} onClose={closeCreateModal} title="Create New List">
         <div className="space-y-4">
           <Input
             label="List Name"
@@ -147,8 +172,16 @@ export function MyLists() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter description"
           />
+          {createError && (
+            <div
+              role="alert"
+              className="rounded-sm border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300"
+            >
+              {createError}
+            </div>
+          )}
           <div className="flex gap-3 pt-4">
-            <Button variant="secondary" onClick={() => setShowModal(false)} className="flex-1">
+            <Button variant="secondary" onClick={closeCreateModal} className="flex-1">
               Cancel
             </Button>
             <Button
