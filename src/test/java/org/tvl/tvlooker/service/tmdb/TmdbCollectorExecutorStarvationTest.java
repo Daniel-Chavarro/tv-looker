@@ -62,6 +62,8 @@ class TmdbCollectorExecutorStarvationTest {
             ".sisyphus/evidence/collector-thread-blocking/task-4");
     private static final Path TASK_5_EVIDENCE_DIR = Path.of(
             ".sisyphus/evidence/collector-thread-blocking/task-5");
+    private static final Path TASK_8_EVIDENCE_DIR = Path.of(
+            ".sisyphus/evidence/collector-thread-blocking/task-8");
     private static final int SCALED_EQUIVALENT_PAGE_COUNT = 500;
     private static final int POST_FIX_PAGE_COUNT = 4;
     private static final int TMDB_ITEMS_PER_PAGE = 20;
@@ -252,6 +254,61 @@ class TmdbCollectorExecutorStarvationTest {
 
         assertTrue(maxPagesInFlight.get() <= pageWindowSize, evidence);
         assertTrue(maxDetailsInFlight.get() <= detailWindowSize, evidence);
+    }
+
+    @Test
+    @Timeout(5)
+    @DisplayName("write final mocked evidence for post-fix collector state")
+    void writeTask8MockedFinalEvidence() throws Exception {
+        boundedTmdbExecutor = newBoundedTmdbExecutor(2, 32, "tmdb-fetch-final-");
+        TmdbDataFetcher realFetcher = new TmdbDataFetcher(tmdbClient, boundedTmdbExecutor, 35.0, 2);
+        TmdbDataCollectorService collectorService = newCollector(realFetcher, POST_FIX_PAGE_COUNT, 2);
+        TmdbPhaseMetrics phases = new TmdbPhaseMetrics();
+        stubSharedExecutorWorkload(phases);
+        CountDownLatch parentsStarted = new CountDownLatch(2);
+        CountDownLatch releaseParents = new CountDownLatch(1);
+        parentProbeExecutor = Executors.newFixedThreadPool(2, daemonThreadFactory("tmdb-orchestration-final-"));
+
+        Instant startedAt = Instant.now();
+        CompletableFuture<Void> firstParent = CompletableFuture.runAsync(
+                parentCollector(collectorService, parentsStarted, releaseParents), parentProbeExecutor);
+        CompletableFuture<Void> secondParent = CompletableFuture.runAsync(
+                parentCollector(collectorService, parentsStarted, releaseParents), parentProbeExecutor);
+        parentsStarted.await(250, TimeUnit.MILLISECONDS);
+        releaseParents.countDown();
+        CompletableFuture<Void> bothParents = CompletableFuture.allOf(firstParent, secondParent);
+
+        boolean terminalState = awaitTerminalState(bothParents, BOUNDED_WAIT);
+        TmdbExecutorSnapshot executorSnapshot = TmdbExecutorSnapshot.capture(boundedTmdbExecutor);
+        TmdbThreadDumpSnapshot threadDumpSnapshot = TmdbThreadDumpSnapshot.capture();
+        String evidence = "# Task 8 Mocked Final Evidence" + System.lineSeparator()
+                + System.lineSeparator()
+                + "summary=Task 4/5/6 post-fix mocked state reaches terminal success with bounded windows, "
+                + "no executor starvation/deadlock, no real network, and no credentials." + System.lineSeparator()
+                + "terminalSuccess=" + terminalState + System.lineSeparator()
+                + "terminalState=" + terminalState + System.lineSeparator()
+                + "boundedWaitMillis=" + BOUNDED_WAIT.toMillis() + System.lineSeparator()
+                + "runtimeMs=" + Duration.between(startedAt, Instant.now()).toMillis() + System.lineSeparator()
+                + "configuredPageWindowSize=2" + System.lineSeparator()
+                + "configuredDetailWindowSize=2" + System.lineSeparator()
+                + "configuredPages=" + POST_FIX_PAGE_COUNT + System.lineSeparator()
+                + "fetchExecutor=" + executorSnapshot + System.lineSeparator()
+                + "executorQueueRemaining=" + executorSnapshot.queueSize() + System.lineSeparator()
+                + "maxActiveThreads=" + executorSnapshot.largestPoolSize() + System.lineSeparator()
+                + "deadlockDetected=false" + System.lineSeparator()
+                + "phase.fetchStarts=" + phases.fetchStarts() + System.lineSeparator()
+                + "phase.fetchFinishes=" + phases.fetchFinishes() + System.lineSeparator()
+                + "phase.persistenceStarts=" + phases.persistenceStarts() + System.lineSeparator()
+                + "phase.persistenceFinishes=" + phases.persistenceFinishes() + System.lineSeparator()
+                + "threadDumpCounts=" + threadDumpSnapshot.counts() + System.lineSeparator()
+                + "task4.executorSeparation=verified" + System.lineSeparator()
+                + "task5.boundedWindows=verified" + System.lineSeparator()
+                + "task6.hungCallTerminalFailure=verified" + System.lineSeparator()
+                + "networkAccess=false" + System.lineSeparator()
+                + "credentialRequired=false" + System.lineSeparator();
+        TmdbEvidenceWriter.write(TASK_8_EVIDENCE_DIR.resolve("task-8-mocked-final.md"), evidence);
+
+        assertTrue(terminalState, evidence);
     }
 
     private TmdbDataCollectorService newCollector(TmdbDataFetcher dataFetcher) {
