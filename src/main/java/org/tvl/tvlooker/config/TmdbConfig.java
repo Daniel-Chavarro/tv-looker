@@ -3,10 +3,14 @@ package org.tvl.tvlooker.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestClient;
+
+import java.time.Duration;
 
 /**
  * Configuration class for the TMDB API connection.
@@ -25,6 +29,12 @@ public class TmdbConfig {
 
     @Value("${tmdb.api.base-url:https://api.themoviedb.org/3}")
     private String baseUrl;
+
+    @Value("${tmdb.api.connect-timeout:PT5S}")
+    private Duration connectTimeout;
+
+    @Value("${tmdb.api.read-timeout:PT10S}")
+    private Duration readTimeout;
 
     /**
      * Creates a RestClient pre-configured for the TMDB API.
@@ -46,9 +56,18 @@ public class TmdbConfig {
      * @return a RestClient configured for the TMDB API v3
      */
     @Bean
+    public ClientHttpRequestFactory tmdbClientHttpRequestFactory() {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(connectTimeout);
+        requestFactory.setReadTimeout(readTimeout);
+        return requestFactory;
+    }
+
+    @Bean
     public RestClient tmdbRestClient() {
         return RestClient.builder()
                 .baseUrl(baseUrl)
+                .requestFactory(tmdbClientHttpRequestFactory())
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();

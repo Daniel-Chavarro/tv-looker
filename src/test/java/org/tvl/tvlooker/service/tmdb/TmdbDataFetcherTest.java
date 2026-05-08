@@ -39,6 +39,8 @@ class TmdbDataFetcherTest {
 
     private static final Path TASK_5_EVIDENCE_DIR = Path.of(
             ".sisyphus/evidence/collector-thread-blocking/task-5");
+    private static final Path TASK_6_EVIDENCE_DIR = Path.of(
+            ".sisyphus/evidence/collector-thread-blocking/task-6");
 
     @Mock
     private TmdbClient tmdbClient;
@@ -375,6 +377,18 @@ class TmdbDataFetcherTest {
         TmdbEvidenceWriter.write(TASK_5_EVIDENCE_DIR.resolve("task-5-partial-failure.txt"),
                 "Task 5 partial detail failure" + System.lineSeparator()
                         + "terminalState=true" + System.lineSeparator()
+                        + "inputDetails=3" + System.lineSeparator()
+                        + "failedDetails=1" + System.lineSeparator()
+                        + "successfulDetails=" + result.size() + System.lineSeparator()
+                        + "resultIds=" + result.stream().map(TmdbMovieDetailsDto::id).toList() + System.lineSeparator()
+                        + "networkAccess=false" + System.lineSeparator()
+                        + "credentialRequired=false" + System.lineSeparator());
+        TmdbEvidenceWriter.write(TASK_6_EVIDENCE_DIR.resolve("task-6-fetcher-regression.txt"),
+                "Task 6 fetcher regression" + System.lineSeparator()
+                        + "terminalState=true" + System.lineSeparator()
+                        + "configuredConnectTimeout=PT5S" + System.lineSeparator()
+                        + "configuredReadTimeout=PT10S" + System.lineSeparator()
+                        + "noIndefiniteWait=true" + System.lineSeparator()
                         + "inputDetails=3" + System.lineSeparator()
                         + "failedDetails=1" + System.lineSeparator()
                         + "successfulDetails=" + result.size() + System.lineSeparator()

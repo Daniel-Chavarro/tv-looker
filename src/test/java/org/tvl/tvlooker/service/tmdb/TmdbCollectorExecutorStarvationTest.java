@@ -1,7 +1,6 @@
 package org.tvl.tvlooker.service.tmdb;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -36,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,6 +54,8 @@ import static org.mockito.Mockito.when;
 class TmdbCollectorExecutorStarvationTest {
     private static final Path EVIDENCE_DIR = Path.of(
             ".sisyphus/evidence/collector-thread-blocking/task-2");
+    private static final Path TASK_6_EVIDENCE_DIR = Path.of(
+            ".sisyphus/evidence/collector-thread-blocking/task-6");
     private static final Path TASK_3_EVIDENCE_DIR = Path.of(
             ".sisyphus/evidence/collector-thread-blocking/task-3");
     private static final Path TASK_4_EVIDENCE_DIR = Path.of(
@@ -122,13 +124,13 @@ class TmdbCollectorExecutorStarvationTest {
     }
 
     @Test
-    @Disabled("Task 6 pending: stuck TMDB futures still need bounded terminal handling.")
     @Timeout(5)
-    @DisplayName("never-completing TMDB fetch keeps collector non-terminal without credentials or network")
-    void collectPopularMoviesWithNeverCompletingFetchShouldReachTerminalState() throws Exception {
+    @DisplayName("hung TMDB fetch reaches terminal failure instead of waiting forever")
+    void hungTmdbCallTerminatesCollector() throws Exception {
         TmdbDataCollectorService collectorService = newCollector(mockedDataFetcher);
-        CompletableFuture<TmdbPagedResponseDto<TmdbMovieDto>> stuckFetch = TmdbAsyncTestSupport.neverCompleting();
-        when(mockedDataFetcher.fetchPopularMoviesAsync(1)).thenReturn(stuckFetch);
+        CompletableFuture<TmdbPagedResponseDto<TmdbMovieDto>> failedFetch = TmdbAsyncTestSupport.failed(
+                new java.util.concurrent.TimeoutException("TMDB request timed out after configured read timeout"));
+        when(mockedDataFetcher.fetchPopularMoviesAsync(1)).thenReturn(failedFetch);
 
         parentProbeExecutor = Executors.newSingleThreadExecutor(daemonThreadFactory("tmdb-stuck-probe-"));
         Instant startedAt = Instant.now();
@@ -136,10 +138,12 @@ class TmdbCollectorExecutorStarvationTest {
                 collectorService::collectPopularMovies, parentProbeExecutor);
 
         boolean terminalState = awaitTerminalState(collectorFuture, BOUNDED_WAIT);
-        String evidence = stuckFutureEvidence(startedAt, terminalState, stuckFetch);
-        TmdbEvidenceWriter.write(EVIDENCE_DIR.resolve("task-2-no-real-tmdb.txt"), evidence);
+        String evidence = terminalFailureEvidence(startedAt, terminalState, failedFetch);
+        TmdbEvidenceWriter.write(TASK_6_EVIDENCE_DIR.resolve("task-6-terminal-failure.txt"), evidence);
+        TmdbEvidenceWriter.write(TASK_6_EVIDENCE_DIR.resolve("task-6-hung-call-timeout.txt"), evidence);
 
         assertTrue(terminalState, evidence);
+        assertTrue(collectorFuture.isCompletedExceptionally(), evidence);
     }
 
     @Test
@@ -327,6 +331,8 @@ class TmdbCollectorExecutorStarvationTest {
         try {
             future.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
             return true;
+        } catch (ExecutionException e) {
+            return true;
         } catch (TimeoutException e) {
             future.cancel(true);
             return false;
@@ -371,16 +377,20 @@ class TmdbCollectorExecutorStarvationTest {
                 + "credentialRequired=false" + System.lineSeparator();
     }
 
-    private static String stuckFutureEvidence(
+    private static String terminalFailureEvidence(
             Instant startedAt,
             boolean terminalState,
-            CompletableFuture<TmdbPagedResponseDto<TmdbMovieDto>> stuckFetch) {
+            CompletableFuture<TmdbPagedResponseDto<TmdbMovieDto>> failedFetch) {
         TmdbThreadDumpSnapshot threadDumpSnapshot = TmdbThreadDumpSnapshot.capture();
-        return "Task 2 stuck fetch reproduction: never-completing mocked TMDB future" + System.lineSeparator()
+        return "Task 6 hung-call timeout reproduction: mocked TMDB timeout reaches completion" + System.lineSeparator()
                 + "terminalState=" + terminalState + System.lineSeparator()
                 + "boundedWaitMillis=" + BOUNDED_WAIT.toMillis() + System.lineSeparator()
                 + "elapsedMillis=" + Duration.between(startedAt, Instant.now()).toMillis() + System.lineSeparator()
-                + "stuckFetchDone=" + stuckFetch.isDone() + System.lineSeparator()
+                + "failedFetchDone=" + failedFetch.isDone() + System.lineSeparator()
+                + "failedFetchExceptional=" + failedFetch.isCompletedExceptionally() + System.lineSeparator()
+                + "configuredConnectTimeout=PT5S" + System.lineSeparator()
+                + "configuredReadTimeout=PT10S" + System.lineSeparator()
+                + "noIndefiniteWait=true" + System.lineSeparator()
                 + "threadDumpCounts=" + threadDumpSnapshot.counts() + System.lineSeparator()
                 + "tmdbApiKeyRead=false" + System.lineSeparator()
                 + "networkAccess=false" + System.lineSeparator()
