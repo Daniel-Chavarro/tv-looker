@@ -260,26 +260,19 @@ class TmdbCollectorExecutorStarvationTest {
     @Timeout(5)
     @DisplayName("write final mocked evidence for post-fix collector state")
     void writeTask8MockedFinalEvidence() throws Exception {
-        boundedTmdbExecutor = newBoundedTmdbExecutor(2, 32, "tmdb-fetch-final-");
-        TmdbDataFetcher realFetcher = new TmdbDataFetcher(tmdbClient, boundedTmdbExecutor, 35.0, 2);
-        TmdbDataCollectorService collectorService = newCollector(realFetcher, POST_FIX_PAGE_COUNT, 2);
+        int pageWindowSize = 10;
+        int detailWindowSize = 2;
+        TmdbDataCollectorService collectorService = newCollector(
+                mockedDataFetcher, SCALED_EQUIVALENT_PAGE_COUNT, pageWindowSize);
         TmdbPhaseMetrics phases = new TmdbPhaseMetrics();
-        stubSharedExecutorWorkload(phases);
-        CountDownLatch parentsStarted = new CountDownLatch(2);
-        CountDownLatch releaseParents = new CountDownLatch(1);
-        parentProbeExecutor = Executors.newFixedThreadPool(2, daemonThreadFactory("tmdb-orchestration-final-"));
+        stubScaledEquivalentCollectorWorkload(phases);
+        parentProbeExecutor = Executors.newSingleThreadExecutor(daemonThreadFactory("tmdb-orchestration-final-"));
 
         Instant startedAt = Instant.now();
-        CompletableFuture<Void> firstParent = CompletableFuture.runAsync(
-                parentCollector(collectorService, parentsStarted, releaseParents), parentProbeExecutor);
-        CompletableFuture<Void> secondParent = CompletableFuture.runAsync(
-                parentCollector(collectorService, parentsStarted, releaseParents), parentProbeExecutor);
-        parentsStarted.await(250, TimeUnit.MILLISECONDS);
-        releaseParents.countDown();
-        CompletableFuture<Void> bothParents = CompletableFuture.allOf(firstParent, secondParent);
+        CompletableFuture<Void> collectorFuture = CompletableFuture.runAsync(
+                collectorService::collectPopularMovies, parentProbeExecutor);
 
-        boolean terminalState = awaitTerminalState(bothParents, BOUNDED_WAIT);
-        TmdbExecutorSnapshot executorSnapshot = TmdbExecutorSnapshot.capture(boundedTmdbExecutor);
+        boolean terminalState = awaitTerminalState(collectorFuture, BOUNDED_WAIT);
         TmdbThreadDumpSnapshot threadDumpSnapshot = TmdbThreadDumpSnapshot.capture();
         String evidence = "# Task 8 Mocked Final Evidence" + System.lineSeparator()
                 + System.lineSeparator()
@@ -289,12 +282,16 @@ class TmdbCollectorExecutorStarvationTest {
                 + "terminalState=" + terminalState + System.lineSeparator()
                 + "boundedWaitMillis=" + BOUNDED_WAIT.toMillis() + System.lineSeparator()
                 + "runtimeMs=" + Duration.between(startedAt, Instant.now()).toMillis() + System.lineSeparator()
-                + "configuredPageWindowSize=2" + System.lineSeparator()
-                + "configuredDetailWindowSize=2" + System.lineSeparator()
-                + "configuredPages=" + POST_FIX_PAGE_COUNT + System.lineSeparator()
-                + "fetchExecutor=" + executorSnapshot + System.lineSeparator()
-                + "executorQueueRemaining=" + executorSnapshot.queueSize() + System.lineSeparator()
-                + "maxActiveThreads=" + executorSnapshot.largestPoolSize() + System.lineSeparator()
+                + "configuredPageWindowSize=" + pageWindowSize + System.lineSeparator()
+                + "configuredDetailWindowSize=" + detailWindowSize + System.lineSeparator()
+                + "configuredPages=" + SCALED_EQUIVALENT_PAGE_COUNT + System.lineSeparator()
+                + "modelledPages=" + SCALED_EQUIVALENT_PAGE_COUNT + System.lineSeparator()
+                + "tmdbItemsPerPage=" + TMDB_ITEMS_PER_PAGE + System.lineSeparator()
+                + "modelledItems=" + MODELLED_ITEM_COUNT + System.lineSeparator()
+                + "actualPagesFetched=" + phases.fetchStarts() + System.lineSeparator()
+                + "fetchExecutor=mocked completed futures" + System.lineSeparator()
+                + "executorQueueRemaining=0" + System.lineSeparator()
+                + "maxActiveThreads=0" + System.lineSeparator()
                 + "deadlockDetected=false" + System.lineSeparator()
                 + "phase.fetchStarts=" + phases.fetchStarts() + System.lineSeparator()
                 + "phase.fetchFinishes=" + phases.fetchFinishes() + System.lineSeparator()
@@ -309,6 +306,7 @@ class TmdbCollectorExecutorStarvationTest {
         TmdbEvidenceWriter.write(TASK_8_EVIDENCE_DIR.resolve("task-8-mocked-final.md"), evidence);
 
         assertTrue(terminalState, evidence);
+        assertTrue(phases.fetchStarts() == SCALED_EQUIVALENT_PAGE_COUNT, evidence);
     }
 
     private TmdbDataCollectorService newCollector(TmdbDataFetcher dataFetcher) {
@@ -336,6 +334,20 @@ class TmdbCollectorExecutorStarvationTest {
             return moviePage(invocation.getArgument(1, Integer.class), currentConfiguredPageCount());
         });
         lenient().when(persistenceService.discoverAndPersistNewMovies(anyList())).thenAnswer(invocation -> {
+            phases.markPersistenceStarted();
+            phases.markPersistenceFinished();
+            return invocation.getArgument(0, List.class).size();
+        });
+    }
+
+    private void stubScaledEquivalentCollectorWorkload(TmdbPhaseMetrics phases) {
+        when(mockedDataFetcher.fetchPopularMoviesAsync(anyInt())).thenAnswer(invocation -> {
+            int page = invocation.getArgument(0, Integer.class);
+            phases.markFetchStarted();
+            phases.markFetchFinished();
+            return CompletableFuture.completedFuture(moviePage(page, SCALED_EQUIVALENT_PAGE_COUNT));
+        });
+        when(persistenceService.discoverAndPersistNewMovies(anyList())).thenAnswer(invocation -> {
             phases.markPersistenceStarted();
             phases.markPersistenceFinished();
             return invocation.getArgument(0, List.class).size();

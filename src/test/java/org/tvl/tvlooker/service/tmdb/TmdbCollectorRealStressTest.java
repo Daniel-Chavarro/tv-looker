@@ -49,6 +49,10 @@ class TmdbCollectorRealStressTest {
     private static final Duration HTTP_CONNECT_TIMEOUT = Duration.ofSeconds(5);
     private static final Duration HTTP_READ_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration TERMINAL_TIMEOUT = Duration.ofSeconds(45);
+    private static final int TMDB_ITEMS_PER_PAGE = 20;
+    private static final int DEFAULT_REAL_STRESS_MAX_PAGES = 500;
+    private static final int DEFAULT_REAL_STRESS_PAGE_WINDOW_SIZE = 10;
+    private static final int DEFAULT_REAL_STRESS_DETAIL_WINDOW_SIZE = 2;
 
     @Test
     @Timeout(60)
@@ -56,9 +60,10 @@ class TmdbCollectorRealStressTest {
     void optInRealTmdbStressWritesEvidence() throws Exception {
         String apiKey = System.getenv("TMDB_API_KEY");
         boolean optIn = "true".equalsIgnoreCase(System.getenv("TV_LOOKER_RUN_REAL_TMDB_STRESS"));
+        StressConfig config = StressConfig.fromEnvironment();
         if (apiKey == null || apiKey.isBlank() || !optIn) {
             String skippedReason = skippedReason(apiKey, optIn);
-            writeRealStressEvidence(StressEvidence.skipped(skippedReason));
+            writeRealStressEvidence(StressEvidence.skipped(skippedReason, config));
             writeDefaultCiEvidence(skippedReason);
             throw new TestAbortedException(skippedReason);
         }
@@ -74,25 +79,26 @@ class TmdbCollectorRealStressTest {
         Instant startedAt = Instant.now();
         try {
             TmdbDataFetcher fetcher = new TmdbDataFetcher(
-                    new CountingTmdbClient(newRestClient(apiKey), "en-US", metrics), fetchExecutor, 10.0, 2);
-            TmdbDataCollectorService collector = newCollector(fetcher);
+                    new CountingTmdbClient(newRestClient(apiKey), "en-US", metrics), fetchExecutor, 10.0,
+                    config.detailWindowSize());
+            TmdbDataCollectorService collector = newCollector(fetcher, config);
             CompletableFuture<Void> collectorFuture = CompletableFuture.runAsync(
                     collector::collectPopularMovies, collectorExecutor);
             boolean terminalState = awaitTerminalState(collectorFuture, TERMINAL_TIMEOUT, metrics.failure());
-            evidence = StressEvidence.finished(statusFor(terminalState, metrics), metrics, terminalState,
+            evidence = StressEvidence.finished(statusFor(terminalState, metrics), metrics, config, terminalState,
                     Duration.between(startedAt, Instant.now()).toMillis(), null);
             writeRealStressEvidence(evidence);
 
             assertTrue(terminalState, "Real TMDB collector stress did not reach terminal state within timeout");
         } catch (RuntimeException e) {
             metrics.recordFailure(e);
-            evidence = StressEvidence.finished("TERMINAL_EXTERNAL_FAILURE", metrics, true,
+            evidence = StressEvidence.finished("TERMINAL_EXTERNAL_FAILURE", metrics, config, true,
                     Duration.between(startedAt, Instant.now()).toMillis(), classifyFailure(metrics.failure()));
             writeRealStressEvidence(evidence);
             assertTrue(evidence.terminalState(), evidence.toText());
         } finally {
             if (evidence.notWritten()) {
-                writeRealStressEvidence(StressEvidence.finished("TERMINAL_EXTERNAL_FAILURE", metrics, true,
+                writeRealStressEvidence(StressEvidence.finished("TERMINAL_EXTERNAL_FAILURE", metrics, config, true,
                         Duration.between(startedAt, Instant.now()).toMillis(), classifyFailure(metrics.failure())));
             }
             fetchExecutor.shutdown();
@@ -101,7 +107,7 @@ class TmdbCollectorRealStressTest {
         }
     }
 
-    private static TmdbDataCollectorService newCollector(TmdbDataFetcher fetcher) {
+    private static TmdbDataCollectorService newCollector(TmdbDataFetcher fetcher, StressConfig config) {
         ItemRepository itemRepository = Mockito.mock(ItemRepository.class);
         EntityCacheService entityCacheService = Mockito.mock(EntityCacheService.class);
         Mockito.when(itemRepository.existsByTmdbIdAndTmdbType(anyLong(), eq(TmdbType.MOVIE))).thenReturn(false);
@@ -113,8 +119,8 @@ class TmdbCollectorRealStressTest {
         TmdbItemPersistenceService persistenceService = new TmdbItemPersistenceService(
                 itemRepository, entityCacheService, fetcher);
         TmdbDataCollectorService collector = new TmdbDataCollectorService(itemRepository, fetcher, persistenceService);
-        ReflectionTestUtils.setField(collector, "maxPages", 1);
-        ReflectionTestUtils.setField(collector, "pageWindowSize", 2);
+        ReflectionTestUtils.setField(collector, "maxPages", config.maxPages());
+        ReflectionTestUtils.setField(collector, "pageWindowSize", config.pageWindowSize());
         ReflectionTestUtils.setField(collector, "batchSize", 20);
         return collector;
     }
@@ -210,9 +216,37 @@ class TmdbCollectorRealStressTest {
                 + "defaultMvnTestRequiresPostgres=false" + System.lineSeparator()
                 + "realStressOptInRequired=true" + System.lineSeparator()
                 + "realStressSkippedByDefault=true" + System.lineSeparator()
+                + "defaultOptInStressMaxPages=" + DEFAULT_REAL_STRESS_MAX_PAGES + System.lineSeparator()
                 + "status=SKIPPED" + System.lineSeparator()
                 + "skippedReason=" + skippedReason + System.lineSeparator();
         TmdbEvidenceWriter.write(TASK_8_EVIDENCE_DIR.resolve("task-8-default-ci.txt"), evidence);
+    }
+
+    private record StressConfig(int maxPages, int pageWindowSize, int detailWindowSize) {
+        private static StressConfig fromEnvironment() {
+            return new StressConfig(
+                    positiveInt("TV_LOOKER_REAL_TMDB_STRESS_MAX_PAGES", DEFAULT_REAL_STRESS_MAX_PAGES),
+                    positiveInt("TV_LOOKER_REAL_TMDB_STRESS_PAGE_WINDOW_SIZE",
+                            DEFAULT_REAL_STRESS_PAGE_WINDOW_SIZE),
+                    positiveInt("TV_LOOKER_REAL_TMDB_STRESS_DETAIL_WINDOW_SIZE",
+                            DEFAULT_REAL_STRESS_DETAIL_WINDOW_SIZE));
+        }
+
+        private int modelledItems() {
+            return maxPages * TMDB_ITEMS_PER_PAGE;
+        }
+    }
+
+    private static int positiveInt(String name, int defaultValue) {
+        String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(value));
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     private static final class CountingTmdbClient extends TmdbClient {
@@ -303,11 +337,13 @@ class TmdbCollectorRealStressTest {
         private final long runtimeMs;
         private final int timeoutCount;
         private final String failureClassification;
+        private final StressConfig config;
         private boolean written;
 
         private StressEvidence(
                 String status,
                 String skippedReason,
+                StressConfig config,
                 int completedCount,
                 int failedCount,
                 boolean terminalState,
@@ -319,6 +355,7 @@ class TmdbCollectorRealStressTest {
                 String failureClassification) {
             this.status = status;
             this.skippedReason = skippedReason;
+            this.config = config;
             this.completedCount = completedCount;
             this.failedCount = failedCount;
             this.terminalState = terminalState;
@@ -330,21 +367,23 @@ class TmdbCollectorRealStressTest {
             this.failureClassification = failureClassification;
         }
 
-        private static StressEvidence skipped(String skippedReason) {
-            return new StressEvidence("SKIPPED", skippedReason, 0, 0, false, false, 0, 0, 0, 0, "none");
+        private static StressEvidence skipped(String skippedReason, StressConfig config) {
+            return new StressEvidence("SKIPPED", skippedReason, config, 0, 0, false, false, 0, 0, 0, 0, "none");
         }
 
         private static StressEvidence started() {
-            return new StressEvidence("NOT_WRITTEN", "", 0, 0, false, false, 0, 0, 0, 0, "none");
+            return new StressEvidence("NOT_WRITTEN", "", StressConfig.fromEnvironment(), 0, 0, false, false,
+                    0, 0, 0, 0, "none");
         }
 
         private static StressEvidence finished(
                 String status,
                 StressMetrics metrics,
+                StressConfig config,
                 boolean terminalState,
                 long runtimeMs,
                 String failureClassification) {
-            return new StressEvidence(status, "", metrics.completedCount(), metrics.failedCount(), terminalState,
+            return new StressEvidence(status, "", config, metrics.completedCount(), metrics.failedCount(), terminalState,
                     false, metrics.executorQueueRemaining(), metrics.maxActiveThreads(), runtimeMs, metrics.timeoutCount(),
                     failureClassification == null ? classifyFailure(metrics.failure()) : failureClassification);
         }
@@ -363,6 +402,12 @@ class TmdbCollectorRealStressTest {
                     + "runtimeMs=" + runtimeMs + System.lineSeparator()
                     + "timeoutCount=" + timeoutCount + System.lineSeparator()
                     + "failureClassification=" + failureClassification + System.lineSeparator()
+                    + "configuredMaxPages=" + config.maxPages() + System.lineSeparator()
+                    + "configuredPageWindowSize=" + config.pageWindowSize() + System.lineSeparator()
+                    + "configuredDetailWindowSize=" + config.detailWindowSize() + System.lineSeparator()
+                    + "tmdbItemsPerPage=" + TMDB_ITEMS_PER_PAGE + System.lineSeparator()
+                    + "modelledItems=" + config.modelledItems() + System.lineSeparator()
+                    + "maxPagesConfigEnv=TV_LOOKER_REAL_TMDB_STRESS_MAX_PAGES" + System.lineSeparator()
                     + "collectorEntryPoint=TmdbDataCollectorService.collectPopularMovies" + System.lineSeparator()
                     + "persistenceMode=mocked" + System.lineSeparator()
                     + "optInRequired=true" + System.lineSeparator()

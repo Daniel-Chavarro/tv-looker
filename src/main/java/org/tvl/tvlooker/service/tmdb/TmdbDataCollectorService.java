@@ -220,7 +220,8 @@ public class TmdbDataCollectorService {
                 CompletableFuture<Void> pageTask = dataFetcher.fetchPopularMoviesAsync(currentPage)
                         .thenAccept(response -> {
                             if (response != null && response.results() != null && !response.results().isEmpty()) {
-                                int collectedResult = persistenceService.discoverAndPersistNewMovies(response.results());
+                                int collectedResult = persistenceService.discoverAndPersistNewMovies(
+                                        response.results());
                                 totalCollected.addAndGet(collectedResult);
                                 totalSkipped.addAndGet(response.results().size() - collectedResult);
                                 log.info("Movies progress: page {}/{}, collected={}, skipped={}",
@@ -230,7 +231,8 @@ public class TmdbDataCollectorService {
                             }
                         })
                         .exceptionally(ex -> {
-                            log.error("Error fetching or persisting movies for page {}: {}", currentPage, ex.getMessage());
+                            log.error("Error fetching or persisting movies for page {}: {}",
+                                    currentPage, ex.getMessage());
                             return null;
                         });
                 pageTasks.add(pageTask);
@@ -288,7 +290,8 @@ public class TmdbDataCollectorService {
                 CompletableFuture<Void> pageTask = dataFetcher.fetchPopularTvShowsAsync(currentPage)
                         .thenAccept(response -> {
                             if (response != null && response.results() != null && !response.results().isEmpty()) {
-                                int collectedResult = persistenceService.discoverAndPersistNewTvShows(response.results());
+                                int collectedResult = persistenceService.discoverAndPersistNewTvShows(
+                                        response.results());
                                 totalCollected.addAndGet(collectedResult);
                                 totalSkipped.addAndGet(response.results().size() - collectedResult);
                                 log.info("TV shows progress: page {}/{}, collected={}, skipped={}",
