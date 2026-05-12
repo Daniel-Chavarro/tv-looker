@@ -35,9 +35,13 @@ public class ContentBasedStrategy implements RecommendationStrategy {
             userProfiles = (Map<String, ItemFeatureVector>) context.getData("user-content-profiles", Map.class);
             itemVectors = (Map<Long, ItemFeatureVector>) context.getData("item-feature-vectors", Map.class);
         } catch (NoDataProviderException e) {
-            logger.debug("Content providers not available, returning empty recommendations");
+            logger.debug("Content providers not available, returning empty recommendations", e);
+            return List.of();
+        } catch (ClassCastException e) {
+            logger.warn("Invalid content recommendation data in recommendation context, returning empty recommendations", e);
             return List.of();
         } catch (Exception e) {
+            logger.warn("Unexpected error while loading content recommendation data, returning empty recommendations", e);
             return List.of();
         }
 
