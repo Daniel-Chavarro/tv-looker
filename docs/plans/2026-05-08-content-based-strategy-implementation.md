@@ -220,7 +220,7 @@ Fuera de alcance en esta feature:
 - **Aprendizaje de pesos dinamicos**: pesos por feature type son fijos
 - **Actualizacion incremental de perfiles**: se recomputan desde cero
 - **Tags**: no implementados por falta de entidad Tag en modelo de datos
-- **Rating exacto en RATING**: se usa score proxy de 4.0 porque el contexto no provee review scores
+- **Rating numérico exacto en RATING**: se extraen los puntajes directamente desde los objetos `Review` incluidos en el `RecommendationContext`. Solo en casos donde no exista la reseña o puntaje, se usa un valor proxy neutral.
 - **Normalizacion de perfiles**: el perfil de usuario no se normaliza por peso total (acumulacion directa)
 
 ---
@@ -233,7 +233,7 @@ Fuera de alcance en esta feature:
 
 2. **Tipo de ID de usuario en UserProfileProvider**: el diseno usaba `Map<Long, ItemFeatureVector>` con `user.getId()` tipo Long; la implementacion usa `Map<String, ItemFeatureVector>` con `user.getId().toString()` (UUID) para consistencia con otros providers.
 
-3. **Peso en RATING**: el diseno sugeria usar `interaction.getRating()` como peso; la implementacion usa un heuristico basado en tipo de interaccion (LIKE=5.0, VIEW=3.0) porque el rating numerico no esta disponible en el contexto actual.
+3. **Peso en RATING**: el diseno sugeria usar `interaction.getRating()` como peso; la implementacion ahora asocia los IDs de las reseñas de las interacciones con las reseñas reales expuestas en `RecommendationContext.getReviews()` para usar la valoración explícita cuando está disponible.
 
 4. **Tags**: reservados en la estructura pero no procesados por `ItemFeatureVectorProvider` debido a la ausencia de entidad Tag.
 

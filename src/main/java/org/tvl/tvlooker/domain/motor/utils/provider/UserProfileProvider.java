@@ -3,6 +3,7 @@ package org.tvl.tvlooker.domain.motor.utils.provider;
 import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.domain.data_structure.ItemFeatureVector;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
+import org.tvl.tvlooker.domain.model.dto.Review;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.motor.utils.DataProvider;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
@@ -40,7 +41,11 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
             // Unchecked cast handling via Java types
             Object obj = context.getData("item-feature-vectors", Map.class);
             itemVectors = (Map<Long, ItemFeatureVector>) obj;
+        } catch (org.tvl.tvlooker.domain.exception.NoDataProviderException e) {
+            itemVectors = new HashMap<>();
         } catch (Exception e) {
+            // Log unexpected exceptions and fallback to an empty map
+            org.slf4j.LoggerFactory.getLogger(UserProfileProvider.class).error("Unexpected exception fetching item vectors", e);
             itemVectors = new HashMap<>();
         }
 
@@ -91,10 +96,15 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
         } else if (interaction.getInteractionType() == InteractionType.VIEW) {
             return 3.0;
         } else if (interaction.getInteractionType() == InteractionType.RATING) {
-            // For RATING, since we don't have reviews in context, we use a neutral/positive proxy.
-            // If the user's test passes review score, we should try to extract it from somewhere.
-            // Let's assume a default rating of 4.0 if not found, to add positive weight.
             double score = 4.0;
+            if (interaction.getReviewId() != null && context.getReviews() != null) {
+                for (Review review : context.getReviews()) {
+                    if (review.getId().equals(interaction.getReviewId())) {
+                        score = review.getScore() != null ? review.getScore() : 4.0;
+                        break;
+                    }
+                }
+            }
 
             // To be precise with the heuristic: score >= 4 is positive (+weight), score <= 2 is penalization (-weight)
             if (score >= 4.0) {
@@ -107,4 +117,3 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
         return 0.0;
     }
 }
-

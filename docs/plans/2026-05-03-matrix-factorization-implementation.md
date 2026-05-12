@@ -47,8 +47,8 @@ Donde:
 - `V^T`: Matriz de items transpuesta (k × n)
 
 Despues de reduccion a k factores:
-- `userFactors = U_k × Σ_k` (vectores latentes de usuarios)
-- `itemFactors = V_k × Σ_k` (vectores latentes de items)
+- `userFactors = U_k × sqrt(Σ_k)` (vectores latentes de usuarios escalados equitativamente)
+- `itemFactors = V_k × sqrt(Σ_k)` (vectores latentes de items escalados equitativamente)
 
 ### Prediccion
 

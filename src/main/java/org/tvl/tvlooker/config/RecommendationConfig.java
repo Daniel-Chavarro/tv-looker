@@ -12,6 +12,7 @@ import org.tvl.tvlooker.domain.motor.utils.DataProvider;
 import org.tvl.tvlooker.domain.strategy.aggregation.AggregationStrategy;
 import org.tvl.tvlooker.domain.strategy.aggregation.ConstantConvexAggregation;
 import org.tvl.tvlooker.domain.strategy.aggregation.RankingBasedAggregation;
+import org.tvl.tvlooker.domain.strategy.recommendation.ContentBasedStrategy;
 import org.tvl.tvlooker.domain.strategy.recommendation.MatrixFactorizationStrategy;
 import org.tvl.tvlooker.domain.strategy.recommendation.PopularityStrategy;
 import org.tvl.tvlooker.domain.strategy.recommendation.RecommendationStrategy;
@@ -43,6 +44,16 @@ public class RecommendationConfig {
             matchIfMissing = true)
     public RecommendationStrategy popularityStrategy() {
         return new PopularityStrategy();
+    }
+
+    @Bean
+    @Order(2)
+    @ConditionalOnProperty(
+            name = "recommendation.strategies.content.enabled",
+            havingValue = "true",
+            matchIfMissing = true)
+    public RecommendationStrategy contentBasedStrategy() {
+        return new ContentBasedStrategy();
     }
 
     @Bean

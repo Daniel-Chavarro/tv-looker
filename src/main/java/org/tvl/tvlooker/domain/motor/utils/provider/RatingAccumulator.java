@@ -1,6 +1,7 @@
 package org.tvl.tvlooker.domain.motor.utils.provider;
 
 import org.tvl.tvlooker.domain.model.dto.Interaction;
+import org.tvl.tvlooker.domain.model.dto.Review;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 
@@ -66,8 +67,13 @@ public class RatingAccumulator {
     }
 
     private double lookupReviewScore(RecommendationContext context, Long reviewId) {
-        // Since reviews aren't directly in the context, we return a neutral default.
-        // In a production system, this would query the review repository.
+        if (context.getReviews() != null) {
+            for (Review review : context.getReviews()) {
+                if (review.getId().equals(reviewId)) {
+                    return review.getScore() != null ? review.getScore() : 3.0;
+                }
+            }
+        }
         return 3.0;
     }
 

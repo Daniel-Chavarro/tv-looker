@@ -67,7 +67,7 @@ public class SVDMatrixProcessor {
 
         for (int i = 0; i < numUsers; i++) {
             for (int j = 0; j < k; j++) {
-                userFactors[i][j] = uMatrix.getEntry(i, j) * singularValues[j];
+                userFactors[i][j] = uMatrix.getEntry(i, j) * Math.sqrt(singularValues[j]);
             }
         }
         return userFactors;
@@ -80,7 +80,7 @@ public class SVDMatrixProcessor {
 
         for (int i = 0; i < numItems; i++) {
             for (int j = 0; j < k; j++) {
-                itemFactors[i][j] = vMatrix.getEntry(i, j) * singularValues[j];
+                itemFactors[i][j] = vMatrix.getEntry(i, j) * Math.sqrt(singularValues[j]);
             }
         }
         return itemFactors;

@@ -22,6 +22,7 @@ public class RecommendationService {
     private final UserService userService;
     private final InteractionService interactionService;
     private final ItemService itemService;
+    private final ReviewService reviewService;
 
     /**
      * Get personalized recommendations for a user.
@@ -40,6 +41,7 @@ public class RecommendationService {
                 .users(userService.getAll())
                 .items(itemService.getAll())
                 .interactions(interactionService.getAll())
+                .reviews(reviewService.getAll())
                 .build();
 
         List<ScoredItem> scoredItems = recommendationEngine.recommend(user, context);

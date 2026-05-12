@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.tvl.tvlooker.domain.exception.NoDataProviderException;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
 import org.tvl.tvlooker.domain.model.dto.Item;
+import org.tvl.tvlooker.domain.model.dto.Review;
 import org.tvl.tvlooker.domain.model.dto.User;
 
 import java.util.HashMap;
@@ -44,6 +45,11 @@ public class RecommendationContext {
      * A list of interactions in the recommendation context.
      */
     private List<Interaction> interactions;
+
+    /**
+     * A list of reviews in the recommendation context.
+     */
+    private List<Review> reviews;
 
     @Builder.Default
     private Map<String, CachedData> dataCache = new HashMap<>();
