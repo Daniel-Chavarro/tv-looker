@@ -111,6 +111,7 @@ Cache:
 
 - `src/test/java/org/tvl/tvlooker/domain/strategy/recommendation/MatrixFactorizationStrategyTest.java`
 - `src/test/java/org/tvl/tvlooker/domain/motor/utils/provider/MatrixFactorizationProviderTest.java`
+- `src/test/java/org/tvl/tvlooker/domain/motor/utils/provider/RatingAccumulatorTest.java` (nuevo)
 
 ---
 
@@ -144,6 +145,12 @@ Cache:
 13. Manejo de unico usuario con unico rating (caso borde)
 14. Manejo eficiente de matriz sparse grande (20 usuarios × 30 items)
 15. Mapeo inverso de indices a itemId consistente
+
+### RatingAccumulatorTest (3 tests) - Nuevo
+
+1. Omite interacciones con null userId o itemId
+2. Maneja null reviewId de forma segura
+3. Usa Objects.equals para comparacion null-safe de reviews
 
 ---
 
@@ -188,7 +195,25 @@ mvn "-Dtest=HybridRecommendationEngineTest" test
 
 ---
 
-## 9) Limitaciones actuales
+## 9) Mejoras de seguridad y robustez (2026-05-11)
+
+Se agregaron validaciones de null para prevenir NullPointerExceptions:
+
+### RatingMatrixBuilder
+- Valida `userId` y `itemId` antes de construir mappings de indices (lineas 89-91)
+- Omite interacciones con identificadores nulos
+
+### RatingAccumulator
+- Valida `userId` y `itemId` antes de procesar interacciones (lineas 44-46)
+- Usa `Objects.equals()` para comparacion null-safe de review IDs (linea 75)
+- Previene NPEs al buscar scores de reviews
+
+### SVDFactors
+- El metodo `predictRealScore` agrega la media del usuario de vuelta a la prediccion (lineas 108-112)
+- Esto asegura que los scores esten en la escala 1-5 antes de normalizacion
+- La normalizacion en MatrixFactorizationStrategy divide por 5.0 correctamente
+
+## 10) Limitaciones actuales
 
 Fuera de alcance en esta feature:
 
@@ -203,7 +228,7 @@ Estas extensiones pueden agregarse en futuras iteraciones de la estrategia.
 
 ---
 
-## 10) Referencias
+## 11) Referencias
 
 - [Matrix Factorization Design](https://github.com/Daniel-Chavarro/tv-looker/blob/main/docs/plans/2026-03-06-recommendation-strategies-and-aggregations-design.md#5-matrix-factorization-svd)
 - Apache Commons Math: https://commons.apache.org/proper/commons-math/

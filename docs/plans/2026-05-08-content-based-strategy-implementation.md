@@ -137,18 +137,23 @@ recommendation.strategies.content.enabled=true
 3. Agregar vector con peso positivo: suma ponderada correcta
 4. Agregar vector con peso negativo: resta ponderada correcta
 
-### ItemFeatureVectorProviderTest (3 tests)
+### ItemFeatureVectorProviderTest (6 tests)
 
 1. Extraccion y calculo TF-IDF correcto para generos
 2. Verificacion de cache: provider ID y expiracion de 86400 segundos
 3. Manejo cuando esta deshabilitado: retorna mapa vacio
+4. Omite items con nombres de genero null o blank (nuevo)
+5. Omite items con nombres de director null o blank (nuevo)
+6. Omite items con ID null (nuevo)
 
-### UserProfileProviderTest (1 test)
+### UserProfileProviderTest (3 tests)
 
 1. Agregacion de perfiles basada en pesos de interaccion
    - LIKE (peso 5.0) sobre item con genero Action -> Action=5.0 en perfil
    - VIEW (peso 3.0) sobre item con genero Comedy -> Comedy=3.0 en perfil
    - RESEARCH (peso 0.0) se ignora
+2. Omite interacciones con null userId o itemId (nuevo)
+3. Maneja null reviewId de forma segura (nuevo)
 
 ### ContentBasedStrategyTest (1 test)
 
@@ -212,7 +217,31 @@ mvn "-Dtest=HybridRecommendationEngineTest" test
 
 ---
 
-## 9) Limitaciones actuales
+## 9) Mejoras de seguridad y robustez (2026-05-11)
+
+Se agregaron validaciones de null para prevenir NullPointerExceptions:
+
+### ItemFeatureVectorProvider
+- Valida nombres de genero antes de usar como claves en mapas (lineas 73-76)
+- Valida nombres de director antes de usar como claves en mapas (lineas 87-90)
+- Valida item ID antes de almacenar vector (lineas 97-100)
+- Omite items con nombres null/blank o IDs null
+- Previene NPEs y corrupcion de datos en vectores
+
+### UserProfileProvider
+- Valida `userId` y `itemId` antes de procesar interacciones (lineas 57-59)
+- Usa `Objects.equals()` para comparacion null-safe de review IDs (linea 102)
+- Previene NPEs al buscar scores de reviews
+
+### ContentBasedStrategy
+- Actualizo comentario para reflejar comportamiento real de normalizacion (lineas 66-70)
+- La similitud coseno se clamp a [0, 1] en lugar de ser remapeada desde [-1, 1]
+- Similitudes negativas (por pesos negativos en perfil) se tratan como 0
+
+### ItemFeatureVector
+- Agrego braces para ifs de una linea para cumplir con regla Checkstyle NeedBraces (lineas 32-34, 96-98)
+
+## 10) Limitaciones actuales
 
 Fuera de alcance en esta feature:
 
@@ -241,7 +270,7 @@ Fuera de alcance en esta feature:
 
 ---
 
-## 11) Referencias
+## 12) Referencias
 
 - [Recommendation Strategies Design](https://github.com/Daniel-Chavarro/tv-looker/blob/main/docs/plans/2026-03-06-recommendation-strategies-and-aggregations-design.md#2-content-based-strategy)
 - Issue original: feature request para Content-Based Strategy (Phase 1 - Foundation)

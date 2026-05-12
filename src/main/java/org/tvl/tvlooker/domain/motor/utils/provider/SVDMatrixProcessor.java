@@ -28,12 +28,14 @@ public class SVDMatrixProcessor {
      * @param userIdToIndex mapping from user UUID to matrix row index
      * @param itemIdToIndex mapping from item ID to matrix column index
      * @param indexToItemId reverse mapping from matrix column index to item ID
+     * @param userMeans map of user UUIDs to their mean rating values
      * @return SVDFactors containing decomposed matrices
      */
     public SVDFactors process(double[][] ratingMatrix, int latentFactors,
                                Map<String, Integer> userIdToIndex,
                                Map<Long, Integer> itemIdToIndex,
-                               Map<Integer, Long> indexToItemId) {
+                               Map<Integer, Long> indexToItemId,
+                               Map<String, Double> userMeans) {
         int numUsers = ratingMatrix.length;
         int numItems = ratingMatrix[0].length;
 
@@ -57,6 +59,7 @@ public class SVDMatrixProcessor {
                 .indexToItemId(indexToItemId)
                 .computedAt(System.currentTimeMillis())
                 .latentFactors(k)
+                .userMeans(userMeans)
                 .build();
     }
 

@@ -65,6 +65,9 @@ public class ContentBasedStrategy implements RecommendationStrategy {
 
                     // Normalize to [0, 1]. Cosine similarity is [-1, 1], so we map it to [0, 1].
                     // Or since features are all non-negative (TF-IDF), cosine similarity will be [0, 1] naturally.
+                    // Clamp similarity to [0, 1] for scoring.
+                    // Negative similarities (for example from penalized user-profile weights) are treated as 0,
+                    // rather than being remapped from [-1, 1] to [0, 1].
                     double normalizedScore = Math.max(0.0, Math.min(1.0, similarity));
 
                     return ScoredItem.builder()
@@ -84,4 +87,3 @@ public class ContentBasedStrategy implements RecommendationStrategy {
         return "content-based";
     }
 }
-

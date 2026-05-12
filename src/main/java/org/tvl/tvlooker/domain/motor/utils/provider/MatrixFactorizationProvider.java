@@ -69,7 +69,7 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
                 result.numUsers(), result.numItems(), latentFactors);
 
         return svdProcessor.process(result.matrix(), latentFactors,
-                result.userIdToIndex(), result.itemIdToIndex(), result.indexToItemId());
+                result.userIdToIndex(), result.itemIdToIndex(), result.indexToItemId(), result.userMeans());
     }
 
     private SVDFactors buildEmptyFactors() {
@@ -82,6 +82,7 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
                 .indexToItemId(Map.of())
                 .computedAt(System.currentTimeMillis())
                 .latentFactors(0)
+                .userMeans(Map.of())
                 .build();
     }
 }

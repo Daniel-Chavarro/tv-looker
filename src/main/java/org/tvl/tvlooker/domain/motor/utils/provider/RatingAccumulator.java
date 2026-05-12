@@ -41,6 +41,9 @@ public class RatingAccumulator {
             if (interaction.getInteractionType() != InteractionType.RATING) {
                 continue;
             }
+            if (interaction.getUserId() == null || interaction.getItemId() == null) {
+                continue;
+            }
             String userUuid = interaction.getUserId().toString();
             Long itemId = interaction.getItemId();
 
@@ -67,9 +70,9 @@ public class RatingAccumulator {
     }
 
     private double lookupReviewScore(RecommendationContext context, Long reviewId) {
-        if (context.getReviews() != null) {
+        if (context.getReviews() != null && reviewId != null) {
             for (Review review : context.getReviews()) {
-                if (review.getId().equals(reviewId)) {
+                if (java.util.Objects.equals(review.getId(), reviewId)) {
                     return review.getScore() != null ? review.getScore() : 3.0;
                 }
             }

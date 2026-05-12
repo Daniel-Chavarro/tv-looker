@@ -29,7 +29,9 @@ public class ItemFeatureVector {
      * Similitud coseno: dotProduct / (norm1 * norm2)
      */
     public double cosineSimilarity(ItemFeatureVector other) {
-        if (other == null) return 0.0;
+        if (other == null) {
+            return 0.0;
+        }
 
         double dotProduct = 0.0;
         double norm1Sq = 0.0;
@@ -91,7 +93,9 @@ public class ItemFeatureVector {
      * scaling by a given weight.
      */
     public void addVectorWithWeight(ItemFeatureVector other, double weight) {
-        if (other == null) return;
+        if (other == null) {
+            return;
+        }
         addMapWithWeight(this.genres, other.genres, weight);
         addMapWithWeight(this.actors, other.actors, weight);
         addMapWithWeight(this.directors, other.directors, weight);

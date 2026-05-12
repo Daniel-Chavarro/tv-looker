@@ -9,9 +9,7 @@ import org.tvl.tvlooker.domain.motor.utils.DataProvider;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Computes aggregated user content profiles.
@@ -56,7 +54,9 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
         Map<String, Map<Long, Double>> userItemWeights = new HashMap<>();
 
         for (Interaction interaction : context.getInteractions()) {
-            if (interaction.getUserId() == null || interaction.getItemId() == null) continue;
+            if (interaction.getUserId() == null || interaction.getItemId() == null) {
+                continue;
+            }
 
             String userUuid = interaction.getUserId().toString();
             Long itemId = interaction.getItemId();
@@ -99,7 +99,7 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
             double score = 4.0;
             if (interaction.getReviewId() != null && context.getReviews() != null) {
                 for (Review review : context.getReviews()) {
-                    if (review.getId().equals(interaction.getReviewId())) {
+                    if (java.util.Objects.equals(review.getId(), interaction.getReviewId())) {
                         score = review.getScore() != null ? review.getScore() : 4.0;
                         break;
                     }

@@ -56,7 +56,7 @@ public class MatrixFactorizationStrategy implements RecommendationStrategy {
         return candidateItems.stream()
                 .filter(item -> item.getId() != null && factors.hasItem(item.getId()))
                 .map(item -> {
-                    double rawScore = factors.predictScore(userUuid, item.getId());
+                    double rawScore = factors.predictRealScore(userUuid, item.getId());
                     double normalizedScore = normalizeScore(rawScore);
                     return ScoredItem.builder()
                             .item(item)

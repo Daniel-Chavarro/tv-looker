@@ -45,6 +45,11 @@ public class SVDFactors {
     private final int latentFactors;
 
     /**
+     * User mean ratings for reconstructing predictions.
+     */
+    private final Map<String, Double> userMeans;
+
+    /**
      * Checks if a user exists in the factor mapping.
      */
     public boolean hasUser(String userUuid) {
@@ -95,6 +100,15 @@ public class SVDFactors {
             return 0.0;
         }
         return dotProduct(userVec, itemVec);
+    }
+    
+    /**
+     * Computes the predicted raw score adding the user's mean to the base prediction.
+     */
+    public double predictRealScore(String userUuid, Long itemId) {
+        double deviation = predictScore(userUuid, itemId);
+        double mean = (userMeans != null) ? userMeans.getOrDefault(userUuid, 3.0) : 3.0;
+        return deviation + mean;
     }
 
     private double dotProduct(double[] a, double[] b) {

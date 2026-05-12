@@ -101,7 +101,7 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
 
             if (item.getActorsInItem() != null) {
                 for (ActorItem a : item.getActorsInItem()) {
-                    if (a.getActor() != null && a.getActor().getName() != null) {
+                    if (a.getActor() != null && a.getActor().getName() != null && !a.getActor().getName().isBlank()) {
                         double idf = Math.log((double) totalItems / (1 + actorDf.getOrDefault(a.getActor().getName(), 0)));
                         vector.getActors().put(a.getActor().getName(), idf);
                     }
@@ -110,15 +110,16 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
 
             if (item.getDirectors() != null) {
                 for (Director d : item.getDirectors()) {
-                    double idf = Math.log((double) totalItems / (1 + directorDf.getOrDefault(d.getName(), 0)));
-                    vector.getDirectors().put(d.getName(), idf);
+                    if (d.getName() != null && !d.getName().isBlank()) {
+                        double idf = Math.log((double) totalItems / (1 + directorDf.getOrDefault(d.getName(), 0)));
+                        vector.getDirectors().put(d.getName(), idf);
+                    }
                 }
             }
 
-            vectors.put(item.getId(), vector);
+            vectors.put(itemId, vector);
         }
 
         return vectors;
     }
 }
-

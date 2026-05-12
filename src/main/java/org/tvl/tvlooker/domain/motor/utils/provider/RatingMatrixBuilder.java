@@ -27,7 +27,8 @@ public class RatingMatrixBuilder {
             double[][] matrix,
             Map<String, Integer> userIdToIndex,
             Map<Long, Integer> itemIdToIndex,
-            Map<Integer, Long> indexToItemId) {
+            Map<Integer, Long> indexToItemId,
+            Map<String, Double> userMeans) {
 
         public boolean isEmpty() {
             return userIdToIndex.isEmpty() || itemIdToIndex.isEmpty();
@@ -56,17 +57,20 @@ public class RatingMatrixBuilder {
                     new double[0][0],
                     mappings.userIdToIndex(),
                     mappings.itemIdToIndex(),
-                    mappings.indexToItemId()
+                    mappings.indexToItemId(),
+                    new HashMap<>()
             );
         }
 
-        double[][] matrix = fillRatingMatrix(interactions, mappings);
+        Map<String, Double> userMeans = new HashMap<>();
+        double[][] matrix = fillRatingMatrix(interactions, mappings, userMeans);
 
         return new RatingMatrixResult(
                 matrix,
                 mappings.userIdToIndex(),
                 mappings.itemIdToIndex(),
-                mappings.indexToItemId()
+                mappings.indexToItemId(),
+                userMeans
         );
     }
 
@@ -80,6 +84,9 @@ public class RatingMatrixBuilder {
 
         for (Interaction interaction : interactions) {
             if (interaction.getInteractionType() != InteractionType.RATING) {
+                continue;
+            }
+            if (interaction.getUserId() == null || interaction.getItemId() == null) {
                 continue;
             }
             String userUuid = interaction.getUserId().toString();
@@ -110,7 +117,7 @@ public class RatingMatrixBuilder {
         return currentIndex;
     }
 
-    private double[][] fillRatingMatrix(List<Interaction> interactions, RatingAccumulator.IndexMappings mappings) {
+    private double[][] fillRatingMatrix(List<Interaction> interactions, RatingAccumulator.IndexMappings mappings, Map<String, Double> userMeansOut) {
         RatingAccumulator accumulator = new RatingAccumulator();
         accumulator.accumulate(interactions, mappings, context);
 
@@ -127,6 +134,7 @@ public class RatingMatrixBuilder {
             Map<Integer, Double> userRatings = accumulator.getUserRatings(userUuid);
             Map<Integer, Integer> userCounts = accumulator.getUserCounts(userUuid);
             double userMean = computeUserMean(userRatings, userCounts, globalMean);
+            userMeansOut.put(userUuid, userMean);
 
             fillUserRow(ratingData, uIdx, userRatings, userCounts, mappings, userMean);
         }
