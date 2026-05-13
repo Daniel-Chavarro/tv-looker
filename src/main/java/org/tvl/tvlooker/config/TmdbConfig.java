@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestClient;
@@ -29,9 +30,6 @@ public class TmdbConfig {
 
     @Value("${tmdb.api.base-url:https://api.themoviedb.org/3}")
     private String baseUrl;
-
-    @Value("${tmdb.api.connect-timeout:PT5S}")
-    private Duration connectTimeout;
 
     @Value("${tmdb.api.read-timeout:PT10S}")
     private Duration readTimeout;
@@ -57,8 +55,7 @@ public class TmdbConfig {
      */
     @Bean
     public ClientHttpRequestFactory tmdbClientHttpRequestFactory() {
-        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(connectTimeout);
+        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory();
         requestFactory.setReadTimeout(readTimeout);
         return requestFactory;
     }
