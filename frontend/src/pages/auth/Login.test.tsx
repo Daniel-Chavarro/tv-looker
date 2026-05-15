@@ -27,10 +27,22 @@ describe('Login page', () => {
 
     renderWithProviders(<Login />);
 
-    await user.type(screen.getByLabelText('Email'), 'demo@example.com');
+    await user.type(screen.getByLabelText('Username or email'), 'demo@example.com');
     await user.type(screen.getByLabelText('Password'), 'secret123');
     await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
     expect(authMocks.login).toHaveBeenCalledWith('demo@example.com', 'secret123');
+  });
+
+  it('allows a username identifier without email formatting', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Login />);
+
+    await user.type(screen.getByLabelText('Username or email'), 'demo_user');
+    await user.type(screen.getByLabelText('Password'), 'secret123');
+    await user.click(screen.getByRole('button', { name: 'Sign In' }));
+
+    expect(authMocks.login).toHaveBeenCalledWith('demo_user', 'secret123');
   });
 });

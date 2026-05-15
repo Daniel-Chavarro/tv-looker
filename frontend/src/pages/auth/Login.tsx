@@ -4,10 +4,10 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Card, CardBody, CardHeader, CardFooter } from '../../components/common/Card';
 import { useAuth } from '../../hooks/useAuth';
-import { validateEmail, validatePassword } from '../../utils/validators';
+import { validatePassword } from '../../utils/validators';
 
 interface FormErrors {
-  email?: string;
+  usernameOrEmail?: string;
   password?: string;
 }
 
@@ -25,7 +25,7 @@ export const Login: React.FC = () => {
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {
-      email: validateEmail(usernameOrEmail) || undefined,
+      usernameOrEmail: usernameOrEmail.trim() ? undefined : 'Username or email is required',
       password: validatePassword(password) || undefined,
     };
     setErrors(newErrors);
@@ -72,14 +72,14 @@ export const Login: React.FC = () => {
               </div>
             )}
             <Input
-              id="email"
-              label="Email"
-              type="email"
-              autoComplete="email"
+              id="usernameOrEmail"
+              label="Username or email"
+              type="text"
+              autoComplete="username"
               value={usernameOrEmail}
               onChange={(e) => setUsernameOrEmail(e.target.value)}
-              error={errors.email}
-              placeholder="your@email.com"
+              error={errors.usernameOrEmail}
+              placeholder="username or email@example.com"
             />
             <Input
               id="password"
