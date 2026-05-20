@@ -90,6 +90,14 @@ recommendation.mf.latent-factors=50
 - Minimo efectivo: `min(k, numUsers, numItems)`
 - Recomendacion: 20-100 factores dependiendo del tamano del dataset
 
+Habilitar/deshabilitar la estrategia:
+
+```properties
+recommendation.strategies.matrix-factorization.enabled=false
+```
+
+- **Nota (2026-05-19):** Se deshabilitó por defecto (false) para ahorrar recursos de CPU, ya que el cálculo de SVD en cada request es costoso. Se recomienda usar solo con caché optimizado.
+
 Cache:
 - Configurada en codigo: 604800 segundos (1 semana)
 - Reentrenamiento automatico cuando expira el cache

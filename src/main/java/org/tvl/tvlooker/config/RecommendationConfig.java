@@ -80,7 +80,7 @@ public class RecommendationConfig {
         
         Map<String, Double> weights = new HashMap<>();
         weights.put("popularity", weightPopularity);
-        weights.put("content", weightContent);
+        weights.put("content-based", weightContent);
         weights.put("item-collaborative", weightItemCollaborative);
         weights.put("user-collaborative", weightUserCollaborative);
         weights.put("matrix-factorization", weightMatrixFactorization);
@@ -95,4 +95,3 @@ public class RecommendationConfig {
     }
 
 }
-

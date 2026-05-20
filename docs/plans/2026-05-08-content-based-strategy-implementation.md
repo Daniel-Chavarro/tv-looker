@@ -100,6 +100,8 @@ Peso en agregacion constante:
 recommendation.weights.content=0.25
 ```
 
+- **Nota (2026-05-19):** En la configuración de los pesos (e.g. `RecommendationConfig`), el key usado en el mapa interno es `"content-based"` para alinearse con el nombre que retorna la estrategia y evitar que el peso se ignore.
+
 Habilitar estrategia (cuando el switch este disponible):
 
 ```properties
