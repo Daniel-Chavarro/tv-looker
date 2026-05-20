@@ -1,0 +1,330 @@
+% ============================================================
+% Comandos personalizados (definidos en el preámbulo)
+% ============================================================
+\newcommand{\ProjectName}{TV Looker}
+\newcommand{\diagramplaceholder}[2]{%
+  \begin{figure}[H]\centering
+  \fbox{\parbox{0.9\textwidth}{\centering\vspace{2cm}\textbf{#1}\\\vspace{0.5cm}#2\vspace{2cm}}}
+  \caption{#1}\end{figure}}
+\newcommand{\technicalnotes}[1]{\subsection*{Notas técnicas}#1}
+\newcommand{\xrefnote}[1]{\medskip\noindent\textbf{Referencia cruzada:} #1}
+
+% ============================================================
+% DIAGRAMA DE CLASES
+% ============================================================
+
+\section{Propósito}
+
+El diagrama de clases de \ProjectName{} modela la estructura estática del sistema backend, incluyendo las entidades de dominio, los servicios de negocio, los controladores REST, las estrategias de recomendación y los adaptadores de integración externa (TMDB). Esta vista permite comprender cómo se relacionan los distintos componentes del sistema, qué dependencias existen entre capas y cómo se refleja el modelo de datos en la persistencia JPA.
+
+El modelo se organiza en siete capas lógicas: API (controladores y DTOs), Servicios (casos de uso), Persistencia (repositorios y entidades JPA), Modelos de Dominio (DTOs de negocio), Motor de Recomendación (estrategias y agregación), Integración TMDB (cliente y mappers) y Configuración (seguridad, async, OpenAPI).
+
+\section{Diagrama General Simplificado}
+
+El diagrama siguiente presenta una vista simplificada del sistema, mostrando las capas principales como cajas y las dependencias más importantes entre ellas. Este diagrama está diseñado para ser legible en formato A4 y sirve como mapa de navegación para los diagramas detallados de cada paquete.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/clases/simplified-class-diagram.png}
+\caption{Diagrama general simplificado de clases}
+\label{fig:simplified}
+\end{figure}
+
+\textbf{Flujo principal de datos:}
+\begin{enumerate}
+  \item Los \textbf{Controladores} reciben peticiones HTTP y delegan en los \textbf{Servicios}.
+  \item Los \textbf{Servicios} ejecutan la lógica de negocio y consultan los \textbf{Repositorios}.
+  \item Los \textbf{Repositorios} gestionan las \textbf{Entidades} JPA y persisten en la base de datos.
+  \item Los \textbf{Servicios} devuelven \textbf{DTOs de dominio} que los controladores transforman en \textbf{DTOs de respuesta} vía los \textbf{Mappers}.
+  \item El \textbf{Motor de Recomendación} ejecuta estrategias, consulta proveedores de datos y agrega resultados.
+  \item La \textbf{Integración TMDB} obtiene datos remotos, los mapea a entidades y los persiste.
+\end{enumerate}
+
+\section{Matriz de Relaciones entre Paquetes}
+
+La siguiente tabla detalla las dependencias entre paquetes del sistema, indicando el tipo de relación y su dirección.
+
+\begin{longtable}{L{4cm} L{4cm} L{5cm}}
+\caption{Matriz de dependencias entre paquetes}\label{tab:dependencias}\\
+\toprule
+\textbf{Paquete origen} & \textbf{Paquete destino} & \textbf{Tipo de dependencia} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Paquete origen} & \textbf{Paquete destino} & \textbf{Tipo de dependencia} \\
+\midrule
+\endhead
+
+\texttt{api.controller} & \texttt{api.dto} & Uso de DTOs de request/response \\
+\texttt{api.controller} & \texttt{service} & Inyección de dependencia (Spring) \\
+\texttt{api.controller} & \texttt{domain.exception} & Captura de excepciones \\
+\texttt{service} & \texttt{persistence.repository} & Inyección de dependencia (Spring) \\
+\texttt{service} & \texttt{domain.model.entity} & Transformación a entidades JPA \\
+\texttt{service} & \texttt{domain.model.dto} & Construcción de DTOs de dominio \\
+\texttt{service} & \texttt{domain.motor} & Coordinación del motor de recomendación \\
+\texttt{service} & \texttt{service.tmdb} & Delegación de integración TMDB \\
+\texttt{service} & \texttt{config} & Uso de JwtService para autenticación \\
+\texttt{persistence.repository} & \texttt{domain.model.entity} & Gestión JPA (CRUD) \\
+\texttt{persistence.tmdb} & \texttt{persistence.tmdb.dto} & DTOs de respuesta de la API TMDB \\
+\texttt{persistence.tmdb.mapper} & \texttt{persistence.tmdb.dto} & Consumo de DTOs para mapeo \\
+\texttt{service.tmdb} & \texttt{persistence.tmdb} & Uso de TmdbClient \\
+\texttt{service.tmdb} & \texttt{persistence.repository} & Persistencia de entidades sincronizadas \\
+\texttt{domain.motor} & \texttt{domain.strategy.recommendation} & Ejecución de estrategias \\
+\texttt{domain.motor} & \texttt{domain.strategy.aggregation} & Agregación de resultados \\
+\texttt{domain.motor.utils} & \texttt{domain.motor.utils.provider} & Proveedores de datos para el contexto \\
+\texttt{domain.model.entity} & \texttt{domain.model.entity} & Auto-referencias (relaciones JPA) \\
+\texttt{config} & \texttt{api.controller} & Seguridad (SecurityConfig) \\
+\texttt{config} & \texttt{service.tmdb} & Async executor (AsyncConfiguration) \\
+\texttt{config} & \texttt{domain.motor} & Configuración de estrategias y pesos (RecommendationConfig) \\
+\texttt{config} & \texttt{persistence.tmdb} & RestClient (TmdbConfig) \\
+\bottomrule
+\end{longtable}
+
+\section{Diagramas Detallados por Paquete}
+
+\subsection{Capa API}
+
+La capa API contiene los controladores REST que exponen los endpoints bajo \texttt{/api/v1/}, los DTOs de request y response, los mappers que convierten entre DTOs de API y DTOs de dominio, y el manejador global de excepciones.
+
+\textbf{Controladores:} 11 clases que gestionan las operaciones CRUD y endpoints específicos de autenticación, recomendación y administración TMDB.
+
+\textbf{DTOs:} Organizados en los subpaquetes \texttt{request} (10 clases), \texttt{response} (14 clases) y \texttt{mapper} (9 clases).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/clases/api-layer-detailed.png}
+\caption{Diagrama detallado de la capa API}
+\label{fig:api-layer}
+\end{figure}
+
+\subsection{Capa de Servicios}
+
+La capa de servicios implementa los casos de uso del sistema. Incluye servicios CRUD para cada entidad de dominio, el servicio de recomendación que orquesta el motor, y los servicios de autenticación y generación de tokens JWT.
+
+\textbf{Nota:} Los servicios CRUD (\texttt{ActorService}, \texttt{DirectorService}, \texttt{GenreService}, \texttt{ItemService}, \texttt{UserService}) exponen operaciones de consulta (getAll, getAll con paginación, getById) y escritura (create, update, delete). Los servicios de interacción (\texttt{InteractionService}, \texttt{ReviewService}, \texttt{ListFavoriteService}) añaden métodos \texttt{*ForUser} para operaciones con ownership del usuario autenticado. \texttt{RecommendationService} orquesta el motor de recomendación para generar recomendaciones personalizadas. \texttt{AuthService} gestiona registro e inicio de sesión, y \texttt{JwtService} genera los tokens JWT.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/clases/service-layer-detailed.png}
+\caption{Diagrama detallado de la capa de servicios}
+\label{fig:service-layer}
+\end{figure}
+
+\subsection{Capa de Persistencia}
+
+La capa de persistencia está compuesta por los repositorios Spring Data JPA y las entidades JPA que modelan el almacenamiento relacional.
+
+\textbf{Entidades:} 9 clases (\texttt{UserEntity}, \texttt{ItemEntity}, \texttt{GenreEntity}, \texttt{ActorEntity}, \texttt{ActorItemEntity}, \texttt{DirectorEntity}, \texttt{InteractionEntity}, \texttt{ReviewEntity}, \texttt{ListFavoriteEntity}) con sus relaciones JPA.
+
+\textbf{Repositorios:} 9 interfaces que extienden \texttt{JpaRepository} y proporcionan operaciones CRUD estándar más métodos de consulta personalizados.
+
+\textbf{Relaciones destacadas:}
+\begin{itemize}
+  \item \texttt{ItemEntity} se relaciona con \texttt{GenreEntity}, \texttt{ActorItemEntity} y \texttt{DirectorEntity} (relaciones muchos-a-muchos).
+  \item \texttt{UserEntity} posee colecciones de \texttt{InteractionEntity}, \texttt{ReviewEntity} y \texttt{ListFavoriteEntity}.
+  \item \texttt{ListFavoriteEntity} contiene una colección de \texttt{ItemEntity}.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/clases/persistence-detailed.png}
+\caption{Diagrama detallado de la capa de persistencia}
+\label{fig:persistence-layer}
+\end{figure}
+
+\subsection{Capa de Configuración}
+
+La capa de configuración agrupa las clases \texttt{@Configuration} que definen beans y ajustes del sistema.
+
+\begin{itemize}
+  \item \texttt{SecurityConfig}: Filtro de seguridad JWT, \texttt{PasswordEncoder}, gestión de rutas públicas y protegidas.
+  \item \texttt{AsyncConfiguration}: Ejecutor general y ejecutor dedicado para operaciones TMDB asíncronas.
+  \item \texttt{RecommendationConfig}: Cableado de estrategias (\texttt{PopularityStrategy}), agregaciones y proveedores de datos.
+  \item \texttt{TmdbConfig}: Cliente REST preconfigurado con \texttt{baseUrl} y token Bearer para la API de TMDB.
+  \item \texttt{OpenApiConfig}: Configuración de Swagger/OpenAPI con esquema de seguridad Bearer JWT.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/clases/config-detailed.png}
+\caption{Diagrama detallado de la capa de configuración}
+\label{fig:config-layer}
+\end{figure}
+
+\subsection{Modelos de Dominio}
+
+Los modelos de dominio representan las abstracciones centrales del negocio, independientes de la tecnología de persistencia. Son DTOs puros (sin anotaciones JPA) que viajan entre las capas de servicio y API.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/clases/core-models-class-diagram.png}
+\caption{Diagrama detallado de los modelos de dominio}
+\label{fig:core-models}
+\end{figure}
+
+\textbf{Enumeraciones:}
+\begin{itemize}
+  \item \texttt{TmdbType}: MOVIE, TV --- distingue el tipo de contenido audiovisual.
+  \item \texttt{InteractionType}: VIEW, RATING, REVIEW, RESEARCH, CLICK, LIKE --- tipos de interacción usuario--contenido.
+  \item \texttt{UserAuthority}: USER, ADMIN --- roles de seguridad.
+\end{itemize}
+
+\subsection{Motor de Recomendación}
+
+El motor de recomendación implementa un patrón de estrategias extensible. \texttt{HybridRecommendationEngine} orquesta múltiples estrategias de recomendación, combina sus resultados mediante una estrategia de agregación y utiliza proveedores de datos para obtener métricas como la popularidad.
+
+\textbf{Arquitectura:}
+\begin{itemize}
+  \item \texttt{RecommendationEngine} (interfaz): Define el contrato \texttt{recommend(User, RecommendationContext)}.
+  \item \texttt{HybridRecommendationEngine}: Implementación concreta que ejecuta estrategias, agrega resultados y post-procesa.
+  \item \texttt{RecommendationStrategy} (interfaz): Estrategias individuales (\texttt{PopularityStrategy}).
+  \item \texttt{AggregationStrategy} (interfaz): Combina resultados (\texttt{ConstantConvexAggregation}, \texttt{RankingBasedAggregation}).
+  \item \texttt{DataProvider<T>} (interfaz): Provee datos contextuales (\texttt{ItemPopularityProvider}).
+  \item \texttt{RecommendationContext}: Contenedor con usuarios, ítems, interacciones, data providers y caché.
+  \item \texttt{ScoredItem}: Resultado individual con puntuación, explicación y estrategia origen.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/clases/engine-class-diagram.png}
+\caption{Diagrama detallado del motor de recomendación}
+\label{fig:engine}
+\end{figure}
+
+\subsection{Integración TMDB}
+
+La integración con TMDB (\texttt{themoviedb.org}) sigue una arquitectura de adaptador. Un cliente HTTP encapsula toda la comunicación REST, los DTOs reflejan la forma de la API externa, y los mappers normalizan los datos a entidades del sistema.
+
+\textbf{Servicios TMDB:}
+\begin{itemize}
+  \item \texttt{TmdbDataFetcher}: Fetch asíncrono con rate limiting, expone métodos por tipo de medio y emisión en lote.
+  \item \texttt{TmdbDataCollectorService}: Orquesta la recolección de datos populares y géneros, tanto síncrona como asíncrona.
+  \item \texttt{TmdbDataSynchronizerService}: Sincronización programada de cambios recientes.
+  \item \texttt{TmdbItemPersistenceService}: Persiste y actualiza ítems, géneros, actores y directores desde DTOs TMDB.
+  \item \texttt{EntityCacheService}: Cache de entidades existentes para evitar duplicados durante la persistencia.
+  \item \texttt{EntitySaveHelper}: Operaciones de guardado con cifrado de contraseñas (para usuarios seed).
+\end{itemize}
+
+\textbf{Adaptador TMDB:}
+\begin{itemize}
+  \item \texttt{TmdbClient}: Cliente REST con métodos \texttt{@Deprecated} (legado) y nuevos métodos genéricos/batch.
+  \item \texttt{TmdbMediaType}: Enum con MOVIE, TV para rutas de la API.
+  \item \texttt{TmdbMediaItem} y \texttt{TmdbMediaDetails}: Interfaces que unifican el contrato de películas y series.
+\end{itemize}
+
+\textbf{DTOs TMDB:} 9 clases/records que modelan las respuestas de la API (\texttt{TmdbMovieDto}, \texttt{TmdbTvShowDto}, \texttt{TmdbMovieDetailsDto}, \texttt{TmdbTvShowDetailsDto}, \texttt{TmdbPagedResponseDto}, \texttt{TmdbGenreDto}, \texttt{TmdbGenreListDto}, \texttt{TmdbCreditsDto}, \texttt{TmdbChangesDto}) y 2 interfaces (\texttt{TmdbMediaItem}, \texttt{TmdbMediaDetails}).
+
+\textbf{Mappers:}
+\begin{itemize}
+  \item \texttt{TmdbItemBuilder}: Construye \texttt{ItemEntity} con entidades cacheadas (géneros, actores, directores).
+  \item \texttt{TmdbItemMapper}: Mapeo simple de DTOs a entidades sin relaciones.
+  \item \texttt{TmdbGenreMapper}: Convierte \texttt{TmdbGenreDto} a \texttt{GenreEntity}.
+  \item \texttt{TmdbCastMemberMapper}: Convierte \texttt{CastMember} a \texttt{ActorEntity} y \texttt{CrewMember} a \texttt{DirectorEntity}.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/clases/tmdb-class-diagram.png}
+\caption{Diagrama detallado de la integración TMDB}
+\label{fig:tmdb}
+\end{figure}
+
+\section{Leyenda y Convenciones}
+
+\subsection{Tipos de flecha}
+
+\begin{longtable}{L{4cm} L{2cm} L{7cm}}
+\caption{Convenciones de notación UML utilizadas}\\
+\toprule
+\textbf{Símbolo} & \textbf{Relación} & \textbf{Significado} \\
+\midrule
+\verb|-->| & Asociación & Una clase conoce/usa a otra \\
+\verb|..>| & Dependencia & Una clase depende temporalmente de otra \\
+\verb*|--\|> & Herencia & Una clase implementa una interfaz o extiende otra \\
+\verb|*--| & Composición & Relación todo--parte con ciclo de vida compartido \\
+\verb|"1" -- "*"| & Cardinalidad & Uno a muchos (con etiqueta semántica) \\
+\bottomrule
+\end{longtable}
+
+\subsection{Símbolos de clase}
+
+\begin{itemize}
+  \item \texttt{interface}: Se muestra con el estereotipo \texttt{<<interface>>}.
+  \item \texttt{enum}: Se muestra con el estereotipo \texttt{<<enum>>} y sus valores literales.
+  \item \texttt{<<Builder>>}: Clase que utiliza el patrón Builder (Lombok @Builder).
+  \item \texttt{<<stub>>}: Referencia externa a otro diagrama (clase definida en otro paquete no incluido en el diagrama actual).
+  \item \texttt{@Deprecated}: Método o clase marcado como obsoleto, se mantiene por compatibilidad.
+\end{itemize}
+
+\subsection{Convenciones de modelado}
+
+\begin{itemize}
+  \item Las clases \texttt{*Entity} en el paquete \texttt{domain.model.entity} son entidades JPA anotadas con \texttt{@Entity}.
+  \item Las clases \texttt{*Dto} en \texttt{persistence.tmdb.dto} son records de Java que reflejan la forma de la API de TMDB.
+  \item Las clases en \texttt{domain.model.dto} son POJOs/DTOs puros sin anotaciones de infraestructura.
+  \item Los \texttt{*Controller} en \texttt{api.controller} están anotados con \texttt{@RestController} y mapean rutas \texttt{/api/v1/**}.
+  \item Los \texttt{*Service} en \texttt{service} están anotados con \texttt{@Service} y se inyectan vía constructor.
+  \item Los \texttt{*Repository} en \texttt{persistence.repository} son interfaces que extienden \texttt{JpaRepository}.
+  \item Las flechas entre paquetes en el diagrama simplificado representan dependencias a nivel de capa, no necesariamente todas las relaciones individuales.
+\end{itemize}
+
+\section{Clases y Abstracciones Candidatas}
+
+\begin{longtable}{L{4.3cm} L{2.4cm} L{6.6cm}}
+\caption{Clases y responsabilidades del modelo de dominio.}\label{tab:clases-candidatas}\\
+\toprule
+\textbf{Clase / abstracción} & \textbf{Categoría} & \textbf{Responsabilidad principal} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Clase / abstracción} & \textbf{Categoría} & \textbf{Responsabilidad principal} \\
+\midrule
+\endhead
+
+User & DTO de dominio & Datos de identidad y perfil del usuario (id, username, email, password, authority). \\
+Item & DTO de dominio & Representación unificada de contenido audiovisual (movie/TV) con metadatos y colecciones de géneros, actores y directores. \\
+Interaction & DTO de dominio & Traza de interacción usuario--contenido (view, rating, review, click, etc.). \\
+Review & DTO de dominio & Opinión textual y puntuación numérica de un usuario sobre un contenido. \\
+Genre & DTO de dominio & Categoría o género audiovisual (id, tmdbId, name). \\
+Actor & DTO de dominio & Actor o intérprete (id, tmdbId, name). \\
+ActorItem & DTO de dominio & Relación actor--contenido con personaje y orden de facturación. \\
+Director & DTO de dominio & Director del contenido (id, tmdbId, name). \\
+ListFavorite & DTO de dominio & Lista personal de favoritos de un usuario con colección de ítems. \\
+UserEntity & Entidad JPA & Persistencia de usuarios con rol y contraseña cifrada. \\
+ItemEntity & Entidad JPA & Persistencia de contenido con metadatos y relaciones JPA a géneros, actores y directores. \\
+RecommendationEngine & Interfaz de motor & Contrato para el motor de recomendación (recommend). \\
+HybridRecommendationEngine & Motor concreto & Orquesta estrategias, agrega resultados y post-procesa. \\
+RecommendationStrategy & Interfaz de estrategia & Define el comportamiento de una estrategia de recomendación. \\
+PopularityStrategy & Estrategia & Recomienda basándose en métricas de popularidad. \\
+AggregationStrategy & Interfaz de agregación & Define cómo combinar múltiples resultados de estrategias. \\
+ConstantConvexAggregation & Agregación & Agregación ponderada con pesos configurables. \\
+RankingBasedAggregation & Agregación & Agregación basada en ranking posicional. \\
+DataProvider<T> & Interfaz de datos & Provee datos contextuales para las estrategias (popularidad, etc.). \\
+ItemPopularityProvider & Proveedor & Calcula popularidad de ítems desde las interacciones. \\
+RecommendationContext & Contexto & Contenedor con usuarios, ítems, interacciones, proveedores y caché. \\
+ScoredItem & Resultado & Ítem recomendado con puntuación, explicación y estrategia origen. \\
+TmdbClient & Adaptador externo & Cliente REST para la API de TMDB v3. \\
+TmdbDataFetcher & Servicio TMDB & Fetch asíncrono con rate limiting hacia TMDB. \\
+TmdbItemPersistenceService & Servicio TMDB & Persistencia de datos TMDB en entidades del sistema. \\
+EntityCacheService & Servicio TMDB & Cache de entidades para evitar duplicados en sincronización. \\
+SecurityConfig & Configuración & Seguridad JWT, rutas públicas/protegidas, password encoder. \\
+AsyncConfiguration & Configuración & Executors para operaciones asíncronas generales y TMDB. \\
+RecommendationConfig & Configuración & Cableado de estrategias, agregaciones y proveedores. \\
+TmdbConfig & Configuración & Cliente REST preconfigurado para TMDB. \\
+OpenApiConfig & Configuración & Documentación Swagger/OpenAPI con esquema Bearer JWT. \\
+\bottomrule
+\end{longtable}
+
+
+\technicalnotes{
+\begin{itemize}[leftmargin=1.2cm]
+    \item Las entidades JPA (\texttt{*Entity}) y los DTOs de dominio (\texttt{*}) están separados en paquetes distintos para evitar acoplamiento entre la capa de persistencia y la lógica de negocio.
+    \item El motor de recomendación es extensible mediante las interfaces \texttt{RecommendationStrategy} y \texttt{DataProvider<T>}. Añadir una nueva estrategia solo requiere implementar la interfaz y registrarla en \texttt{RecommendationConfig}.
+    \item Los DTOs de TMDB (\texttt{persistence.tmdb.dto}) son records inmutables que reflejan la forma exacta de la API externa. No deben ser usados fuera del paquete de persistencia TMDB.
+    \item Los servicios TMDB (\texttt{service.tmdb}) actúan como orquestadores: \texttt{TmdbDataCollectorService} recolecta datos vía \texttt{TmdbDataFetcher}, \texttt{TmdbItemPersistenceService} construye entidades con \texttt{TmdbItemBuilder} y las persiste en los repositorios.
+    \item La cardinalidad entre \texttt{UserEntity} y las entidades de interacción (\texttt{InteractionEntity}, \texttt{ReviewEntity}, \texttt{ListFavoriteEntity}) es de 1 a N, reflejando que un usuario puede tener múltiples interacciones, reseñas y listas de favoritos.
+    \item La cardinalidad entre \texttt{ItemEntity} y \texttt{GenreEntity} / \texttt{ActorItemEntity} / \texttt{DirectorEntity} es de N a M (muchos-a-muchos), modelada mediante tablas intermedias gestionadas por JPA.
+\end{itemize}}
+
+
+\xrefnote{El modelo de clases presentado en este capítulo es la base estructural para los diagramas de estados del Capítulo~\ref{ch:estados} (que modelan el ciclo de vida de las entidades), los diagramas de actividades del Capítulo~\ref{ch:actividades} (que detallan los flujos de los servicios) y los diagramas de paquetes del Capítulo~\ref{ch:paquetes}.}

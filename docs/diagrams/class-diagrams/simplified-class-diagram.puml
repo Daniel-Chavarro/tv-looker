@@ -1,0 +1,130 @@
+@startuml
+!theme plain
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 120
+skinparam ArrowThickness 1.2
+skinparam ArrowColor #444444
+skinparam packageBorderColor #777777
+skinparam packageBackgroundColor #FCFCFC
+
+top to bottom direction
+hide empty members
+
+rectangle "API Layer\n(org.tvl.tvlooker.api)" as API {
+
+    together {
+        (Controllers)
+        (Auth Controller)
+    }
+
+    together {
+        (API DTOs)
+        (API Mappers)
+    }
+
+    together {
+        (Exception Handler)
+    }
+
+    (Controllers) -[hidden]down-> (API DTOs)
+    (API DTOs) -[hidden]down-> (Exception Handler)
+}
+
+rectangle "Service Layer\n(org.tvl.tvlooker.service)" as SVC {
+
+    together {
+        (Business Services)
+        (Auth Service)
+    }
+
+    together {
+        (JWT Service)
+        (Integracion TMDB)
+    }
+
+    (Business Services) -[hidden]down-> (JWT Service)
+}
+
+rectangle "Persistence Layer\n(org.tvl.tvlooker.persistence)" as PER {
+
+    together {
+        (JPA Repositories)
+        (TMDB Client)
+    }
+
+    together {
+        (TMDB DTOs)
+        (TMDB Mappers)
+    }
+
+    (JPA Repositories) -[hidden]down-> (TMDB DTOs)
+}
+
+rectangle "Domain Layer\n(org.tvl.tvlooker.domain)" as DOM {
+
+    together {
+        (Domain DTOs)
+        (Entities)
+    }
+
+    together {
+        (Engine)
+        (Strategies / Aggregation)
+    }
+
+    together {
+        (Data Providers)
+    }
+
+    (Domain DTOs) -[hidden]down-> (Engine)
+    (Engine) -[hidden]down-> (Data Providers)
+}
+
+rectangle "Config Layer\n(org.tvl.tvlooker.config)" as CFG {
+
+    together {
+        (Security)
+        (Async)
+    }
+
+    together {
+        (Recommendation)
+        (TMDB)
+    }
+
+    together {
+        (OpenAPI)
+    }
+
+    (Security) -[hidden]down-> (Recommendation)
+    (Recommendation) -[hidden]down-> (OpenAPI)
+}
+
+database "DB\n(PostgreSQL / H2)" as DB
+
+cloud "TMDB API" as TMDBAPI
+
+API -down-> SVC : delegates
+SVC -down-> PER : persists
+PER -down-> DOM : manages
+SVC -down-> DOM : maps
+
+API -right-> API
+
+CFG -left-> API : secures
+CFG -down-> SVC : enables/enriches
+CFG -down-> DOM : configures
+CFG -down-> PER : configures
+
+SVC -right-> TMDBAPI : fetches
+PER -right-> TMDBAPI : REST HTTP
+
+PER -down-> DB : SQL
+
+DOM -right-> DOM
+@enduml

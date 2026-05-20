@@ -1,0 +1,91 @@
+@startuml
+!theme plain
+
+' ========== ESTILOS VISUALES MODERNOS ==========
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam linetype ortho
+skinparam ArrowThickness 1.2
+skinparam ArrowColor #666666
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+
+left to right direction
+hide empty members
+
+' ========== CAPAS Y COMPONENTES CORE ==========
+
+rectangle "Entry Layer" #E3F2FD {
+  component "API REST\n<<interfaz de entrada>>" as REST
+  interface "IRestAPI" as IAPI
+  REST - IAPI
+}
+
+rectangle "Application Layer" #E8F5E9 {
+  component "Application Services\n<<capa de aplicacion>>" as SVC
+  interface "IAppService" as ISVC
+  SVC - ISVC
+}
+
+rectangle "Domain Layer" #FFF3E0 {
+  component "Recommendation Engine\n<<dominio>>" as ENG
+  interface "IRecEngine" as IREC
+  ENG - IREC
+  
+  component "Recommendation Strategies\n<<dominio extensible>>" as STR
+  interface "IRecStrategy" as ISTR
+  STR - ISTR
+}
+
+rectangle "Infrastructure Layer" #F3E5F5 {
+  component "Persistence Adapter\n<<infraestructura>>" as PERS
+  interface "IRepository" as IREPO
+  PERS - IREPO
+}
+
+rectangle "External Adapters" #FFEBEE {
+  component "TMDB Integration\n<<adaptador externo>>" as TMDB
+  interface "IContentProvider" as ICONT
+  TMDB - ICONT
+}
+
+' ========== DEPENDENCIAS CORE ==========
+IAPI --> SVC : <<calls>>
+ISVC --> IREC : <<orquesta>>
+IREC --> ISTR : <<executes>>
+ISVC --> IREPO : <<persiste>>
+ISVC --> ICONT : <<fetches>>
+
+' ========== SOPORTE Y TRANSVERSALES ==========
+' Agrupados abajo para no cruzar el flujo principal
+
+rectangle "Cross-Cutting & Support" #F5F5F5 {
+  component "Security Layer\n<<infra. transversal>>" as SEC
+  component "Observability\n<<soporte operativo>>" as OBS
+  component "Configuration Module\n<<soporte tecnico>>" as CONF
+}
+
+' En lugar de dibujar flechas cruzadas que rompen el diagrama,
+' usamos notas para indicar la transversalidad limpiamente.
+
+note bottom of SEC
+  <<intercepts>> API REST
+  Filtro JWT (/api/v1/**)
+end note
+
+note bottom of OBS
+  <<monitorea>> Todas las capas
+  Health Actuator & SLF4J
+end note
+
+note bottom of CONF
+  <<configura>> Todas las capas
+  Propiedades y beans
+end note
+
+note top of ENG
+  HybridRecommendationEngine
+  Agregación ponderada
+end note
+
+@enduml

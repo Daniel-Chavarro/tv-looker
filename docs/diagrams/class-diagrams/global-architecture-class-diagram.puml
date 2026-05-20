@@ -1,0 +1,95 @@
+@startuml
+
+top to bottom direction
+
+package "Client Layer" {
+    [Web/Mobile Clients]
+}
+
+package "API Layer" {
+    [Controllers]
+    [Auth Controller]
+    [API DTOs]
+    [API Mappers]
+    [Exception Handler]
+}
+
+package "Config Layer" {
+    [Security Config]
+    [Async Config]
+    [Recommendation Config]
+    [TMDB Config]
+    [OpenAPI Config]
+}
+
+package "Service Layer" {
+    [Business Services]
+    [TMDB Services]
+    [Recommendation Service]
+    [Auth Service]
+    [JWT Service]
+}
+
+package "Domain Layer" {
+    [Domain DTOs]
+    [Domain Entities]
+    [Entity Mappers]
+    [Recommendation Engine]
+    [Strategies]
+    [Aggregation]
+    [Data Providers]
+    [Recommendation Context]
+}
+
+package "Persistence Layer" {
+    [Spring Data Repositories]
+    [TMDB Client]
+    [TMDB DTOs]
+    [TMDB Mappers]
+}
+
+package "Database Layer" {
+    database "PostgreSQL / H2" {
+        [Relational Data]
+    }
+}
+
+package "External APIs" {
+    cloud "TMDB API" {
+        [Movie/TV Data]
+    }
+}
+
+[Web/Mobile Clients] --> [Controllers] : HTTP/JSON
+[Web/Mobile Clients] --> [Auth Controller] : login/register
+[Controllers] --> [API DTOs] : maps to/from
+[API DTOs] --> [API Mappers] : transforms
+[API Mappers] --> [Business Services] : passes
+[Auth Controller] --> [Auth Service] : delegates
+[Auth Service] --> [JWT Service] : generates token
+[JWT Service] --> [Security Config] : validates
+[Controllers] --> [Exception Handler] : errors
+[Business Services] --> [Domain DTOs] : uses
+[Domain DTOs] --> [Entity Mappers] : maps to/from
+[Entity Mappers] --> [Domain Entities] : transforms
+[Business Services] --> [Spring Data Repositories] : queries
+[Spring Data Repositories] --> [Domain Entities] : returns
+[Domain Entities] --> [Relational Data] : persists
+[Recommendation Service] --> [Recommendation Engine] : coordinates
+[Recommendation Engine] --> [Strategies] : executes
+[Strategies] --> [Recommendation Context] : reads
+[Recommendation Context] --> [Data Providers] : fetches
+[Recommendation Engine] --> [Aggregation] : aggregates
+[Recommendation Engine] --> [Domain DTOs] : processes
+[TMDB Services] --> [TMDB Client] : calls
+[TMDB Client] --> [TMDB DTOs] : returns
+[TMDB DTOs] --> [TMDB Mappers] : transforms
+[TMDB Mappers] --> [Domain DTOs] : converts
+[TMDB Client] --> [Movie/TV Data] : REST HTTP
+[Security Config] --> [Controllers] : secures
+[Security Config] --> [Auth Controller] : secures
+[Async Config] --> [TMDB Services] : enables async
+[Recommendation Config] --> [Recommendation Engine] : configures
+[TMDB Config] --> [TMDB Client] : configures
+
+@enduml

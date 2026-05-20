@@ -1,0 +1,52 @@
+@startuml
+' Diagrama B: Infraestructura de Desarrollo y CI/CD
+
+skinparam backgroundColor transparent
+skinparam defaultFontName Arial
+skinparam nodeBackgroundColor #F5F5F5
+skinparam artifactBackgroundColor #E1F5FE
+skinparam componentBackgroundColor #FFF
+
+title Vista de Despliegue - Desarrollo, Pruebas y CI/CD
+
+node "Estación de Desarrollo Local" as local_dev {
+  component "IDE (IntelliJ / VSCode)" as ide
+  artifact "Código Fuente (.java, .tsx)" as source
+
+  node "Entorno de Pruebas (Test Profile)" as test_env {
+    artifact "JUnit 5 + MockMvc" as tests
+    database "H2 In-Memory DB\n(Modo PostgreSQL)" as h2
+  }
+}
+
+node "Motor de Contenedores" as docker_dev {
+  artifact "docker-compose.yml" as compose
+  database "PostgreSQL 17\n(Volumen: postgres-data)" as pg_local
+}
+
+node "GitHub Actions (CI)" as ci_cd {
+  component "Pipeline: ci.yml" as pipeline {
+    artifact "1. Build & Lint (PMD/Checkstyle)" as step1
+    artifact "2. Unit & Integration Tests" as step2
+    artifact "3. Package (tv-looker.jar)" as step3
+  }
+}
+
+' Flujos de trabajo
+ide --> source : Edita
+source --> tests : Compila y ejecuta
+tests --> h2 : jdbc:h2:mem:testdb
+compose --> pg_local : Provisiona
+source --> pg_local : Ejecución local (spring-boot:run)
+
+source --> pipeline : Push / Pull Request
+step1 --> step2
+step2 --> step3
+
+note bottom of ci_cd
+  El pipeline asegura calidad de código
+  y ejecución exitosa de pruebas (H2)
+  antes de generar el artefacto final.
+end note
+
+@enduml

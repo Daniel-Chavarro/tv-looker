@@ -1,0 +1,113 @@
+@startuml
+skinparam packageStyle rectangle
+top to bottom direction
+hide empty members
+
+package "org.tvl.tvlooker.persistence.repository" {
+    interface ActorRepository
+    interface DirectorRepository
+    interface GenreRepository
+    interface InteractionRepository
+    interface ItemRepository
+    interface ListFavoriteRepository
+    interface ReviewRepository
+    interface UserRepository
+    interface ActorItemRepository
+}
+
+package "org.tvl.tvlooker.domain.model.entity" {
+    class UserEntity {
+        - id: UUID
+        - username: String
+        - email: String
+        - password: String
+        - name: String
+        - authority: UserAuthority
+        - createdAt: Timestamp
+    }
+    class ItemEntity {
+        - id: Long
+        - tmdbId: Long
+        - tmdbType: TmdbType
+        - title: String
+        - overview: String
+        - releaseDate: LocalDate
+        - popularity: BigDecimal
+        - voteAverage: BigDecimal
+        - createdAt: Timestamp
+        - genres: Set<GenreEntity>
+        - directors: Set<DirectorEntity>
+        - actorItems: Set<ActorItemEntity>
+    }
+    class GenreEntity {
+        - id: Long
+        - tmdbId: Long
+        - name: String
+    }
+    class ActorEntity {
+        - id: Long
+        - tmdbId: Long
+        - name: String
+    }
+    class ActorItemEntity {
+        - id: Long
+        - actor: ActorEntity
+        - item: ItemEntity
+        - characterName: String
+        - billingOrder: Integer
+    }
+    class DirectorEntity {
+        - id: Long
+        - tmdbId: Long
+        - name: String
+    }
+    class InteractionEntity {
+        - id: Long
+        - user: UserEntity
+        - item: ItemEntity
+        - review: ReviewEntity
+        - interactionType: InteractionType
+        - createdAt: Timestamp
+    }
+    class ReviewEntity {
+        - id: Long
+        - user: UserEntity
+        - item: ItemEntity
+        - score: int
+        - reviewText: String
+        - reviewDate: Timestamp
+    }
+    class ListFavoriteEntity {
+        - id: Long
+        - user: UserEntity
+        - name: String
+        - description: String
+        - items: Set<ItemEntity>
+    }
+
+    ' --- entity relationships ---
+    ItemEntity "*" -- "*" GenreEntity : categorizes
+    ItemEntity "1" -- "*" ActorItemEntity : features
+    ItemEntity "*" -- "*" DirectorEntity : directed by
+    ActorItemEntity "*" -- "1" ActorEntity : references
+    UserEntity "1" -- "*" InteractionEntity : has
+    ItemEntity "1" -- "*" InteractionEntity : receives
+    UserEntity "1" -- "*" ReviewEntity : writes
+    ItemEntity "1" -- "*" ReviewEntity : gets
+    UserEntity "1" -- "*" ListFavoriteEntity : owns
+    ListFavoriteEntity "1" -- "*" ItemEntity : contains
+    ListFavoriteEntity "*" -- "1" UserEntity : belongs to
+}
+
+' --- repository → entity mappings ---
+ActorRepository --> ActorEntity
+DirectorRepository --> DirectorEntity
+GenreRepository --> GenreEntity
+InteractionRepository --> InteractionEntity
+ItemRepository --> ItemEntity
+ListFavoriteRepository --> ListFavoriteEntity
+ReviewRepository --> ReviewEntity
+UserRepository --> UserEntity
+ActorItemRepository --> ActorItemEntity
+
+@enduml

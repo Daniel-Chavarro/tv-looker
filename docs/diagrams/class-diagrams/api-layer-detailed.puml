@@ -1,0 +1,225 @@
+@startuml
+!theme plain
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 120
+skinparam ArrowThickness 1.2
+skinparam ArrowColor #444444
+skinparam packageBorderColor #777777
+skinparam packageBackgroundColor #FCFCFC
+
+top to bottom direction
+hide empty members
+
+package "org.tvl.tvlooker.api.controller" as CTRL {
+
+    class ActorController {
+        + getAllActors()
+        + getActorById()
+    }
+
+    class DirectorController {
+        + getAllDirectors()
+        + getDirectorById()
+    }
+
+    class GenreController {
+        + getAllGenres()
+        + getGenreById()
+    }
+
+    class InteractionController {
+        + getAllInteractions()
+        + getInteractionById()
+        + createInteraction()
+        + updateInteraction()
+        + deleteInteraction()
+        + getMyInteractions()
+    }
+
+    class ItemController {
+        + getAllItems()
+        + getItemById()
+    }
+
+    class ListFavoriteController {
+        + listFavorites()
+        + getListFavoriteById()
+        + createListFavorite()
+        + updateListFavorite()
+        + deleteListFavorite()
+        + addItemToFavorite()
+        + removeItemFromFavorite()
+        + getMyLists()
+        + getUserLists()
+    }
+
+    class ReviewController {
+        + getAllReviews()
+        + getReviewById()
+        + createReview()
+        + updateReview()
+        + deleteReview()
+        + getMyReviews()
+        + getItemReviews()
+        + getUserReviews()
+    }
+
+    class UserController {
+        + getAllUsers()
+        + getUserById()
+        + createUser()
+        + updateUser()
+        + deleteUser()
+    }
+
+    class AuthController {
+        + register()
+        + login()
+    }
+
+    class RecommendationController {
+        + getRecommendations()
+    }
+
+    class TmdbAdminController {
+        + collectAll()
+        + collectGenres()
+        + collectMovies()
+        + collectTvShows()
+        + sync()
+        + getStatus()
+    }
+
+    class GlobalExceptionHandler {
+        + handleTmdbCollectionInProgress()
+        + handleUserNotFound()
+        + handleItemNotFound()
+        + handleReviewNotFound()
+        + handleActorNotFound()
+        + handleDirectorNotFound()
+        + handleGenreNotFound()
+        + handleInteractionNotFound()
+        + handleListFavoriteNotFound()
+        + handleIllegalArgument()
+        + handleBadCredentials()
+        + handleValidationErrors()
+        + handleInsufficientData()
+        + handleInvalidEngineConfiguration()
+        + handleNoDataProvider()
+        + handleNoRecommendationsAvailable()
+        + handleGenericException()
+    }
+}
+
+package "org.tvl.tvlooker.api.dto" as APIDTO {
+
+    package "request" as req {
+        class CreateInteractionRequest
+        class UpdateInteractionRequest
+        class CreateListFavoriteRequest
+        class UpdateListFavoriteRequest
+        class CreateReviewRequest
+        class UpdateReviewRequest
+        class CreateUserRequest
+        class UpdateUserRequest
+        class RegisterRequest
+        class LoginRequest
+    }
+
+    package "response" as res {
+        class ActorResponse
+        class DirectorResponse
+        class GenreResponse
+        class InteractionResponse
+        class ItemResponse
+        class ListFavoriteResponse
+        class ReviewResponse
+        class UserResponse
+        class AuthResponse
+        class RecommendationResponse
+        class PageResponse
+        class ActorItemResponse
+        class TmdbOperationResponse
+        class TmdbStatusResponse
+    }
+
+package "mapper" as map {
+
+    together {
+        class ActorItemMapper
+        class DirectorMapper
+        class GenreMapper
+    }
+
+    together {
+        class InteractionMapper
+    }
+
+    together {
+        class ItemMapper
+    }
+
+    together {
+        class ListFavoriteMapper
+        class PageMapper
+    }
+
+    together {
+        class ReviewMapper
+    }
+
+    together {
+        class UserMapper
+    }
+
+    ActorItemMapper -[hidden]down-> InteractionMapper
+    InteractionMapper -[hidden]down-> ItemMapper
+    ItemMapper -[hidden]down-> ListFavoriteMapper
+    ListFavoriteMapper -[hidden]down-> ReviewMapper
+    ReviewMapper -[hidden]down-> UserMapper
+}
+}
+
+' =========================
+' FORZAR PAQUETES VERTICALES
+' =========================
+
+CTRL -[hidden]down-> APIDTO
+
+' =========================
+' CONTROLLERS -> MAPPERS
+' =========================
+
+ActorController -down-> ActorItemMapper
+DirectorController -down-> DirectorMapper
+GenreController -down-> GenreMapper
+InteractionController -down-> InteractionMapper
+ItemController -down-> ItemMapper
+ListFavoriteController -down-> ListFavoriteMapper
+ReviewController -down-> ReviewMapper
+UserController -down-> UserMapper
+
+' =========================
+' CONTROLLERS -> REQUEST DTOs
+' =========================
+
+InteractionController -down-> req
+ListFavoriteController -down-> req
+ReviewController -down-> req
+UserController -down-> req
+AuthController -down-> req
+
+' =========================
+' RESPONSE DTOs
+' =========================
+
+RecommendationController -down-> res
+TmdbAdminController -down-> res
+GlobalExceptionHandler -down-> res
+PageMapper -right-> res
+@enduml

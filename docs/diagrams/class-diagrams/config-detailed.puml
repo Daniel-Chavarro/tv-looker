@@ -1,0 +1,38 @@
+@startuml
+skinparam packageStyle rectangle
+top to bottom direction
+hide empty members
+
+package "org.tvl.tvlooker.config" {
+    class SecurityConfig {
+        + securityFilterChain(): SecurityFilterChain
+        + jwtAuthenticationConverter(): JwtAuthenticationConverter
+        + jwtEncoder(): JwtEncoder
+        + jwtDecoder(): JwtDecoder
+        + passwordEncoder(): PasswordEncoder
+    }
+    class AsyncConfiguration {
+        + taskExecutor(): Executor
+        + tmdbTaskExecutor(): Executor
+    }
+    class RecommendationConfig {
+        + popularityStrategy(): RecommendationStrategy
+        + aggregationStrategy(): AggregationStrategy
+        + recommendationEngine(): HybridRecommendationEngine
+    }
+    class TmdbConfig {
+        - apiKey: String
+        - baseUrl: String
+        + tmdbRestClient(): RestClient
+    }
+    class OpenApiConfig {
+        + customOpenAPI(): OpenAPI
+    }
+}
+
+SecurityConfig --> "Controllers"
+AsyncConfiguration --> "TMDB Services"
+RecommendationConfig --> "Engine"
+TmdbConfig --> "TMDB Client"
+
+@enduml

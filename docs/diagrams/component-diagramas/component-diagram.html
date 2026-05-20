@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TV Looker — Diagrama de Componentes</title>
+<style>
+  :root {
+    --bg:      #f5f7fb;
+    --surface: #ffffff;
+    --card:    #f8fafc;
+    --border:  #d9e2ec;
+
+    --entry:   #0ea5e9;
+    --app:     #10b981;
+    --domain:  #8b5cf6;
+    --infra:   #eab308;
+    --ext:     #f97316;
+    --xting:   #64748b;
+    --support: #06b6d4;
+
+    --entry-bg: rgba(14,165,233,0.06);
+    --app-bg:   rgba(16,185,129,0.05);
+    --dom-bg:   rgba(139,92,246,0.05);
+    --infra-bg: rgba(234,179,8,0.05);
+    --ext-bg:   rgba(249,115,22,0.05);
+    --xting-bg: rgba(100,116,139,0.06);
+
+    --text:   #334155;
+    --bright: #0f172a;
+    --dim:    #64748b;
+    --mid:    #475569;
+
+    --mono: 'Courier New', 'Lucida Console', monospace;
+    --sans: 'Trebuchet MS', 'Gill Sans MT', 'Helvetica Neue', sans-serif;
+    --radius: 10px;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    background-image: radial-gradient(circle, #dbe7f3 1.2px, transparent 0);
+    background-size: 26px 26px;
+    color: var(--text);
+    font-family: var(--sans);
+    padding: 40px 24px 64px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+
+  .wrapper { max-width: 1160px; width: 100%; }
+
+  /* ── header ── */
+  header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 28px;
+  }
+  h1 {
+    font-family: var(--mono); font-size: 19px; font-weight: 700; letter-spacing: -.2px;
+    color: var(--bright);
+  }
+  h1 .acc { color: var(--entry); }
+  .sub {
+    font-family: var(--mono); font-size: 11px; color: var(--dim); margin-top: 4px; letter-spacing: .4px;
+  }
+  .badge {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .8px;
+    color: var(--mid); background: #eef4fb;
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 5px 14px;
+  }
+
+  /* ── diagram card ── */
+  .dcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 36px 36px 30px;
+    position: relative;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+  }
+  .dcard::before {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 18px;
+    background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(14,165,233,0.04), transparent);
+    pointer-events: none;
+  }
+
+  /* ── diagram area (relative for SVG) ── */
+  .darea {
+    position: relative;
+    min-height: 600px;
+  }
+
+  /* ── SVG overlay ── */
+  #arrows-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 1;
+    overflow: visible;
+  }
+
+  /* ── layer rows ── */
+  .row { display: flex; margin-bottom: 28px; position: relative; z-index: 5; }
+
+  .row-xting { justify-content: space-between; gap: 0; margin-bottom: 32px; }
+  .row-main  { justify-content: center; gap: 40px; }
+  .row-infra { justify-content: center; gap: 60px; margin-top: 4px; }
+  .row-sup   { justify-content: center; margin-top: 6px; }
+
+  .row-label {
+    font-family: var(--mono); font-size: 8px; font-weight: 700;
+    letter-spacing: 1.8px; text-transform: uppercase;
+    text-align: center; color: var(--dim);
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 6px; margin-bottom: 6px;
+  }
+
+  /* ── component card ── */
+  .comp {
+    background: var(--card);
+    border: 1.5px solid #cbd5e1;
+    border-radius: var(--radius);
+    padding: 11px 14px 10px;
+    position: relative;
+    cursor: default;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+  .comp:hover { transform: translateY(-2px); }
+
+  /* colored top border line */
+  .comp::after {
+    content: '';
+    position: absolute;
+    top: -1px; left: 14px; right: 14px;
+    height: 2.5px; border-radius: 2px;
+    transition: opacity 0.18s;
+  }
+  .comp:hover::after { opacity: 1; }
+
+  .stereo {
+    font-family: var(--mono); font-size: 8.5px; letter-spacing: .3px;
+    display: block; margin-bottom: 4px;
+  }
+  .cname {
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    color: var(--bright); line-height: 1.3;
+  }
+  .cdesc {
+    font-size: 10px; color: var(--mid);
+    margin-top: 3px; line-height: 1.4;
+  }
+
+  /* color variants per layer */
+  .c-entry  { border-color: rgba(14,165,233,0.30); }
+  .c-entry::after  { background: var(--entry); }
+  .c-entry:hover   { box-shadow: 0 4px 18px rgba(14,165,233,0.10); border-color: var(--entry); }
+  .c-entry .stereo { color: var(--entry); }
+
+  .c-app    { border-color: rgba(16,185,129,0.30); }
+  .c-app::after  { background: var(--app); }
+  .c-app:hover   { box-shadow: 0 4px 18px rgba(16,185,129,0.10); border-color: var(--app); }
+  .c-app .stereo { color: var(--app); }
+
+  .c-domain { border-color: rgba(139,92,246,0.30); }
+  .c-domain::after  { background: var(--domain); }
+  .c-domain:hover   { box-shadow: 0 4px 18px rgba(139,92,246,0.10); border-color: var(--domain); }
+  .c-domain .stereo { color: var(--domain); }
+
+  .c-infra  { border-color: rgba(234,179,8,0.30); }
+  .c-infra::after  { background: var(--infra); }
+  .c-infra:hover   { box-shadow: 0 4px 18px rgba(234,179,8,0.10); border-color: var(--infra); }
+  .c-infra .stereo { color: var(--infra); }
+
+  .c-ext    { border-color: rgba(249,115,22,0.30); }
+  .c-ext::after  { background: var(--ext); }
+  .c-ext:hover   { box-shadow: 0 4px 18px rgba(249,115,22,0.10); border-color: var(--ext); }
+  .c-ext .stereo { color: var(--ext); }
+
+  .c-xting  { border-color: rgba(100,116,139,0.30); border-style: dashed; }
+  .c-xting::after  { background: var(--xting); }
+  .c-xting:hover   { box-shadow: 0 4px 18px rgba(100,116,139,0.10); border-color: var(--xting); }
+  .c-xting .stereo { color: var(--xting); }
+
+  .c-support { border-color: rgba(6,182,212,0.30); border-style: dashed; }
+  .c-support::after  { background: var(--support); }
+  .c-support:hover   { box-shadow: 0 4px 18px rgba(6,182,212,0.10); border-color: var(--support); }
+  .c-support .stereo { color: var(--support); }
+
+  /* component widths */
+  .w-a { width: 170px; }
+  .w-b { width: 220px; }
+  .w-c { width: 200px; }
+  .w-d { width: 185px; }
+  .w-e { width: 310px; }
+  .w-f { width: 200px; }
+
+  /* ── interface ports (lollipops) ── */
+  .port {
+    position: absolute; z-index: 20;
+    width: 11px; height: 11px; border-radius: 50%;
+    border: 2px solid var(--mid); background: #fff;
+  }
+  .port-provided { background: var(--mid); }
+  .port-required { background: #fff; }
+
+  .port-label {
+    position: absolute; z-index: 20;
+    font-family: var(--mono); font-size: 7px;
+    color: var(--dim); white-space: nowrap;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .port-right  { right: -5px;  top: 50%; transform: translateY(-50%); }
+  .port-left   { left: -5px;   top: 50%; transform: translateY(-50%); }
+  .port-top    { top: -5px;    left: 50%; transform: translateX(-50%); }
+  .port-bottom { bottom: -5px; left: 50%; transform: translateX(-50%); }
+
+  .pl-right  { right: -5px;  bottom: calc(50% + 8px); transform: translateX(50%); }
+  .pl-left   { left: -5px;   bottom: calc(50% + 8px); transform: translateX(-50%); text-align: center; }
+  .pl-top    { left: 50%;    top: -18px; transform: translateX(-50%); }
+
+  /* ── external system box (TMDB API) ── */
+  .ext-sys {
+    border: 2px dashed var(--ext); border-radius: var(--radius);
+    background: rgba(249,115,22,0.03);
+    padding: 10px 14px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center;
+  }
+  .ext-sys .cname { color: var(--ext); font-size: 11px; }
+  .ext-sys .stereo { color: var(--ext); }
+  .ext-sys .cdesc { font-size: 9px; }
+
+  /* ── legend ── */
+  .legend {
+    margin-top: 22px;
+    display: flex; flex-wrap: wrap; gap: 8px 30px;
+    padding: 14px 22px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 11px; color: var(--mid);
+  }
+  .leg-title {
+    width: 100%;
+    font-family: var(--mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 1.8px; text-transform: uppercase; color: var(--dim);
+    margin-bottom: 2px;
+  }
+  .leg-item { display: flex; align-items: center; gap: 7px; }
+  .lb {
+    width: 16px; height: 11px; border-radius: 3px;
+    border: 1.5px solid; flex-shrink: 0; background: #fff;
+  }
+  .ll { width: 22px; height: 2px; flex-shrink: 0; background: var(--mid); }
+  .ld { width: 22px; height: 0; border-top: 2px dashed; flex-shrink: 0; border-color: var(--mid); }
+  .lp { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--mid); flex-shrink:0; }
+  .lp-f { background: var(--mid); }
+
+  /* ── notes ── */
+  .notes {
+    margin-top: 14px;
+    padding: 16px 22px;
+    border-left: 3px solid var(--entry);
+    background: rgba(14,165,233,0.03);
+    border-radius: 0 12px 12px 0;
+  }
+  .notes-title {
+    font-family: var(--mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 1.8px; text-transform: uppercase;
+    color: var(--entry); margin-bottom: 8px;
+  }
+  .notes ul {
+    list-style: none; font-size: 11.5px;
+    color: var(--mid); line-height: 1.8;
+  }
+  .notes li::before { content: '\25B8 '; color: var(--entry); }
+  .notes strong { color: var(--text); }
+  .notes code {
+    font-family: var(--mono); font-size: 10px;
+    background: #eef4fb; color: var(--domain);
+    padding: 1px 5px; border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- ─── HEADER ─── -->
+  <header>
+    <div>
+      <h1>Diagrama de Componentes — <span class="acc">TV Looker</span></h1>
+      <p class="sub">// componentes · interfaces explícitas · dependencias por capa</p>
+    </div>
+    <span class="badge">UML Component Diagram · v2.0</span>
+  </header>
+
+  <!-- ─── DIAGRAM ─── -->
+  <div class="dcard">
+    <div class="darea" id="darea">
+
+      <!-- SVG arrows layer -->
+      <svg id="arrows-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+
+      <!-- ═══ ROW 1: CROSS-CUTTING (Security + Observability) ═══ -->
+      <div class="row row-xting">
+        <div class="comp c-xting w-f" id="comp-security">
+          <span class="stereo">«infraestructura transversal»</span>
+          <div class="cname">Security Layer</div>
+          <div class="cdesc">JWT filter · Route authorization</div>
+          <div class="port port-provided port-right" id="port-sec"></div>
+          <div class="port-label pl-right" style="color:var(--xting);">ISecurity</div>
+        </div>
+
+        <div class="comp c-xting w-f" id="comp-obs">
+          <span class="stereo">«soporte operativo»</span>
+          <div class="cname">Observability</div>
+          <div class="cdesc">Actuator · Health checks · Logs</div>
+        </div>
+      </div>
+
+      <!-- ═══ ROW 2: MAIN FLOW ═══ -->
+      <div class="row row-main">
+        <!-- API REST -->
+        <div class="comp c-entry w-a" id="comp-api">
+          <span class="stereo">«interface de entrada»</span>
+          <div class="cname">API REST</div>
+          <div class="cdesc">11 controllers · DTOs · /api/v1</div>
+          <div class="port port-provided port-right" id="port-api-prov"></div>
+          <div class="port-label pl-right">IRestAPI</div>
+          <div class="port port-required port-left" id="port-api-req"></div>
+          <div class="port-label pl-left">ISecurity</div>
+        </div>
+
+        <!-- Application Services -->
+        <div class="comp c-app w-b" id="comp-app">
+          <span class="stereo">«capa de aplicación»</span>
+          <div class="cname">Application Services</div>
+          <div class="cdesc">Auth · User · Item · Review · Rec</div>
+          <div class="port port-provided port-right" id="port-app-prov"></div>
+          <div class="port-label pl-right">IAppService</div>
+          <div class="port port-required port-left" id="port-app-req"></div>
+          <div class="port port-required port-bottom" id="port-app-bottom-left" style="left:35%;"></div>
+          <div class="port port-required port-bottom" id="port-app-bottom-right" style="left:65%;"></div>
+        </div>
+
+        <!-- Recommendation Engine -->
+        <div class="comp c-domain w-c" id="comp-rec">
+          <span class="stereo">«dominio»</span>
+          <div class="cname">Recommendation Engine</div>
+          <div class="cdesc">HybridRecommendationEngine<br>RecommendationContext</div>
+          <div class="port port-provided port-right" id="port-rec-prov"></div>
+          <div class="port-label pl-right">IRecEngine</div>
+          <div class="port port-required port-left" id="port-rec-req"></div>
+          <div class="port port-required port-bottom" id="port-rec-bottom" style="left:50%;"></div>
+        </div>
+
+        <!-- Recommendation Strategies -->
+        <div class="comp c-domain w-d" id="comp-strat">
+          <span class="stereo">«dominio extensible»</span>
+          <div class="cname">Recommendation Strategies</div>
+          <div class="cdesc">Popularity · Aggregation<br>(Convex, Borda)</div>
+          <div class="port port-provided port-left" id="port-strat-prov"></div>
+          <div class="port port-required port-left" style="left:-6px;top:30%;" id="port-strat-req"></div>
+        </div>
+      </div>
+
+      <!-- ═══ ROW 3: INFRASTRUCTURE + EXTERNAL ═══ -->
+      <div class="row row-infra">
+        <div class="comp c-infra w-d" id="comp-persist">
+          <span class="stereo">«infraestructura»</span>
+          <div class="cname">Persistence Adapter</div>
+          <div class="cdesc">JPA Repositories · Entities<br>PostgreSQL / H2</div>
+          <div class="port port-provided port-top" id="port-pers-top"></div>
+          <div class="port-label pl-top" style="color:var(--dim);">IRepository</div>
+        </div>
+
+        <div class="comp c-ext w-d" id="comp-tmdb">
+          <span class="stereo">«adaptador externo»</span>
+          <div class="cname">TMDB Integration</div>
+          <div class="cdesc">TmdbClient · Mappers<br>Cache · Sync</div>
+          <div class="port port-provided port-top" id="port-tmdb-top"></div>
+          <div class="port-label pl-top" style="color:var(--dim);">IContentProvider</div>
+        </div>
+      </div>
+
+      <!-- ═══ ROW 4: SUPPORT (Configuration) ═══ -->
+      <div class="row row-sup">
+        <div class="comp c-support w-e" id="comp-config">
+          <span class="stereo">«soporte técnico»</span>
+          <div class="cname">Configuration Module</div>
+          <div class="cdesc">Properties · Profiles · Schedulers · Beans · Recommendation weights</div>
+          <div class="port port-provided port-top" style="left:20%;" id="port-config-left"></div>
+          <div class="port-label pl-top" style="left:20%;color:var(--dim);">IConfiguration</div>
+          <div class="port port-provided port-top" style="left:50%;" id="port-config-mid"></div>
+          <div class="port port-provided port-top" style="left:80%;" id="port-config-right"></div>
+        </div>
+      </div>
+
+    </div><!-- /darea -->
+
+    <!-- ─── LEGEND ─── -->
+    <div class="legend">
+      <div class="leg-title">Leyenda</div>
+      <div class="leg-item"><div class="lb" style="border-color:var(--entry)"></div> Entrada</div>
+      <div class="leg-item"><div class="lb" style="border-color:var(--app)"></div> Aplicación</div>
+      <div class="leg-item"><div class="lb" style="border-color:var(--domain)"></div> Dominio</div>
+      <div class="leg-item"><div class="lb" style="border-color:var(--infra)"></div> Infraestructura</div>
+      <div class="leg-item"><div class="lb" style="border-color:var(--ext)"></div> Adaptador externo</div>
+      <div class="leg-item"><div class="lb" style="border-color:var(--xting);border-style:dashed"></div> Transversal</div>
+      <div class="leg-item"><div class="lb" style="border-color:var(--support);border-style:dashed"></div> Soporte técnico</div>
+      <div class="leg-item"><div class="ll"></div> Dependencia directa</div>
+      <div class="leg-item"><div class="ld"></div> Dependencia transversal</div>
+      <div class="leg-item"><span class="lp lp-f"></span> Puerto provisto</div>
+      <div class="leg-item"><span class="lp"></span> Puerto requerido</div>
+    </div>
+
+    <!-- ─── NOTES ─── -->
+    <div class="notes">
+      <div class="notes-title">// Notas arquitectónicas</div>
+      <ul>
+        <li><strong>Desacoplamiento por interfaces:</strong> cada componente expone interfaces explícitas (<code>IRestAPI</code>, <code>IAppService</code>, <code>IRepository</code>, etc.) y los dependientes se acoplan solo al contrato, no a la implementación.</li>
+        <li><strong>Motor de recomendación extensible:</strong> <code>RecommendationEngine</code> ejecuta <code>IRecStrategy</code>; añadir una estrategia solo requiere implementar la interfaz y registrarla en <code>RecommendationConfig</code>.</li>
+        <li><strong>TMDB como adaptador aislado:</strong> <code>TmdbClient</code> es el único punto de contacto. Ningún otro componente conoce la API REST de TMDB.</li>
+        <li><strong>Persistencia encapsulada:</strong> <code>IRepository</code> oculta JPA/Hibernate. Los servicios superiores nunca dependen de entidades JPA directamente.</li>
+        <li><strong>Transversales desacoplados:</strong> Security, Configuration y Observability envuelven el flujo principal sin acoplarse a la lógica de dominio.</li>
+        <li><strong>Configuración centralizada:</strong> todos los componentes consumen <code>IConfiguration</code> para leer propiedades, pesos de recomendación y perfiles.</li>
+      </ul>
+    </div>
+
+  </div><!-- /dcard -->
+</div><!-- /wrapper -->
+
+<!-- ─── SCRIPT: AUTO-DRAW ARROWS ─── -->
+<script>
+(function() {
+  const svg  = document.getElementById('arrows-svg');
+  const area = document.getElementById('darea');
+  if (!svg || !area) return;
+
+  function getCompEdge(id, side) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const ar = area.getBoundingClientRect();
+    const er = el.getBoundingClientRect();
+    const top = er.top - ar.top, bottom = er.bottom - ar.top;
+    const left = er.left - ar.left, right = er.right - ar.left;
+    const cx = (left + right) / 2, cy = (top + bottom) / 2;
+    const map = {
+      top:    [cx, top],
+      bottom: [cx, bottom],
+      left:   [left, cy],
+      right:  [right, cy],
+      'top-left':     [left + 12, top],
+      'top-right':    [right - 12, top],
+      'bottom-left':  [left + 12, bottom],
+      'bottom-right': [right - 12, bottom],
+      'left-top':     [left, top + 12],
+      'left-bottom':  [left, bottom - 12],
+      'right-top':    [right, top + 12],
+      'right-bottom': [right, bottom - 12],
+    };
+    return map[side] || null;
+  }
+
+  function makeDefs() {
+    const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+    const arrs = [
+      ['arr-solid', '#64748b'],
+      ['arr-dashed','#64748b'],
+      ['arr-entry','#0ea5e9'],
+      ['arr-app','#10b981'],
+      ['arr-dom','#8b5cf6'],
+      ['arr-inf','#eab308'],
+      ['arr-ext','#f97316'],
+      ['arr-xting','#64748b'],
+    ];
+    arrs.forEach(([id, col]) => {
+      const m = document.createElementNS('http://www.w3.org/2000/svg','marker');
+      m.setAttribute('id',id); m.setAttribute('markerWidth','8');
+      m.setAttribute('markerHeight','6'); m.setAttribute('refX','7');
+      m.setAttribute('refY','3'); m.setAttribute('orient','auto');
+      const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+      p.setAttribute('d','M0,0 L8,3 L0,6 Z'); p.setAttribute('fill',col);
+      m.appendChild(p); defs.appendChild(m);
+    });
+    svg.appendChild(defs);
+  }
+
+  function drawCurve(x1,y1,x2,y2, col, marker, label, dashed) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const k = Math.min(dist * 0.35, 60);
+
+    let cx1, cy1, cx2, cy2;
+    const ax = Math.abs(dx), ay = Math.abs(dy);
+
+    if (ay < 8 && dx > 0) {
+      // horizontal rightward
+      cx1 = x1 + k; cy1 = y1;
+      cx2 = x2 - k; cy2 = y2;
+    } else if (ay < 8 && dx < 0) {
+      // horizontal leftward
+      cx1 = x1 - k; cy1 = y1;
+      cx2 = x2 + k; cy2 = y2;
+    } else if (ax < 8 && dy > 0) {
+      // vertical downward
+      cx1 = x1; cy1 = y1 + k;
+      cx2 = x2; cy2 = y2 - k;
+    } else if (ax < 8 && dy < 0) {
+      // vertical upward
+      cx1 = x1; cy1 = y1 - k;
+      cx2 = x2; cy2 = y2 + k;
+    } else if (dy > 0 && dx > 0) {
+      // diagonal down-right
+      cx1 = x1 + k; cy1 = y1;
+      cx2 = x2; cy2 = y2 - k;
+    } else if (dy > 0 && dx < 0) {
+      // diagonal down-left
+      cx1 = x1; cy1 = y1 + k;
+      cx2 = x2; cy2 = y2;
+    } else if (dy < 0 && dx > 0) {
+      // diagonal up-right
+      cx1 = x1; cy1 = y1;
+      cx2 = x2; cy2 = y2 + k;
+    } else {
+      cx1 = x1 + k; cy1 = y1;
+      cx2 = x2 - k; cy2 = y2;
+    }
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}`);
+    path.setAttribute('stroke', col);
+    path.setAttribute('stroke-width', '1.6');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-dasharray', dashed ? '5,4' : 'none');
+    path.setAttribute('marker-end', `url(#${marker})`);
+    path.setAttribute('opacity', '0.85');
+    svg.appendChild(path);
+
+    if (label) {
+      const mx = (x1 + x2) / 2 + (cx1 + cx2 - x1 - x2) / 4;
+      const my = (y1 + y2) / 2 + (cy1 + cy2 - y1 - y2) / 4;
+      const tw = label.length * 5.5 + 14;
+      const th = 16;
+      const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bg.setAttribute('x', mx - tw/2);
+      bg.setAttribute('y', my - th/2);
+      bg.setAttribute('width', tw);
+      bg.setAttribute('height', th);
+      bg.setAttribute('rx', '4');
+      bg.setAttribute('fill', '#ffffff');
+      bg.setAttribute('stroke', '#e2e8f0');
+      bg.setAttribute('stroke-width', '0.5');
+      svg.appendChild(bg);
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('x', mx);
+      txt.setAttribute('y', my + 1);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('dominant-baseline', 'central');
+      txt.setAttribute('font-size', '8');
+      txt.setAttribute('font-family', 'Courier New, monospace');
+      txt.setAttribute('font-weight', '700');
+      txt.setAttribute('fill', col);
+      txt.textContent = label;
+      svg.appendChild(txt);
+    }
+  }
+
+  function offset(x, y, side, dist) {
+    const d = dist || 8;
+    switch (side) {
+      case 'right':     case 'right-top':    case 'right-bottom': return [x + d, y];
+      case 'left':      case 'left-top':     case 'left-bottom':  return [x - d, y];
+      case 'top':       case 'top-left':     case 'top-right':    return [x, y - d];
+      case 'bottom':    case 'bottom-left':  case 'bottom-right': return [x, y + d];
+      default: return [x, y];
+    }
+  }
+
+  function drawLine(x1,y1,x2,y2,x3,y3,x4,y4, col, marker, label, dashed) {
+    const pts = [];
+    if (x4 !== undefined) pts.push(`${x4},${y4}`);
+    if (x3 !== undefined) pts.unshift(`${x3},${y3}`);
+    const d = `M${x1},${y1} L${pts.join(' L')} L${x2},${y2}`;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', col);
+    path.setAttribute('stroke-width', '1.6');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-dasharray', dashed ? '5,4' : 'none');
+    path.setAttribute('marker-end', `url(#${marker})`);
+    path.setAttribute('opacity', '0.85');
+    svg.appendChild(path);
+
+    if (label) {
+      let mx, my;
+      if (x4 !== undefined) {
+        mx = (x1 + x4) / 2; my = (y1 + y4) / 2;
+      } else {
+        mx = (x1 + x2) / 2; my = (y1 + y2) / 2;
+      }
+      const tw = label.length * 5.5 + 14;
+      const th = 16;
+      const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bg.setAttribute('x', mx - tw/2);
+      bg.setAttribute('y', my - th/2);
+      bg.setAttribute('width', tw);
+      bg.setAttribute('height', th);
+      bg.setAttribute('rx', '4');
+      bg.setAttribute('fill', '#ffffff');
+      bg.setAttribute('stroke', '#e2e8f0');
+      bg.setAttribute('stroke-width', '0.5');
+      svg.appendChild(bg);
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('x', mx);
+      txt.setAttribute('y', my + 1);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('dominant-baseline', 'central');
+      txt.setAttribute('font-size', '8');
+      txt.setAttribute('font-family', 'Courier New, monospace');
+      txt.setAttribute('font-weight', '700');
+      txt.setAttribute('fill', col);
+      txt.textContent = label;
+      svg.appendChild(txt);
+    }
+  }
+
+  function connect(fromId, fromSide, toId, toSide, col, marker, label, dashed, via) {
+    const f = getCompEdge(fromId, fromSide);
+    const t = getCompEdge(toId, toSide);
+    if (!f || !t) return;
+    const [fx, fy] = offset(f[0], f[1], fromSide);
+    const [tx, ty] = offset(t[0], t[1], toSide);
+    if (via) {
+      drawLine(fx, fy, tx, ty, via[0], via[1], null, null, col, marker, label, dashed);
+    } else {
+      drawLine(fx, fy, tx, ty, null, null, null, null, col, marker, label, dashed);
+    }
+  }
+
+  function draw() {
+    svg.innerHTML = '';
+    makeDefs();
+
+    // helper to get component box midpoint
+    function mid(id, side) {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const ar = area.getBoundingClientRect();
+      const er = el.getBoundingClientRect();
+      const top = er.top - ar.top, bottom = er.bottom - ar.top;
+      const left = er.left - ar.left, right = er.right - ar.left;
+      const cx = (left + right) / 2, cy = (top + bottom) / 2;
+      if (side === 'below') return [cx, bottom + 16];
+      if (side === 'above') return [cx, top - 16];
+      return [cx, cy];
+    }
+
+    // ── MAIN FLOW (solid arrows) ──
+    // API REST → App Services
+    connect('comp-api', 'right', 'comp-app', 'left',
+      '#64748b', 'arr-solid', '\u00abcalls\u00bb', false);
+
+    // App Services → Rec Engine
+    connect('comp-app', 'right', 'comp-rec', 'left',
+      '#64748b', 'arr-solid', '\u00aborquesta\u00bb', false);
+
+    // Rec Engine → Rec Strategies
+    connect('comp-rec', 'right', 'comp-strat', 'left',
+      '#8b5cf6', 'arr-dom', '\u00abexecutes\u00bb', false);
+
+    // App Services → Persistence
+    connect('comp-app', 'bottom-left', 'comp-persist', 'top',
+      '#64748b', 'arr-solid', '\u00abpersiste\u00bb', false);
+
+    // App Services → TMDB
+    connect('comp-app', 'bottom-right', 'comp-tmdb', 'top',
+      '#f97316', 'arr-ext', '\u00abfetches\u00bb', false);
+
+    // ── CROSS-CUTTING (dashed arrows) ──
+    // Security → API REST: route around via waypoint above API
+    connect('comp-security', 'right', 'comp-api', 'left-top',
+      '#64748b', 'arr-xting', '\u00abintercepts\u00bb', true);
+
+    // Config → App Services
+    connect('comp-config', 'top-left', 'comp-app', 'bottom-left',
+      '#06b6d4', 'arr-solid', '\u00abconfigura\u00bb', true);
+
+    // Config → Persistence
+    connect('comp-config', 'top', 'comp-persist', 'bottom',
+      '#06b6d4', 'arr-solid', '', true);
+
+    // Config → TMDB
+    connect('comp-config', 'top-right', 'comp-tmdb', 'bottom',
+      '#06b6d4', 'arr-solid', '', true);
+
+    // Config → Rec Engine (route behind infra row)
+    const recMid = mid('comp-rec', 'below');
+    const confMid = mid('comp-config', 'above');
+    if (recMid && confMid) {
+      connect('comp-config', 'top', 'comp-rec', 'bottom',
+        '#06b6d4', 'arr-solid', '', true,
+        [confMid[0], confMid[1] + 20]);
+    }
+
+    // Observability → App Services (route via gap right of main row)
+    const obs = getCompEdge('comp-obs', 'left');
+    const appR = getCompEdge('comp-app', 'right-bottom');
+    if (obs && appR) {
+      const [ox, oy] = offset(obs[0], obs[1], 'left', 8);
+      const [ax, ay] = offset(appR[0], appR[1], 'right-bottom', 8);
+      const wayY = (oy + ay) / 2;
+      drawLine(ox, oy, ax, ay, ox - 40, wayY, null, null,
+        '#64748b', 'arr-xting', '\u00abmonitorea\u00bb', true);
+    }
+
+    // OBS → Persistence (route below main flow)
+    connect('comp-obs', 'left', 'comp-persist', 'right',
+      '#64748b', 'arr-xting', '', true);
+
+    // OBS → Rec Engine (short horizontal)
+    connect('comp-obs', 'left', 'comp-rec', 'right-bottom',
+      '#64748b', 'arr-xting', '', true);
+  }
+
+  // draw on load and resize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(draw, 150));
+  } else {
+    setTimeout(draw, 150);
+  }
+  window.addEventListener('resize', draw);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+@startuml
+!theme plain
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 120
+skinparam ArrowThickness 1.2
+skinparam ArrowColor #444444
+skinparam packageBorderColor #777777
+skinparam packageBackgroundColor #FCFCFC
+
+top to bottom direction
+hide empty members
+
+package "org.tvl.tvlooker.service" as SERVICE {
+
+    class ActorService {
+        - actorRepository : ActorRepository
+        --
+        + getAll()
+        + getAll(pageable)
+        + getById()
+        + create()
+        + update()
+        + deleteById()
+    }
+
+    class DirectorService {
+        - directorRepository : DirectorRepository
+        --
+        + getAll()
+        + getById()
+        + create()
+        + update()
+        + deleteById()
+    }
+
+    class GenreService {
+        - genreRepository : GenreRepository
+        --
+        + getAll()
+        + getById()
+        + create()
+        + update()
+        + deleteById()
+    }
+
+    class InteractionService {
+        - interactionRepository : InteractionRepository
+        - reviewService : ReviewService
+        - userService : UserService
+        - itemService : ItemService
+        --
+        + getAll()
+        + getAll(pageable)
+        + getById()
+        + getByIdForUser()
+        + getByUserId()
+        + create()
+        + createForUser()
+        + update()
+        + updateForUser()
+        + delete()
+        + deleteForUser()
+    }
+
+    class ItemService {
+        - itemRepository : ItemRepository
+        --
+        + getAll()
+        + getAll(pageable)
+        + getById()
+        + create()
+        + update()
+        + deleteById()
+    }
+
+    class ListFavoriteService {
+        - listFavoriteRepository : ListFavoriteRepository
+        - itemService : ItemService
+        --
+        + getAll()
+        + getAll(pageable)
+        + getById()
+        + getByIdForUser()
+        + getByUserId()
+        + getListFavorites()
+        + create()
+        + createForUser()
+        + update()
+        + updateForUser()
+        + deleteById()
+        + deleteByIdForUser()
+        + addItemToFavorite()
+        + removeItemFromFavorite()
+    }
+
+    class ReviewService {
+        - reviewRepository : ReviewRepository
+        - userService : UserService
+        - itemService : ItemService
+        --
+        + getAll()
+        + getAll(pageable)
+        + getById()
+        + getByIdForUser()
+        + getByIdForAdmin()
+        + getByUserId()
+        + getByItemId()
+        + findByUserIdAndItemId()
+        + create()
+        + createForUser()
+        + update()
+        + updateForUser()
+        + deleteById()
+        + deleteByIdForUser()
+    }
+
+    class UserService {
+        - userRepository : UserRepository
+        - passwordEncoder : PasswordEncoder
+        --
+        + getAll()
+        + getAll(pageable)
+        + getById()
+        + create()
+        + update()
+        + delete()
+    }
+
+    class RecommendationService {
+        - recommendationEngine : RecommendationEngine
+        - userService : UserService
+        - interactionService : InteractionService
+        - itemService : ItemService
+        --
+        + getUserRecommendations()
+    }
+
+    class AuthService {
+        - userRepository : UserRepository
+        - passwordEncoder : PasswordEncoder
+        - jwtService : JwtService
+        --
+        + register()
+        + login()
+    }
+
+    class JwtService {
+        - jwtEncoder : JwtEncoder
+        - jwtExpiration : Duration
+        --
+        + generateToken()
+    }
+}
+
+package "org.tvl.tvlooker.domain.model.dto" as DomainDTO {
+
+    together {
+        class User
+        class Item
+        class Interaction
+    }
+
+    together {
+        class Review
+        class Genre
+        class Actor
+    }
+
+    together {
+        class ActorItem
+        class Director
+        class ListFavorite
+    }
+
+    together {
+        class ScoredItem
+    }
+
+    User -[hidden]down-> Review
+    Review -[hidden]down-> ActorItem
+    ActorItem -[hidden]down-> ScoredItem
+}
+
+SERVICE -[hidden]down-> DomainDTO
+
+ActorService   -down-> DomainDTO
+
+DirectorService -down-> DomainDTO
+
+GenreService   -down-> DomainDTO
+
+InteractionService -down-> DomainDTO
+
+ItemService     -down-> DomainDTO
+
+ListFavoriteService -down-> DomainDTO
+
+ReviewService   -down-> DomainDTO
+
+UserService    -down-> DomainDTO
+
+RecommendationService -down-> DomainDTO
+
+AuthService    -down-> DomainDTO
+
+AuthService -right-> JwtService
+
+InteractionService --> ReviewService
+
+InteractionService --> UserService
+
+InteractionService --> ItemService
+
+ListFavoriteService --> ItemService
+
+ReviewService --> UserService
+
+ReviewService --> ItemService
+
+RecommendationService --> UserService
+
+RecommendationService --> InteractionService
+
+RecommendationService --> ItemService
+
+@enduml

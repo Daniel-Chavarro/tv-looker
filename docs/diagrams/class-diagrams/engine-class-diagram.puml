@@ -1,0 +1,121 @@
+@startuml
+!theme plain
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 120
+skinparam ArrowThickness 1.2
+skinparam ArrowColor #444444
+skinparam packageBorderColor #777777
+skinparam packageBackgroundColor #FCFCFC
+
+top to bottom direction
+hide empty members
+
+package "org.tvl.tvlooker.domain.motor" {
+
+    interface RecommendationEngine {
+        + recommend()
+    }
+
+    class HybridRecommendationEngine implements RecommendationEngine {
+        + recommend()
+    }
+}
+
+package "org.tvl.tvlooker.domain.motor.utils" {
+
+    together {
+        class RecommendationContext <<Builder>> {
+            + getData()
+            + registerDataProvider()
+            + clearCache()
+            + checkDataNotNull()
+        }
+
+        class CachedData {
+            + isExpired()
+        }
+    }
+
+    together {
+        interface "DataProvider<T>" as DataProvider {
+            + getProviderId()
+            + provide()
+            + isCacheable()
+            + getCacheExpirationSeconds()
+        }
+    }
+
+    RecommendationContext *-- CachedData : contains
+}
+
+package "org.tvl.tvlooker.domain.motor.utils.provider" {
+
+    class ItemPopularityProvider {
+        + getProviderId()
+        + provide()
+        + getCacheExpirationSeconds()
+    }
+}
+
+package "org.tvl.tvlooker.domain.data_structure" {
+
+    class ScoredItem
+}
+
+package "org.tvl.tvlooker.domain.strategy.recommendation" {
+
+    interface RecommendationStrategy {
+        + recommend()
+        + getStrategyName()
+    }
+
+    class PopularityStrategy implements RecommendationStrategy {
+        + recommend()
+        + getStrategyName()
+    }
+}
+
+package "org.tvl.tvlooker.domain.strategy.aggregation" {
+
+    together {
+        interface AggregationStrategy {
+            + aggregate()
+            + getAggregationName()
+        }
+
+        class ConstantConvexAggregation implements AggregationStrategy {
+            + aggregate()
+            + getAggregationName()
+        }
+    }
+
+    together {
+        class RankingBasedAggregation implements AggregationStrategy {
+            + aggregate()
+            + getAggregationName()
+        }
+    }
+}
+
+HybridRecommendationEngine *-down- RecommendationStrategy
+HybridRecommendationEngine *-down- AggregationStrategy
+HybridRecommendationEngine *-down- DataProvider
+
+RecommendationEngine ..down.> RecommendationContext : uses
+RecommendationEngine ..down.> ScoredItem : produces
+
+RecommendationStrategy ..down.> RecommendationContext : uses
+RecommendationStrategy ..down.> ScoredItem : produces
+RecommendationStrategy ..down.> DataProvider : uses
+
+AggregationStrategy ..down.> ScoredItem : processes
+
+RecommendationContext *-down- DataProvider : registers
+
+ItemPopularityProvider ..up.|> DataProvider
+@enduml

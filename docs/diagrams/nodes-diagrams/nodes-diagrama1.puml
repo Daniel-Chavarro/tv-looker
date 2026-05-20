@@ -1,0 +1,47 @@
+@startuml
+' Diagrama A: Arquitectura de Ejecución (Runtime)
+
+skinparam backgroundColor transparent
+skinparam defaultFontName Arial
+skinparam nodeBackgroundColor #E8F0FE
+skinparam databaseBackgroundColor #FFF8DC
+skinparam cloudBackgroundColor #F3E8FF
+skinparam artifactBackgroundColor #D8F3DC
+skinparam noteBackgroundColor #FFF
+
+title Vista de Despliegue - Entorno de Ejecución (Runtime)
+
+node "Dispositivo Cliente" as client_node {
+  artifact "Frontend SPA\n(React 19, Vite, Axios)" as frontend
+}
+
+node "Servidor de Aplicación (JVM 21)" as app_node {
+  artifact "tv-looker.jar\n(Spring Boot 4.0.2)" as backend {
+    component "Capa API REST" as api
+    component "Motor de Recomendación" as engine
+    component "Módulos de Seguridad (JWT)" as security
+  }
+}
+
+database "Contenedor Docker (Puerto 5432)" as db_node {
+  artifact "PostgreSQL 17\n(tv-looker-db)" as postgres
+}
+
+cloud "Servicios de Terceros" as external_node {
+  artifact "The Movie Database\n(TMDB API)" as tmdb
+}
+
+' Conexiones de Red
+client_node --> api : HTTP/HTTPS\n[JSON + Bearer JWT]
+backend --> postgres : JDBC (TCP/IP)\n[Credenciales encriptadas]
+backend --> tmdb : HTTPS (REST)\n[Bearer API Key]
+
+' Notas de Configuración Externa
+note right of backend
+  <b>Configuración Externa (Variables de Entorno):</b>
+  • SPRING_DATASOURCE_* (Credenciales DB)
+  • APP_SECURITY_JWT_SECRET
+  • TMDB_API_KEY
+end note
+
+@enduml

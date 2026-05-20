@@ -1,0 +1,116 @@
+@startuml
+hide empty members
+
+package "org.tvl.tvlooker.domain.model.dto" {
+
+    class User {
+        + id: UUID
+        + username: String
+        + email: String
+        + name: String
+        + password: String
+        + authority: UserAuthority
+        + createdAt: Timestamp
+    }
+
+    class Item {
+        + id: Long
+        + title: String
+        + overview: String
+        + releaseDate: LocalDate
+        + popularity: BigDecimal
+        + voteAverage: BigDecimal
+        + tmdbType: TmdbType
+        + tmdbId: Long
+        + genres: Set<Genre>
+        + directors: Set<Director>
+        + actorsInItem: Set<ActorItem>
+    }
+
+    class Interaction {
+        + id: Long
+        + userId: UUID
+        + itemId: Long
+        + reviewId: Long
+        + interactionType: InteractionType
+        + createdAt: Timestamp
+    }
+
+    class Review {
+        + id: Long
+        + userId: UUID
+        + itemId: Long
+        + score: Integer
+        + reviewText: String
+        + reviewDate: Timestamp
+    }
+
+    class Genre {
+        + id: Long
+        + tmdbId: Long
+        + name: String
+    }
+
+    class Actor {
+        + id: Long
+        + tmdbId: Long
+        + name: String
+    }
+
+    class ActorItem {
+        + id: Long
+        + actor: Actor
+        + item: Item
+        + characterName: String
+        + billingOrder: Integer
+    }
+
+    class Director {
+        + id: Long
+        + tmdbId: Long
+        + name: String
+    }
+
+    class ListFavorite {
+        + id: Long
+        + userId: UUID
+        + name: String
+        + description: String
+        + items: Set<Item>
+    }
+
+    enum TmdbType {
+        MOVIE
+        TV
+    }
+
+    enum InteractionType {
+        VIEW
+        RATING
+        REVIEW
+        RESEARCH
+        CLICK
+        LIKE
+    }
+
+    enum UserAuthority {
+        USER
+        ADMIN
+    }
+
+    User "1" -- "*" Interaction : has
+    Item "1" -- "*" Interaction : receives
+    User "1" -- "*" Review : writes
+    Item "1" -- "*" Review : gets
+    Item "*" -- "*" Genre : categorizes
+    Item "*" -- "*" ActorItem : features
+    ActorItem "*" -- "1" Actor : references
+    Item "*" -- "*" Director : directed by
+    User "1" -- "*" ListFavorite : owns
+    ListFavorite "1" -- "*" Item : contains
+
+    Item ..> TmdbType : uses
+    Interaction ..> InteractionType : uses
+    User ..> UserAuthority : uses
+}
+@enduml

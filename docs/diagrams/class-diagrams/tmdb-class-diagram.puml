@@ -1,0 +1,303 @@
+@startuml
+!theme plain
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 120
+skinparam ArrowThickness 1.2
+skinparam ArrowColor #444444
+skinparam packageBorderColor #777777
+skinparam packageBackgroundColor #FCFCFC
+
+top to bottom direction
+hide empty members
+
+package "org.tvl.tvlooker.service.tmdb" {
+
+    together {
+        class TmdbDataFetcher {
+            + fetchMovieDetailsAsync()
+            + fetchTvShowDetailsAsync()
+            + fetchGenresAsync()
+            + fetchPopularMoviesAsync()
+            + fetchPopularTvShowsAsync()
+            + fetchChangesAsync()
+            + fetchDetailsWithCreditsAsync()
+            + fetchPopularAsync()
+            + fetchMoviesDetailsBatch()
+            + fetchTvShowsDetailsBatch()
+            + fetchGenres()
+        }
+
+        class TmdbDataCollectorService {
+            + collectAll()
+            + collectAllAsync()
+            + collectGenres()
+            + collectPopularMovies()
+            + collectPopularMoviesAsync()
+            + collectPopularTvShows()
+            + collectPopularTvShowsAsync()
+            + isCollectionInProgress()
+        }
+    }
+
+    together {
+        class TmdbDataSynchronizerService {
+            + scheduledSync()
+            + synchronize()
+        }
+
+        class TmdbItemPersistenceService {
+            + persistItems()
+            + persistGenres()
+            + discoverAndPersistNewMovies()
+            + discoverAndPersistNewTvShows()
+            + updateItem()
+        }
+    }
+
+    together {
+        class EntityCacheService {
+            + findOrCreateActors()
+            + findOrCreateDirectors()
+            + findOrCreateGenres()
+        }
+
+        class EntitySaveHelper {
+            + saveActor()
+            + saveDirector()
+            + saveGenre()
+        }
+    }
+
+    TmdbDataFetcher -[hidden]down-> TmdbDataSynchronizerService
+    TmdbDataSynchronizerService -[hidden]down-> EntityCacheService
+}
+
+package "org.tvl.tvlooker.persistence.tmdb" {
+
+    together {
+        class TmdbClient {
+            + getMovieDetails() @Deprecated
+            + getMovieCredits() @Deprecated
+            + getTvShowDetails() @Deprecated
+            + getTvShowCredits() @Deprecated
+            + getPopular()
+            + getDetailsWithCredits()
+            + getChanges()
+            + getGenres()
+        }
+
+        enum TmdbMediaType {
+            MOVIE
+            TV
+        }
+    }
+}
+
+package "org.tvl.tvlooker.persistence.tmdb.dto" {
+
+    together {
+        class TmdbMovieDto {
+            + id: long
+            + title: String
+            + overview: String
+            + releaseDate: String
+            + popularity: double
+            + voteAverage: double
+            + voteCount: int
+            + posterPath: String
+            + genreIds: List<Integer>
+            + genres: List<TmdbGenreDto>
+        }
+
+        class TmdbTvShowDto {
+            + id: long
+            + name: String
+            + overview: String
+            + firstAirDate: String
+            + popularity: double
+            + voteAverage: double
+            + voteCount: int
+            + posterPath: String
+            + genreIds: List<Integer>
+            + genres: List<TmdbGenreDto>
+        }
+    }
+
+    together {
+        class TmdbMovieDetailsDto {
+            + id: long
+            + title: String
+            + overview: String
+            + releaseDate: String
+            + popularity: double
+            + voteAverage: double
+            + voteCount: int
+            + posterPath: String
+            + backdropPath: String
+            + genres: List<TmdbGenreDto>
+            + credits: TmdbCreditsDto
+        }
+
+        class TmdbTvShowDetailsDto {
+            + id: long
+            + title: String
+            + overview: String
+            + releaseDate: String
+            + popularity: double
+            + voteAverage: double
+            + voteCount: int
+            + posterPath: String
+            + backdropPath: String
+            + genres: List<TmdbGenreDto>
+            + credits: TmdbCreditsDto
+        }
+    }
+
+    together {
+        class TmdbPagedResponseDto<T> {
+            + page: int
+            + results: List<T>
+            + totalPages: int
+            + totalResults: int
+        }
+
+        class TmdbGenreDto {
+            + id: int
+            + name: String
+        }
+
+        class TmdbGenreListDto {
+            + genres: List<TmdbGenreDto>
+        }
+    }
+
+    together {
+        class TmdbCreditsDto {
+            + id: Long
+            + cast: List<CastMember>
+            + crew: List<CrewMember>
+        }
+
+        class TmdbChangesDto {
+            + id: long
+            + adult: boolean
+        }
+    }
+
+    together {
+        interface TmdbMediaItem {
+            + id()
+            + title()
+            + overview()
+            + releaseDate()
+            + popularity()
+            + voteAverage()
+            + voteCount()
+            + posterPath()
+            + genreIds()
+            + genres()
+        }
+
+        interface TmdbMediaDetails {
+            + credits()
+        }
+    }
+
+    TmdbMovieDto -[hidden]down-> TmdbMovieDetailsDto
+    TmdbMovieDetailsDto -[hidden]down-> TmdbPagedResponseDto
+    TmdbPagedResponseDto -[hidden]down-> TmdbCreditsDto
+    TmdbCreditsDto -[hidden]down-> TmdbMediaItem
+}
+
+package "org.tvl.tvlooker.persistence.tmdb.mapper" {
+
+    together {
+        class TmdbItemBuilder {
+            + buildFromItemDetails()
+            + buildActorItems()
+        }
+
+        class TmdbGenreMapper {
+            + toEntity()
+        }
+    }
+
+    together {
+        class TmdbCastMemberMapper {
+            + toEntity()
+        }
+
+        class TmdbItemMapper {
+            + fromMovie()
+            + fromTvShow()
+            + updateFromMovie(movieDto)
+            + updateFromMovie(movieDetailsDto)
+            + updateFromTvShow(tvShowDto)
+            + updateFromTvShow(tvShowDetailsDto)
+        }
+    }
+
+    TmdbItemBuilder -down-> TmdbCastMemberMapper : uses
+}
+
+TmdbDataFetcher -down-> TmdbClient : uses
+TmdbDataFetcher -down-> TmdbMediaType : uses
+
+TmdbDataCollectorService -down-> TmdbDataFetcher : uses
+TmdbDataCollectorService -down-> TmdbItemPersistenceService : uses
+
+TmdbDataSynchronizerService -down-> TmdbItemPersistenceService : uses
+TmdbDataSynchronizerService -down-> TmdbDataFetcher : uses
+TmdbDataSynchronizerService -down-> ItemRepository : uses
+
+TmdbItemPersistenceService -down-> TmdbItemBuilder : uses
+TmdbItemPersistenceService -down-> ItemRepository : uses
+TmdbItemPersistenceService -down-> TmdbDataFetcher : uses
+TmdbItemPersistenceService -down-> EntityCacheService : uses
+
+TmdbClient ..down.> TmdbMovieDto : returns
+TmdbClient ..down.> TmdbTvShowDto : returns
+TmdbClient ..down.> TmdbMovieDetailsDto : returns
+TmdbClient ..down.> TmdbTvShowDetailsDto : returns
+TmdbClient ..down.> TmdbPagedResponseDto : returns
+TmdbClient ..down.> TmdbGenreListDto : returns
+TmdbClient ..down.> TmdbChangesDto : returns
+
+TmdbItemBuilder ..down.> TmdbMediaDetails : consumes
+
+TmdbItemMapper ..down.> TmdbMovieDto : consumes
+TmdbItemMapper ..down.> TmdbTvShowDto : consumes
+TmdbItemMapper ..down.> TmdbMovieDetailsDto : consumes
+TmdbItemMapper ..down.> TmdbTvShowDetailsDto : consumes
+
+EntityCacheService ..down.> TmdbCreditsDto : consumes
+EntityCacheService ..down.> TmdbGenreDto : consumes
+
+TmdbGenreMapper ..down.> TmdbGenreDto : consumes
+
+TmdbMediaType ..down.> TmdbMediaItem : references
+TmdbMediaType ..down.> TmdbMediaDetails : references
+
+TmdbMovieDto ..up.|> TmdbMediaItem : implements
+TmdbTvShowDto ..up.|> TmdbMediaItem : implements
+
+TmdbMovieDetailsDto ..up.|> TmdbMediaDetails : implements
+TmdbTvShowDetailsDto ..up.|> TmdbMediaDetails : implements
+
+TmdbMediaDetails --up.|> TmdbMediaItem : extends
+EntityCacheService *-- EntitySaveHelper : helper
+
+TmdbMovieDto *-- TmdbGenreDto
+TmdbTvShowDto *-- TmdbGenreDto
+TmdbMovieDetailsDto *-- TmdbGenreDto
+TmdbTvShowDetailsDto *-- TmdbGenreDto
+TmdbGenreListDto *-- TmdbGenreDto
+
+TmdbMovieDetailsDto *-- TmdbCreditsDto
+TmdbTvShowDetailsDto *-- TmdbCreditsDto
+@enduml
