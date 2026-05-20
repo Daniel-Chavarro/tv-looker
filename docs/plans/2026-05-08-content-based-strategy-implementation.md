@@ -53,13 +53,14 @@ Nota: Tags no se procesan en esta implementacion porque el modelo de datos aun n
 Provider ID: `"user-content-profiles"`
 
 1. Obtiene los vectores de items de `ItemFeatureVectorProvider`
-2. Agrega interacciones de usuarios ponderadas por tipo:
+2. Pre-indexa los reviews en un `Map<Long, Double>` (reviewId → score) para lookup O(1) — evita linear scan por cada interacción RATING
+3. Agrega interacciones de usuarios ponderadas por tipo:
    - LIKE: peso 5.0
    - VIEW: peso 3.0
-   - RATING: usa score >= 4.0 como positivo, score <= 2.0 como penalizacion (-score), neutral entre 2 y 4
+   - RATING: obtiene el score real desde el mapa de reviews; si no hay review o score, default 4.0; score >= 4.0 contribuye positivo, score <= 2.0 contribuye como penalización (-score), neutral entre 2 y 4
    - Otros tipos: peso 0.0
-3. Construye perfil del usuario sumando vectores de items con sus pesos
-4. Cache: 1 hora (3600 segundos)
+4. Construye perfil del usuario sumando vectores de items con sus pesos
+5. Cache: 1 hora (3600 segundos)
 
 ### ContentBasedStrategy (Recommendation Strategy)
 
@@ -102,11 +103,18 @@ recommendation.weights.content=0.25
 
 - **Nota (2026-05-19):** En la configuración de los pesos (e.g. `RecommendationConfig`), el key usado en el mapa interno es `"content-based"` para alinearse con el nombre que retorna la estrategia y evitar que el peso se ignore.
 
-Habilitar estrategia (cuando el switch este disponible):
+La estrategia se habilita/deshabilita via:
 
 ```properties
 recommendation.strategies.content.enabled=true
 ```
+
+Controlada por `@ConditionalOnProperty` con `matchIfMissing = false`, lo que significa que **no** se carga sin la propiedad explícita `=true`. Actualmente está habilitada en los 3 profiles:
+- `application.properties`: `recommendation.strategies.content.enabled=true`
+- `application-test.properties`: `recommendation.strategies.content.enabled=true`
+- `application-dev.properties`: `recommendation.strategies.content.enabled=true`
+
+El switch de estrategia es independiente del switch de TF-IDF (`recommendation.content.tfidf.enabled`). Se puede tener la estrategia habilitada con TF-IDF deshabilitado (usa pesos planos) o viceversa.
 
 ---
 
@@ -269,6 +277,39 @@ Fuera de alcance en esta feature:
 4. **Tags**: reservados en la estructura pero no procesados por `ItemFeatureVectorProvider` debido a la ausencia de entidad Tag.
 
 5. **Cache**: implementado via `getCacheExpirationSeconds()` en cada provider, no via `CachedData` interno como sugeria el diseno (la cache es manejada por el consumidor del provider).
+
+---
+
+## 11) Optimización de rendimiento: lookup de reviews con mapa (2026-05-19)
+
+### Problema original
+
+`UserProfileProvider.computeWeight()` y `RatingAccumulator.lookupReviewScore()` escaneaban `context.getReviews()` linealmente por cada interacción RATING. Con N reviews y M ratings, la complejidad era O(N×M) por request.
+
+### Solución
+
+Ambos componentes construyen un `Map` pre-indexado una sola vez antes de iterar interacciones:
+
+| Componente | Estructura | Default si no encuentra |
+|---|---|---|
+| `UserProfileProvider` | `Map<Long, Double>` (reviewId → score, con nulls flatteados a 4.0) | 4.0 |
+| `RatingAccumulator` | `Map<Long, Review>` (reviewId → Review object) | 3.0 |
+
+### Cambios concretos
+
+- **`UserProfileProvider`:**
+  - Nuevo método `buildReviewScoreMap()` construye el mapa al inicio de `provide()`
+  - `computeWeight()` recibe el mapa como parámetro y hace `reviewScoreMap.get(reviewId)` en O(1)
+
+- **`RatingAccumulator`:**
+  - Nuevo método `buildReviewMap()` construye el mapa al inicio de `accumulate()`
+  - `extractRating()` recibe el mapa en vez del contexto
+  - `lookupReviewScore()` eliminada (reemplazada por lookup directo en el mapa)
+
+### Archivos modificados
+
+- `src/main/java/org/tvl/tvlooker/domain/motor/utils/provider/UserProfileProvider.java`
+- `src/main/java/org/tvl/tvlooker/domain/motor/utils/provider/RatingAccumulator.java`
 
 ---
 
