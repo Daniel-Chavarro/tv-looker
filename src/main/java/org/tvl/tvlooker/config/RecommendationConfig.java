@@ -51,7 +51,7 @@ public class RecommendationConfig {
     @ConditionalOnProperty(
             name = "recommendation.strategies.content.enabled",
             havingValue = "true",
-            matchIfMissing = true)
+            matchIfMissing = false)
     public RecommendationStrategy contentBasedStrategy() {
         return new ContentBasedStrategy();
     }

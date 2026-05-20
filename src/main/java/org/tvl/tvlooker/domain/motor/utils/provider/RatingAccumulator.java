@@ -37,6 +37,7 @@ public class RatingAccumulator {
     public void accumulate(List<Interaction> interactions,
                            IndexMappings mappings,
                            RecommendationContext context) {
+        Map<Long, Review> reviewMap = buildReviewMap(context);
         for (Interaction interaction : interactions) {
             if (interaction.getInteractionType() != InteractionType.RATING) {
                 continue;
@@ -53,7 +54,7 @@ public class RatingAccumulator {
                 continue;
             }
 
-            double rating = extractRating(interaction, context);
+            double rating = extractRating(interaction, reviewMap);
 
             ratingSums.computeIfAbsent(userUuid, k -> new HashMap<>())
                     .merge(iIdx, rating, Double::sum);
@@ -62,19 +63,22 @@ public class RatingAccumulator {
         }
     }
 
-    private double extractRating(Interaction interaction, RecommendationContext context) {
-        if (interaction.getReviewId() != null) {
-            return lookupReviewScore(context, interaction.getReviewId());
+    private Map<Long, Review> buildReviewMap(RecommendationContext context) {
+        if (context.getReviews() == null) return Map.of();
+        Map<Long, Review> map = new HashMap<>();
+        for (Review review : context.getReviews()) {
+            if (review.getId() != null) {
+                map.put(review.getId(), review);
+            }
         }
-        return 3.0;
+        return map;
     }
 
-    private double lookupReviewScore(RecommendationContext context, Long reviewId) {
-        if (context.getReviews() != null && reviewId != null) {
-            for (Review review : context.getReviews()) {
-                if (java.util.Objects.equals(review.getId(), reviewId)) {
-                    return review.getScore() != null ? review.getScore() : 3.0;
-                }
+    private double extractRating(Interaction interaction, Map<Long, Review> reviewMap) {
+        if (interaction.getReviewId() != null) {
+            Review review = reviewMap.get(interaction.getReviewId());
+            if (review != null) {
+                return review.getScore() != null ? review.getScore() : 3.0;
             }
         }
         return 3.0;

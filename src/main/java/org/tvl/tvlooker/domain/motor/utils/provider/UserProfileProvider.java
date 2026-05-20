@@ -51,6 +51,7 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
             return userProfiles;
         }
 
+        Map<Long, Double> reviewScoreMap = buildReviewScoreMap(context);
         Map<String, Map<Long, Double>> userItemWeights = new HashMap<>();
 
         for (Interaction interaction : context.getInteractions()) {
@@ -61,7 +62,7 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
             String userUuid = interaction.getUserId().toString();
             Long itemId = interaction.getItemId();
 
-            double weight = computeWeight(interaction, context);
+            double weight = computeWeight(interaction, context, reviewScoreMap);
 
             if (weight != 0.0) {
                 userItemWeights.computeIfAbsent(userUuid, k -> new HashMap<>())
@@ -90,23 +91,32 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
         return userProfiles;
     }
 
-    private double computeWeight(Interaction interaction, RecommendationContext context) {
+    private Map<Long, Double> buildReviewScoreMap(RecommendationContext context) {
+        if (context.getReviews() == null) return Map.of();
+        Map<Long, Double> map = new HashMap<>();
+        for (Review review : context.getReviews()) {
+            if (review.getId() != null) {
+                map.put(review.getId(), review.getScore() != null ? review.getScore() : 4.0);
+            }
+        }
+        return map;
+    }
+
+    private double computeWeight(Interaction interaction, RecommendationContext context,
+                                  Map<Long, Double> reviewScoreMap) {
         if (interaction.getInteractionType() == InteractionType.LIKE) {
             return 5.0;
         } else if (interaction.getInteractionType() == InteractionType.VIEW) {
             return 3.0;
         } else if (interaction.getInteractionType() == InteractionType.RATING) {
             double score = 4.0;
-            if (interaction.getReviewId() != null && context.getReviews() != null) {
-                for (Review review : context.getReviews()) {
-                    if (java.util.Objects.equals(review.getId(), interaction.getReviewId())) {
-                        score = review.getScore() != null ? review.getScore() : 4.0;
-                        break;
-                    }
+            if (interaction.getReviewId() != null && reviewScoreMap != null) {
+                Double mappedScore = reviewScoreMap.get(interaction.getReviewId());
+                if (mappedScore != null) {
+                    score = mappedScore;
                 }
             }
 
-            // To be precise with the heuristic: score >= 4 is positive (+weight), score <= 2 is penalization (-weight)
             if (score >= 4.0) {
                 return score;
             } else if (score <= 2.0) {
