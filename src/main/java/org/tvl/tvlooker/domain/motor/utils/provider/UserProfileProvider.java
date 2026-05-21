@@ -62,7 +62,7 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
             String userUuid = interaction.getUserId().toString();
             Long itemId = interaction.getItemId();
 
-            double weight = computeWeight(interaction, context, reviewScoreMap);
+            double weight = computeWeight(interaction, reviewScoreMap);
 
             if (weight != 0.0) {
                 userItemWeights.computeIfAbsent(userUuid, k -> new HashMap<>())
@@ -102,7 +102,7 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
         return map;
     }
 
-    private double computeWeight(Interaction interaction, RecommendationContext context,
+    private double computeWeight(Interaction interaction,
                                   Map<Long, Double> reviewScoreMap) {
         if (interaction.getInteractionType() == InteractionType.LIKE) {
             return 5.0;
