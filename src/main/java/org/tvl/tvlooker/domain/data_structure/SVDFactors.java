@@ -53,14 +53,11 @@ public class SVDFactors {
      * Checks if a user exists in the factor mapping.
      */
     public boolean hasUser(String userUuid) {
-        return userIdToIndex.containsKey(userUuid);
+        return userIdToIndex != null && userIdToIndex.containsKey(userUuid);
     }
 
-    /**
-     * Checks if an item exists in the factor mapping.
-     */
     public boolean hasItem(Long itemId) {
-        return itemIdToIndex.containsKey(itemId);
+        return itemIdToIndex != null && itemIdToIndex.containsKey(itemId);
     }
 
     /**
@@ -68,6 +65,7 @@ public class SVDFactors {
      * Returns null if user not found.
      */
     public double[] getUserVector(String userUuid) {
+        if (userIdToIndex == null || userFactors == null) return null;
         Integer index = userIdToIndex.get(userUuid);
         if (index == null || index >= userFactors.length) {
             return null;
@@ -75,11 +73,8 @@ public class SVDFactors {
         return userFactors[index];
     }
 
-    /**
-     * Gets the item factor vector for a given item ID.
-     * Returns null if item not found.
-     */
     public double[] getItemVector(Long itemId) {
+        if (itemIdToIndex == null || itemFactors == null) return null;
         Integer index = itemIdToIndex.get(itemId);
         if (index == null || index >= itemFactors.length) {
             return null;

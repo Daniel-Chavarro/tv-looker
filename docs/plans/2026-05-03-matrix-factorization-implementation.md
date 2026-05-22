@@ -52,13 +52,13 @@ Despues de reduccion a k factores:
 
 ### Prediccion
 
-```
+```text
 score = userVector · itemVector = Σ (userFactors[i] * itemFactors[i])
 ```
 
 ### Normalizacion
 
-```
+```text
 normalizedScore = clamp(score / 5.0, 0.0, 1.0)
 ```
 
@@ -171,14 +171,14 @@ Dado:
   - User2: Item1=5, Item3=2
 
 Matriz de ratings (centrada por media usuario):
-```
+```text
        Item1   Item2   Item3
 User1  +0.5   -0.5     0.0   (media=3.5)
 User2  +1.5    0.0    -1.5   (media=3.5)
 ```
 
 SVD con k=2 produce vectores latentes. Para predecir rating de User1 sobre Item3:
-```
+```text
 score = dot(User1_vector, Item3_vector)
 ```
 
@@ -189,7 +189,7 @@ score = dot(User1_vector, Item3_vector)
 Ejecutar tests especificos:
 
 ```powershell
-Set-Location "C:\Users\user\OneDrive\Documentos\TV-Looker\tv-looker"
+# From the project root (tv-looker)
 mvn "-Dtest=MatrixFactorizationStrategyTest" test
 mvn "-Dtest=MatrixFactorizationProviderTest" test
 ```
@@ -197,7 +197,7 @@ mvn "-Dtest=MatrixFactorizationProviderTest" test
 Validacion de regresion:
 
 ```powershell
-Set-Location "C:\Users\user\OneDrive\Documentos\TV-Looker\tv-looker"
+# From the project root (tv-looker)
 mvn "-Dtest=HybridRecommendationEngineTest" test
 ```
 

@@ -31,7 +31,12 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
     public MatrixFactorizationProvider(
             @Value("${recommendation.mf.latent-factors:50}") int latentFactors,
             SVDMatrixProcessor svdProcessor) {
-        this.latentFactors = latentFactors;
+        if (latentFactors < 1) {
+            logger.warn("Invalid recommendation.mf.latent-factors={}, clamping to 1", latentFactors);
+            this.latentFactors = 1;
+        } else {
+            this.latentFactors = latentFactors;
+        }
         this.svdProcessor = svdProcessor;
     }
 
@@ -44,7 +49,7 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
     public SVDFactors provide(RecommendationContext context) {
         List<Interaction> interactions = context.getInteractions();
         if (interactions == null || interactions.isEmpty()) {
-            logger.warn("No interactions available for SVD computation");
+            logger.info("No interactions available for SVD computation");
             return buildEmptyFactors();
         }
 
@@ -61,7 +66,7 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
         RatingMatrixBuilder.RatingMatrixResult result = matrixBuilder.build(interactions);
 
         if (result.matrix().length == 0) {
-            logger.warn("No rating interactions found for SVD computation");
+            logger.info("No rating interactions found for SVD computation");
             return buildEmptyFactors();
         }
 

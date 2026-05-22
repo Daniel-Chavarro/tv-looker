@@ -36,11 +36,11 @@ class ItemFeatureVectorProviderTest {
         assertNotNull(result);
         assertEquals(3, result.size());
 
-        // Total items = 3. Action DF = 2. Comedy DF = 1. Drama DF = 1.
-        // Idf action = Math.log(3 / (1+2)) = Math.log(1) = 0.0
-        // Idf comedy = Math.log(3 / (1+1)) = Math.log(1.5)
-        double actionIdf = Math.log(3.0 / 3.0);
-        double comedyIdf = Math.log(3.0 / 2.0);
+        // Total items N = 3. Action DF = 2. Comedy DF = 1. Drama DF = 1.
+        // Idf action = Math.log((N+1) / (df+1)) = Math.log(4 / 3)
+        // Idf comedy = Math.log((N+1) / (df+1)) = Math.log(4 / 2)
+        double actionIdf = Math.log(4.0 / 3.0);
+        double comedyIdf = Math.log(4.0 / 2.0);
 
         assertEquals(actionIdf, result.get(1L).getGenres().get("Action"), 0.001);
         assertEquals(actionIdf, result.get(2L).getGenres().get("Action"), 0.001);

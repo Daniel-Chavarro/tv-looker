@@ -140,7 +140,7 @@ El switch de estrategia es independiente del switch de TF-IDF (`recommendation.c
 
 ## 6) Casos cubiertos por tests
 
-### ItemFeatureVectorTest (2 tests)
+### ItemFeatureVectorTest (4 tests)
 
 1. Similitud coseno entre vectores identicos = 1.0
 2. Similitud coseno entre vectores ortogonales = 0.0
@@ -165,7 +165,7 @@ El switch de estrategia es independiente del switch de TF-IDF (`recommendation.c
 2. Omite interacciones con null userId o itemId (nuevo)
 3. Maneja null reviewId de forma segura (nuevo)
 
-### ContentBasedStrategyTest (1 test)
+### ContentBasedStrategyTest (5 tests)
 
 1. Recomendacion normal: usuario con perfil obtiene items similares
 2. Cold start: usuario sin perfil retorna lista vacia
@@ -190,19 +190,17 @@ Document frequencies:
 - Drama: df=1 (Item3)
 
 IDF:
-- Action: log(3 / (1+2)) = log(1) = 0.0
-- Comedy: log(3 / (1+1)) = log(1.5) ≈ 0.405
-- Drama: log(3 / (1+1)) = log(1.5) ≈ 0.405
+- Action: log((3+1) / (2+1)) = log(4/3) ≈ 0.288
+- Comedy: log((3+1) / (1+1)) = log(4/2) ≈ 0.693
+- Drama: log((3+1) / (1+1)) = log(4/2) ≈ 0.693
 
 Perfil de usuario (solo vio Item1):
-- Action: 5.0 * 0.0 = 0.0
+- Action: 5.0 * 0.288 = 1.44
 
-Scores contra candidatos:
-- Item1: cosineSimilarity([Action:0.0], [Action:0.0]) = 0.0 -> filtrado
-- Item2: cosineSimilarity([Action:0.0], [Action:0.0, Comedy:0.405]) = 0.0 -> filtrado
-- Item3: cosineSimilarity([Action:0.0], [Drama:0.405]) = 0.0 -> filtrado
-
-> Nota: con este ejemplo degenerado (Action DF=2, IDF=0), todas las similitudes son 0. En datos reales con mas items y features mas raros, los scores serian no nulos.
+Scores contra candidatos (similitud coseno normalizada a [0, 1]):
+- Item1: cosineSimilarity([Action:1.44], [Action:0.288]) = 1.0 -> score 1.0
+- Item2: cosineSimilarity([Action:1.44], [Action:0.288, Comedy:0.693]) ≈ 0.384 -> score 0.384
+- Item3: cosineSimilarity([Action:1.44], [Drama:0.693]) = 0.0 -> filtrado
 
 ---
 
@@ -211,7 +209,7 @@ Scores contra candidatos:
 Ejecutar tests especificos:
 
 ```powershell
-Set-Location "C:\Users\user\OneDrive\Documentos\TV-Looker\tv-looker"
+# From the project root (tv-looker)
 mvn "-Dtest=ItemFeatureVectorTest" test
 mvn "-Dtest=ItemFeatureVectorProviderTest" test
 mvn "-Dtest=UserProfileProviderTest" test
@@ -221,7 +219,7 @@ mvn "-Dtest=ContentBasedStrategyTest" test
 Validacion de regresion:
 
 ```powershell
-Set-Location "C:\Users\user\OneDrive\Documentos\TV-Looker\tv-looker"
+# From the project root (tv-looker)
 mvn "-Dtest=HybridRecommendationEngineTest" test
 ```
 
@@ -251,7 +249,7 @@ Se agregaron validaciones de null para prevenir NullPointerExceptions:
 ### ItemFeatureVector
 - Agrego braces para ifs de una linea para cumplir con regla Checkstyle NeedBraces (lineas 32-34, 96-98)
 
-## 10) Limitaciones actuales
+## 11) Limitaciones actuales
 
 Fuera de alcance en esta feature:
 
@@ -264,7 +262,7 @@ Fuera de alcance en esta feature:
 
 ---
 
-## 10) Decisiones tecnicas y desviaciones del diseno
+## 12) Decisiones tecnicas y desviaciones del diseno
 
 ### Diferencias respecto al diseno original (2026-03-06)
 
@@ -280,7 +278,7 @@ Fuera de alcance en esta feature:
 
 ---
 
-## 11) Optimización de rendimiento: lookup de reviews con mapa (2026-05-19)
+## 13) Optimización de rendimiento: lookup de reviews con mapa (2026-05-19)
 
 ### Problema original
 
@@ -313,7 +311,7 @@ Ambos componentes construyen un `Map` pre-indexado una sola vez antes de iterar 
 
 ---
 
-## 12) Referencias
+## 14) Referencias
 
 - [Recommendation Strategies Design](https://github.com/Daniel-Chavarro/tv-looker/blob/main/docs/plans/2026-03-06-recommendation-strategies-and-aggregations-design.md#2-content-based-strategy)
 - Issue original: feature request para Content-Based Strategy (Phase 1 - Foundation)

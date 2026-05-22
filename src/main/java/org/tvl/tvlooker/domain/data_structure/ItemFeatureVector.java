@@ -83,7 +83,9 @@ public class ItemFeatureVector {
     private double sumOfSquares(Map<String, Double> map) {
         double sum = 0.0;
         for (Double val : map.values()) {
-            sum += val * val;
+            if (val != null) {
+                sum += val * val;
+            }
         }
         return sum;
     }
@@ -104,7 +106,10 @@ public class ItemFeatureVector {
 
     private void addMapWithWeight(Map<String, Double> target, Map<String, Double> source, double weight) {
         for (Map.Entry<String, Double> entry : source.entrySet()) {
-            target.put(entry.getKey(), target.getOrDefault(entry.getKey(), 0.0) + (entry.getValue() * weight));
+            Double val = entry.getValue();
+            if (val != null) {
+                target.put(entry.getKey(), target.getOrDefault(entry.getKey(), 0.0) + (val * weight));
+            }
         }
     }
 }

@@ -49,10 +49,12 @@ public class ContentBasedStrategy implements RecommendationStrategy {
             return List.of();
         }
 
+        if (user.getId() == null) {
+            return List.of();
+        }
         String userUuid = user.getId().toString();
         ItemFeatureVector userProfile = userProfiles.get(userUuid);
 
-        // Cold start users (no history) -> return empty list
         if (userProfile == null) {
             return List.of();
         }

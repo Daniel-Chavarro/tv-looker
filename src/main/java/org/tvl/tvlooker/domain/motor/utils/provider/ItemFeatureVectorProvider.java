@@ -13,8 +13,10 @@ import org.tvl.tvlooker.domain.motor.utils.DataProvider;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Computes TF-IDF weighted feature vectors for items.
@@ -69,22 +71,25 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
 
         for (Item item : items) {
             if (item.getGenres() != null) {
+                Set<String> seen = new HashSet<>();
                 for (Genre g : item.getGenres()) {
-                    if (g.getName() != null && !g.getName().isBlank()) {
+                    if (g.getName() != null && !g.getName().isBlank() && seen.add(g.getName())) {
                         genreDf.put(g.getName(), genreDf.getOrDefault(g.getName(), 0) + 1);
                     }
                 }
             }
             if (item.getActorsInItem() != null) {
+                Set<String> seen = new HashSet<>();
                 for (ActorItem a : item.getActorsInItem()) {
-                    if (a.getActor() != null && a.getActor().getName() != null && !a.getActor().getName().isBlank()) {
+                    if (a.getActor() != null && a.getActor().getName() != null && !a.getActor().getName().isBlank() && seen.add(a.getActor().getName())) {
                         actorDf.put(a.getActor().getName(), actorDf.getOrDefault(a.getActor().getName(), 0) + 1);
                     }
                 }
             }
             if (item.getDirectors() != null) {
+                Set<String> seen = new HashSet<>();
                 for (Director d : item.getDirectors()) {
-                    if (d.getName() != null && !d.getName().isBlank()) {
+                    if (d.getName() != null && !d.getName().isBlank() && seen.add(d.getName())) {
                         directorDf.put(d.getName(), directorDf.getOrDefault(d.getName(), 0) + 1);
                     }
                 }
@@ -103,7 +108,7 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
             if (item.getGenres() != null) {
                 for (Genre g : item.getGenres()) {
                     if (g.getName() != null && !g.getName().isBlank()) {
-                        double idf = Math.log((double) totalItems / (1 + genreDf.getOrDefault(g.getName(), 0)));
+                        double idf = Math.log((double) (totalItems + 1) / (1 + genreDf.getOrDefault(g.getName(), 0)));
                         vector.getGenres().put(g.getName(), idf);
                     }
                 }
@@ -112,7 +117,7 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
             if (item.getActorsInItem() != null) {
                 for (ActorItem a : item.getActorsInItem()) {
                     if (a.getActor() != null && a.getActor().getName() != null && !a.getActor().getName().isBlank()) {
-                        double idf = Math.log((double) totalItems / (1 + actorDf.getOrDefault(a.getActor().getName(), 0)));
+                        double idf = Math.log((double) (totalItems + 1) / (1 + actorDf.getOrDefault(a.getActor().getName(), 0)));
                         vector.getActors().put(a.getActor().getName(), idf);
                     }
                 }
@@ -121,7 +126,7 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
             if (item.getDirectors() != null) {
                 for (Director d : item.getDirectors()) {
                     if (d.getName() != null && !d.getName().isBlank()) {
-                        double idf = Math.log((double) totalItems / (1 + directorDf.getOrDefault(d.getName(), 0)));
+                        double idf = Math.log((double) (totalItems + 1) / (1 + directorDf.getOrDefault(d.getName(), 0)));
                         vector.getDirectors().put(d.getName(), idf);
                     }
                 }
