@@ -1,5 +1,9 @@
 package org.tvl.tvlooker.domain.motor.utils.provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.domain.data_structure.ItemFeatureVector;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
@@ -19,6 +23,8 @@ import java.util.Map;
  */
 @Component
 public class UserProfileProvider implements DataProvider<Map<String, ItemFeatureVector>> {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserProfileProvider.class);
 
     @Override
     public String getProviderId() {
@@ -43,7 +49,7 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
             itemVectors = new HashMap<>();
         } catch (Exception e) {
             // Log unexpected exceptions and fallback to an empty map
-            org.slf4j.LoggerFactory.getLogger(UserProfileProvider.class).error("Unexpected exception fetching item vectors", e);
+            logger.error("Unexpected exception fetching item vectors", e);
             itemVectors = new HashMap<>();
         }
 
@@ -92,7 +98,9 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
     }
 
     private Map<Long, Double> buildReviewScoreMap(RecommendationContext context) {
-        if (context.getReviews() == null) return Map.of();
+        if (context.getReviews() == null) {
+            return Map.of();
+        }
         Map<Long, Double> map = new HashMap<>();
         for (Review review : context.getReviews()) {
             if (review.getId() != null) {

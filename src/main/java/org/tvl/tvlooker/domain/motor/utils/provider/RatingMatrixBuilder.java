@@ -117,7 +117,9 @@ public class RatingMatrixBuilder {
         return currentIndex;
     }
 
-    private double[][] fillRatingMatrix(List<Interaction> interactions, RatingAccumulator.IndexMappings mappings, Map<String, Double> userMeansOut) {
+    private double[][] fillRatingMatrix(List<Interaction> interactions,
+                                         RatingAccumulator.IndexMappings mappings,
+                                         Map<String, Double> userMeansOut) {
         RatingAccumulator accumulator = new RatingAccumulator();
         accumulator.accumulate(interactions, mappings, context);
 

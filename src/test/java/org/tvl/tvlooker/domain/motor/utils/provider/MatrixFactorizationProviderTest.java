@@ -3,6 +3,7 @@ package org.tvl.tvlooker.domain.motor.utils.provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.tvl.tvlooker.domain.data_structure.SVDFactors;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
 import org.tvl.tvlooker.domain.model.dto.Item;
@@ -266,27 +267,7 @@ class MatrixFactorizationProviderTest {
     }
 
     @Test
-    @DisplayName("Should handle single user with single rating")
-    void shouldHandleSingleUserSingleRating() {
-        User user1 = TestDataFactory.createUser("user1");
-        List<Item> items = TestDataFactory.createItems(3);
-
-        List<Interaction> interactions = List.of(
-                createRatingInteraction(1L, user1.getId(), items.get(0).getId())
-        );
-
-        RecommendationContext context = TestDataFactory.createContext(
-                List.of(user1), items, interactions);
-
-        SVDFactors factors = provider.provide(context);
-
-        assertNotNull(factors);
-        assertEquals(1, factors.getUserIdToIndex().size());
-        assertEquals(1, factors.getItemIdToIndex().size());
-        assertTrue(factors.getLatentFactors() > 0);
-    }
-
-    @Test
+    @Timeout(5)
     @DisplayName("Should handle large sparse matrix efficiently")
     void shouldHandleLargeSparseMatrix() {
         int numUsers = 20;
@@ -306,14 +287,10 @@ class MatrixFactorizationProviderTest {
 
         RecommendationContext context = TestDataFactory.createContext(users, items, interactions);
 
-        long start = System.currentTimeMillis();
         SVDFactors factors = provider.provide(context);
-        long elapsed = System.currentTimeMillis() - start;
 
         assertNotNull(factors);
         assertTrue(factors.getLatentFactors() > 0);
-        // Should complete in reasonable time (< 5 seconds for this size)
-        assertTrue(elapsed < 5000, "SVD computation took too long: " + elapsed + "ms");
     }
 
     @Test

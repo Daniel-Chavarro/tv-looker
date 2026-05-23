@@ -73,24 +73,25 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
             if (item.getGenres() != null) {
                 Set<String> seen = new HashSet<>();
                 for (Genre g : item.getGenres()) {
-                    if (g.getName() != null && !g.getName().isBlank() && seen.add(g.getName())) {
-                        genreDf.put(g.getName(), genreDf.getOrDefault(g.getName(), 0) + 1);
+                    if (isValidName(g.getName()) && seen.add(g.getName())) {
+                        genreDf.merge(g.getName(), 1, Integer::sum);
                     }
                 }
             }
             if (item.getActorsInItem() != null) {
                 Set<String> seen = new HashSet<>();
                 for (ActorItem a : item.getActorsInItem()) {
-                    if (a.getActor() != null && a.getActor().getName() != null && !a.getActor().getName().isBlank() && seen.add(a.getActor().getName())) {
-                        actorDf.put(a.getActor().getName(), actorDf.getOrDefault(a.getActor().getName(), 0) + 1);
+                    String actorName = getActorName(a);
+                    if (isValidName(actorName) && seen.add(actorName)) {
+                        actorDf.merge(actorName, 1, Integer::sum);
                     }
                 }
             }
             if (item.getDirectors() != null) {
                 Set<String> seen = new HashSet<>();
                 for (Director d : item.getDirectors()) {
-                    if (d.getName() != null && !d.getName().isBlank() && seen.add(d.getName())) {
-                        directorDf.put(d.getName(), directorDf.getOrDefault(d.getName(), 0) + 1);
+                    if (isValidName(d.getName()) && seen.add(d.getName())) {
+                        directorDf.merge(d.getName(), 1, Integer::sum);
                     }
                 }
             }
@@ -102,32 +103,34 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
                 continue;
             }
 
-            ItemFeatureVector.ItemFeatureVectorBuilder vectorBuilder = ItemFeatureVector.builder();
-            ItemFeatureVector vector = vectorBuilder.build(); // Using default empty maps
+            ItemFeatureVector vector = ItemFeatureVector.builder().build();
 
             if (item.getGenres() != null) {
                 for (Genre g : item.getGenres()) {
-                    if (g.getName() != null && !g.getName().isBlank()) {
-                        double idf = Math.log((double) (totalItems + 1) / (1 + genreDf.getOrDefault(g.getName(), 0)));
-                        vector.getGenres().put(g.getName(), idf);
+                    String name = g.getName();
+                    if (isValidName(name)) {
+                        double idf = Math.log((double) (totalItems + 1) / (1 + genreDf.getOrDefault(name, 0)));
+                        vector.getGenres().put(name, idf);
                     }
                 }
             }
 
             if (item.getActorsInItem() != null) {
                 for (ActorItem a : item.getActorsInItem()) {
-                    if (a.getActor() != null && a.getActor().getName() != null && !a.getActor().getName().isBlank()) {
-                        double idf = Math.log((double) (totalItems + 1) / (1 + actorDf.getOrDefault(a.getActor().getName(), 0)));
-                        vector.getActors().put(a.getActor().getName(), idf);
+                    String actorName = getActorName(a);
+                    if (isValidName(actorName)) {
+                        double idf = Math.log((double) (totalItems + 1) / (1 + actorDf.getOrDefault(actorName, 0)));
+                        vector.getActors().put(actorName, idf);
                     }
                 }
             }
 
             if (item.getDirectors() != null) {
                 for (Director d : item.getDirectors()) {
-                    if (d.getName() != null && !d.getName().isBlank()) {
-                        double idf = Math.log((double) (totalItems + 1) / (1 + directorDf.getOrDefault(d.getName(), 0)));
-                        vector.getDirectors().put(d.getName(), idf);
+                    String name = d.getName();
+                    if (isValidName(name)) {
+                        double idf = Math.log((double) (totalItems + 1) / (1 + directorDf.getOrDefault(name, 0)));
+                        vector.getDirectors().put(name, idf);
                     }
                 }
             }
@@ -136,5 +139,16 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
         }
 
         return vectors;
+    }
+
+    private static boolean isValidName(String name) {
+        return name != null && !name.isBlank();
+    }
+
+    private static String getActorName(ActorItem a) {
+        if (a.getActor() == null) {
+            return null;
+        }
+        return a.getActor().getName();
     }
 }

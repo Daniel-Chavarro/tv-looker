@@ -65,7 +65,9 @@ public class SVDFactors {
      * Returns null if user not found.
      */
     public double[] getUserVector(String userUuid) {
-        if (userIdToIndex == null || userFactors == null) return null;
+        if (userIdToIndex == null || userFactors == null) {
+            return null;
+        }
         Integer index = userIdToIndex.get(userUuid);
         if (index == null || index >= userFactors.length) {
             return null;
@@ -74,7 +76,9 @@ public class SVDFactors {
     }
 
     public double[] getItemVector(Long itemId) {
-        if (itemIdToIndex == null || itemFactors == null) return null;
+        if (itemIdToIndex == null || itemFactors == null) {
+            return null;
+        }
         Integer index = itemIdToIndex.get(itemId);
         if (index == null || index >= itemFactors.length) {
             return null;

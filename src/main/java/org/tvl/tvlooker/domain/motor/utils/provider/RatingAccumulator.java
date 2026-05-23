@@ -64,7 +64,9 @@ public class RatingAccumulator {
     }
 
     private Map<Long, Review> buildReviewMap(RecommendationContext context) {
-        if (context.getReviews() == null) return Map.of();
+        if (context.getReviews() == null) {
+            return Map.of();
+        }
         Map<Long, Review> map = new HashMap<>();
         for (Review review : context.getReviews()) {
             if (review.getId() != null) {
