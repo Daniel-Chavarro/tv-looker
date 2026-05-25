@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Computes TF-IDF weighted feature vectors for items.
@@ -52,14 +53,20 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
     public Map<Long, ItemFeatureVector> provide(RecommendationContext context) {
         Map<Long, ItemFeatureVector> vectors = new HashMap<>();
 
-        if (!enabled) {
-            logger.debug("TF-IDF content provider is disabled");
-            return vectors;
-        }
-
         List<Item> items = context.getItems();
         if (items == null || items.isEmpty()) {
             return vectors;
+        }
+
+        // Filter out items with null IDs early so totalItems and DF are consistent
+        items = items.stream().filter(i -> i.getId() != null).collect(Collectors.toList());
+        if (items.isEmpty()) {
+            return vectors;
+        }
+
+        if (!enabled) {
+            logger.debug("TF-IDF weighting is disabled; using flat weights for content vectors");
+            return buildFlatVectors(items);
         }
 
         int totalItems = items.size();
@@ -99,10 +106,6 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
 
         // Calculate TF-IDF vectors
         for (Item item : items) {
-            if (item.getId() == null) {
-                continue;
-            }
-
             ItemFeatureVector vector = ItemFeatureVector.builder().build();
 
             if (item.getGenres() != null) {
@@ -138,6 +141,38 @@ public class ItemFeatureVectorProvider implements DataProvider<Map<Long, ItemFea
             vectors.put(item.getId(), vector);
         }
 
+        return vectors;
+    }
+
+    private Map<Long, ItemFeatureVector> buildFlatVectors(List<Item> items) {
+        Map<Long, ItemFeatureVector> vectors = new HashMap<>();
+        for (Item item : items) {
+            ItemFeatureVector vector = ItemFeatureVector.builder().build();
+            if (item.getGenres() != null) {
+                for (Genre g : item.getGenres()) {
+                    if (isValidName(g.getName())) {
+                        vector.getGenres().put(g.getName(), 1.0);
+                    }
+                }
+            }
+            if (item.getActorsInItem() != null) {
+                for (ActorItem a : item.getActorsInItem()) {
+                    String actorName = getActorName(a);
+                    if (isValidName(actorName)) {
+                        vector.getActors().put(actorName, 1.0);
+                    }
+                }
+            }
+            if (item.getDirectors() != null) {
+                for (Director d : item.getDirectors()) {
+                    String name = d.getName();
+                    if (isValidName(name)) {
+                        vector.getDirectors().put(name, 1.0);
+                    }
+                }
+            }
+            vectors.put(item.getId(), vector);
+        }
         return vectors;
     }
 

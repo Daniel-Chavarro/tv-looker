@@ -151,7 +151,7 @@ El switch de estrategia es independiente del switch de TF-IDF (`recommendation.c
 
 1. Extraccion y calculo TF-IDF correcto para generos
 2. Verificacion de cache: provider ID y expiracion de 86400 segundos
-3. Manejo cuando esta deshabilitado: retorna mapa vacio
+3. Manejo cuando esta deshabilitado: retorna vectores con pesos planos (1.0)
 4. Omite items con nombres de genero null o blank (nuevo)
 5. Omite items con nombres de director null o blank (nuevo)
 6. Omite items con ID null (nuevo)

@@ -48,7 +48,7 @@ public class SVDMatrixProcessor {
         double[][] itemFactors = extractItemFactors(svd, numItems, k);
         double[] reducedSingularValues = Arrays.copyOf(svd.getSingularValues(), k);
 
-        logger.info("SVD computation complete: {} latent factors extracted", k);
+        logger.debug("SVD computation complete: {} latent factors extracted", k);
 
         return SVDFactors.builder()
                 .userFactors(userFactors)

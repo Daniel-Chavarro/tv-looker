@@ -49,7 +49,7 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
     public SVDFactors provide(RecommendationContext context) {
         List<Interaction> interactions = context.getInteractions();
         if (interactions == null || interactions.isEmpty()) {
-            logger.info("No interactions available for SVD computation");
+            logger.debug("No interactions available for SVD computation");
             return buildEmptyFactors();
         }
 
@@ -58,7 +58,10 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
 
     @Override
     public long getCacheExpirationSeconds() {
-        return 604800; // 1 week
+        // Caching is scoped to the RecommendationContext instance (per-request).
+        // No cross-request cache is maintained, so returning 0 avoids a misleading TTL.
+        // For SVD factor caching across requests, wire up Spring Cache / Caffeine externally.
+        return 0;
     }
 
     private SVDFactors computeSVDFactors(List<Interaction> interactions, RecommendationContext context) {
@@ -66,11 +69,11 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
         RatingMatrixBuilder.RatingMatrixResult result = matrixBuilder.build(interactions);
 
         if (result.matrix().length == 0) {
-            logger.info("No rating interactions found for SVD computation");
+            logger.debug("No rating interactions found for SVD computation");
             return buildEmptyFactors();
         }
 
-        logger.info("Building rating matrix: {} users × {} items, k={}",
+        logger.debug("Building rating matrix: {} users × {} items, k={}",
                 result.numUsers(), result.numItems(), latentFactors);
 
         return svdProcessor.process(result.matrix(), latentFactors,

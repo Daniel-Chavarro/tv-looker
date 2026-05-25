@@ -39,9 +39,10 @@ class MatrixFactorizationProviderTest {
     }
 
     @Test
-    @DisplayName("Should cache results for 1 week (604800 seconds)")
-    void shouldCacheForOneWeek() {
-        assertEquals(604800, provider.getCacheExpirationSeconds());
+    @DisplayName("Should return 0 TTL (no cross-request cache)")
+    void shouldReturnNoCacheTtl() {
+        // Caching is scoped to RecommendationContext (per-request), so TTL is 0
+        assertEquals(0, provider.getCacheExpirationSeconds());
     }
 
     @Test

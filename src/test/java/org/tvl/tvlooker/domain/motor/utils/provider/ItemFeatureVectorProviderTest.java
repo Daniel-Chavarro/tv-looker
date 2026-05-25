@@ -56,13 +56,16 @@ class ItemFeatureVectorProviderTest {
     }
 
     @Test
-    @DisplayName("Should handle disabled correctly")
+    @DisplayName("Should use flat weights when disabled")
     void testDisabled() {
         ItemFeatureVectorProvider localProvider = new ItemFeatureVectorProvider(false);
         Item item1 = Item.builder().id(1L).genres(Set.of(new Genre(1L, 100L, "Action"))).build();
         RecommendationContext context = RecommendationContext.builder().items(List.of(item1)).build();
 
-        assertTrue(localProvider.provide(context).isEmpty());
+        Map<Long, ItemFeatureVector> result = localProvider.provide(context);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(1.0, result.get(1L).getGenres().get("Action"), 0.001);
     }
 
     @Test
