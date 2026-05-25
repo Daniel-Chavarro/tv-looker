@@ -103,8 +103,8 @@ class RatingAccumulatorTest {
     }
 
     @Test
-    @DisplayName("Should use Objects.equals for null-safe review comparison")
-    void testShouldUseObjectsEqualsForReviewComparison() {
+    @DisplayName("Should accumulate rating when interaction reviewId matches a context review")
+    void testShouldAccumulateRatingWhenReviewIdMatchesContextReview() {
         UUID userId = UUID.randomUUID();
         
         RatingAccumulator.IndexMappings mappings = new RatingAccumulator.IndexMappings(

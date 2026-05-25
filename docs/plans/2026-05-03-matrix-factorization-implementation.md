@@ -136,7 +136,7 @@ Cache:
 7. Manejo de lista vacia de items candidatos
 8. Solo recomienda items presentes en la lista candidata
 
-### MatrixFactorizationProviderTest (15 tests)
+### MatrixFactorizationProviderTest (14 tests)
 
 1. Provider ID correcto (`"svd-factors"`)
 2. Cache de 1 semana (604800 segundos)
@@ -150,9 +150,8 @@ Cache:
 10. Score 0 para usuario desconocido
 11. Score 0 para item desconocido
 12. Timestamp `computedAt` establecido
-13. Manejo de unico usuario con unico rating (caso borde)
-14. Manejo eficiente de matriz sparse grande (20 usuarios × 30 items)
-15. Mapeo inverso de indices a itemId consistente
+13. Manejo eficiente de matriz sparse grande (20 usuarios × 30 items)
+14. Mapeo inverso de indices a itemId consistente
 
 ### RatingAccumulatorTest (3 tests) - Nuevo
 
@@ -213,8 +212,8 @@ Se agregaron validaciones de null para prevenir NullPointerExceptions:
 
 ### RatingAccumulator
 - Valida `userId` y `itemId` antes de procesar interacciones (lineas 44-46)
-- Usa `Objects.equals()` para comparacion null-safe de review IDs (linea 75)
-- Previene NPEs al buscar scores de reviews
+- Usa un mapa preconstruido `reviewId` -> `Review` para resolver reviews asociadas de forma eficiente (linea 66-77)
+- Previene NPEs al buscar reviews y al acceder a sus scores
 
 ### SVDFactors
 - El metodo `predictRealScore` agrega la media del usuario de vuelta a la prediccion (lineas 108-112)

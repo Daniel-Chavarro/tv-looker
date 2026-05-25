@@ -31,7 +31,10 @@ public class MatrixFactorizationStrategy implements RecommendationStrategy {
 
     @Override
     public List<ScoredItem> recommend(User user, List<Item> candidateItems, RecommendationContext context) {
-        if (candidateItems == null || candidateItems.isEmpty()) {
+        if (user == null || candidateItems == null || candidateItems.isEmpty()) {
+            return List.of();
+        }
+        if (user.getId() == null) {
             return List.of();
         }
 

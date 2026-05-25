@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.tvl.tvlooker.domain.data_structure.ItemFeatureVector;
+import org.tvl.tvlooker.domain.model.dto.Director;
 import org.tvl.tvlooker.domain.model.dto.Genre;
 import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
@@ -87,9 +88,9 @@ class ItemFeatureVectorProviderTest {
     @Test
     @DisplayName("Should skip items with null director names")
     void testShouldSkipNullDirectorNames() {
-        org.tvl.tvlooker.domain.model.dto.Director nullDirector = new org.tvl.tvlooker.domain.model.dto.Director(1L, 100L, null);
-        org.tvl.tvlooker.domain.model.dto.Director blankDirector = new org.tvl.tvlooker.domain.model.dto.Director(2L, 200L, "");
-        org.tvl.tvlooker.domain.model.dto.Director validDirector = new org.tvl.tvlooker.domain.model.dto.Director(3L, 300L, "Nolan");
+        Director nullDirector = new Director(1L, 100L, null);
+        Director blankDirector = new Director(2L, 200L, "");
+        Director validDirector = new Director(3L, 300L, "Nolan");
 
         Item item1 = Item.builder().id(1L).directors(Set.of(nullDirector, blankDirector, validDirector)).build();
         RecommendationContext context = RecommendationContext.builder().items(List.of(item1)).build();

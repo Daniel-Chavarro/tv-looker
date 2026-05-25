@@ -2,8 +2,6 @@ package org.tvl.tvlooker.domain.motor.utils.provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.domain.data_structure.ItemFeatureVector;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
@@ -78,8 +76,7 @@ public class UserProfileProvider implements DataProvider<Map<String, ItemFeature
 
         for (Map.Entry<String, Map<Long, Double>> entry : userItemWeights.entrySet()) {
             String userUuid = entry.getKey();
-            ItemFeatureVector.ItemFeatureVectorBuilder profileBuilder = ItemFeatureVector.builder();
-            ItemFeatureVector profile = profileBuilder.build();
+            ItemFeatureVector profile = ItemFeatureVector.builder().build();
 
             for (Map.Entry<Long, Double> itemWeight : entry.getValue().entrySet()) {
                 Long itemId = itemWeight.getKey();

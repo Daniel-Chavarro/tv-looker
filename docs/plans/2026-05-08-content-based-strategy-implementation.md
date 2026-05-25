@@ -165,13 +165,12 @@ El switch de estrategia es independiente del switch de TF-IDF (`recommendation.c
 2. Omite interacciones con null userId o itemId (nuevo)
 3. Maneja null reviewId de forma segura (nuevo)
 
-### ContentBasedStrategyTest (5 tests)
+### ContentBasedStrategyTest (1 test)
 
-1. Recomendacion normal: usuario con perfil obtiene items similares
-2. Cold start: usuario sin perfil retorna lista vacia
-3. Filtrado de items con score 0
-4. Verificacion de nombre de estrategia `"content-based"`
-5. Verificacion de sourceStrategy en ScoredItem
+1. Recomendacion normal + cold start: usuario con perfil obtiene items similares, usuario sin perfil retorna lista vacia
+2. Filtrado de items con score 0
+3. Verificacion de nombre de estrategia `"content-based"`
+4. Verificacion de `sourceStrategy` y `explanation` en ScoredItem
 
 ---
 
@@ -238,8 +237,8 @@ Se agregaron validaciones de null para prevenir NullPointerExceptions:
 
 ### UserProfileProvider
 - Valida `userId` y `itemId` antes de procesar interacciones (lineas 57-59)
-- Usa `Objects.equals()` para comparacion null-safe de review IDs (linea 102)
-- Previene NPEs al buscar scores de reviews
+- Usa un mapa preconstruido `reviewId` -> `score` para resolver scores de reviews de forma segura (linea 94-103)
+- Previene NPEs al buscar scores de reviews mediante lookup en mapa
 
 ### ContentBasedStrategy
 - Actualizo comentario para reflejar comportamiento real de normalizacion (lineas 66-70)
