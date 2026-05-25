@@ -46,9 +46,9 @@ class MatrixFactorizationProviderTest {
     }
 
     @Test
-    @DisplayName("Should be cacheable")
-    void shouldBeCacheable() {
-        assertTrue(provider.isCacheable());
+    @DisplayName("Should not be cacheable")
+    void shouldNotBeCacheable() {
+        assertFalse(provider.isCacheable());
     }
 
     @Test

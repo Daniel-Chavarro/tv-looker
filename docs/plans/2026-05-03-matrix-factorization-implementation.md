@@ -72,7 +72,7 @@ Los scores se dividen por 5.0 (maximo rating esperado) y se clamp a [0, 1].
 - **Cold start**: Usuarios sin historial de ratings no reciben recomendaciones de esta estrategia
 - **Matriz sparse**: Maneja eficientemente matrices grandes con pocos ratings (usa 0.0 para celdas vacias)
 - **Media por usuario**: Los ratings se centran restando la media del usuario antes de SVD
-- **Cache**: La entrada `"svd-factors"` usa TTL de 1 semana (604800 segundos) dentro del `RecommendationContext`, pero no hay cache compartido entre requests. Para evitar recomputo SVD en produccion, se debe agregar Spring Cache / Caffeine externamente
+- **Cache**: La entrada `"svd-factors"` retorna `isCacheable()=false` (TTL=0) en `RecommendationContext`, por lo que no hay cacheo efectivo intra-context. Para evitar recomputo SVD en produccion, se debe agregar Spring Cache / Caffeine externamente
 - **Explicacion**: `"Based on your overall preferences"` (generica, no especifica factores individuales)
 - **sourceStrategy**: `"matrix-factorization"`
 

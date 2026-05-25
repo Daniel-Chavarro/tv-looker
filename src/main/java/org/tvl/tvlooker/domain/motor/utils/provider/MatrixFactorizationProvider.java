@@ -58,10 +58,12 @@ public class MatrixFactorizationProvider implements DataProvider<SVDFactors> {
 
     @Override
     public long getCacheExpirationSeconds() {
-        // Caching is scoped to the RecommendationContext instance (per-request).
-        // No cross-request cache is maintained, so returning 0 avoids a misleading TTL.
-        // For SVD factor caching across requests, wire up Spring Cache / Caffeine externally.
         return 0;
+    }
+
+    @Override
+    public boolean isCacheable() {
+        return false;
     }
 
     private SVDFactors computeSVDFactors(List<Interaction> interactions, RecommendationContext context) {
