@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
-import org.tvl.tvlooker.domain.data_structure.SVDFactors;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
 import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.domain.model.dto.User;
@@ -14,10 +13,10 @@ import org.tvl.tvlooker.domain.motor.utils.provider.MatrixFactorizationProvider;
 import org.tvl.tvlooker.domain.motor.utils.provider.SVDMatrixProcessor;
 import org.tvl.tvlooker.testutil.TestDataFactory;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 

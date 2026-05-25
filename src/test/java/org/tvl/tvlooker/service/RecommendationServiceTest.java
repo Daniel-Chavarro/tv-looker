@@ -220,6 +220,8 @@ class RecommendationServiceTest {
         assertThat(capturedContext.getUsers()).hasSize(2);
         assertThat(capturedContext.getItems()).hasSize(3);
         assertThat(capturedContext.getInteractions()).hasSize(2);
+        assertThat(capturedContext.getReviews()).isNotNull();
+        assertThat(capturedContext.getReviews()).isEmpty();
     }
 
     @Test

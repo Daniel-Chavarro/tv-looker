@@ -99,8 +99,9 @@ recommendation.strategies.matrix-factorization.enabled=false
 - **Nota (2026-05-19):** Se deshabilitó por defecto (false) para ahorrar recursos de CPU, ya que el cálculo de SVD en cada request es costoso. Se recomienda usar solo con caché optimizado.
 
 Cache:
-- Configurada en codigo: 604800 segundos (1 semana)
-- Reentrenamiento automatico cuando expira el cache
+- Estado actual en codigo (`MatrixFactorizationProvider`): `isCacheable() = false`, TTL = `0`
+- El cache interno del contexto no es adecuado para factores SVD (nunca se reusa entre requests)
+- Para produccion, agregar Spring Cache / Caffeine externo con la politica de TTL deseada
 
 ---
 
@@ -139,8 +140,8 @@ Cache:
 ### MatrixFactorizationProviderTest (14 tests)
 
 1. Provider ID correcto (`"svd-factors"`)
-2. Cache de 1 semana (604800 segundos)
-3. Es cacheable (`isCacheable()` retorna true)
+2. Cache expiration en 0 segundos (`getCacheExpirationSeconds()` retorna `0`)
+3. No es cacheable (`isCacheable()` retorna `false`)
 4. Factores vacios cuando no hay interacciones
 5. Factores vacios cuando no hay interacciones de tipo RATING
 6. Construccion correcta de matriz usuario-item desde ratings
