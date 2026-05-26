@@ -11,6 +11,7 @@ import { MyLists } from './pages/MyLists';
 import { ListDetail } from './pages/ListDetail';
 import { MyReviews } from './pages/MyReviews';
 import { Profile } from './pages/Profile';
+import { AdminTmdb } from './pages/AdminTmdb';
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
 
@@ -77,6 +78,14 @@ export function App() {
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/tmdb"
+                element={
+                  <ProtectedRoute requiredAuthority="ADMIN">
+                    <AdminTmdb />
                   </ProtectedRoute>
                 }
               />

@@ -23,8 +23,7 @@ const profileState = vi.hoisted(() => ({
   error: null as Error | null,
   refetch: vi.fn(),
   logout: vi.fn(),
-  updateUser: { mutateAsync: vi.fn(), isPending: false },
-  deleteUser: { mutateAsync: vi.fn(), isPending: false },
+  updateCurrentUser: { mutateAsync: vi.fn(), isPending: false },
 }));
 
 vi.mock('../hooks/useAuth', () => ({
@@ -32,14 +31,13 @@ vi.mock('../hooks/useAuth', () => ({
 }));
 
 vi.mock('../hooks/useUsers', () => ({
-  useUser: () => ({
+  useCurrentUser: () => ({
     data: profileState.userData,
     isLoading: profileState.isLoading,
     error: profileState.error,
     refetch: profileState.refetch,
   }),
-  useUpdateUser: () => profileState.updateUser,
-  useDeleteUser: () => profileState.deleteUser,
+  useUpdateCurrentUser: () => profileState.updateCurrentUser,
 }));
 
 describe('Profile', () => {
@@ -48,8 +46,7 @@ describe('Profile', () => {
     profileState.error = null;
     profileState.refetch.mockReset();
     profileState.logout.mockReset();
-    profileState.updateUser.mutateAsync.mockReset();
-    profileState.deleteUser.mutateAsync.mockReset();
+    profileState.updateCurrentUser.mutateAsync.mockReset();
   });
 
   afterEach(() => {
@@ -58,7 +55,7 @@ describe('Profile', () => {
 
   it('shows an accessible alert when updating the profile fails', async () => {
     const user = userEvent.setup();
-    profileState.updateUser.mutateAsync.mockRejectedValueOnce(new Error('update failed'));
+    profileState.updateCurrentUser.mutateAsync.mockRejectedValueOnce(new Error('update failed'));
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     renderWithProviders(<Profile />);
@@ -70,17 +67,10 @@ describe('Profile', () => {
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
   });
 
-  it('shows an accessible alert when deleting the profile fails', async () => {
-    const user = userEvent.setup();
-    profileState.deleteUser.mutateAsync.mockRejectedValueOnce(new Error('delete failed'));
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-
+  it('does not show delete account controls', () => {
     renderWithProviders(<Profile />);
 
-    await user.click(screen.getByRole('button', { name: 'Delete Account' }));
-    await user.click(screen.getAllByRole('button', { name: 'Delete' }).at(-1)!);
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to delete profile. Please try again.');
-    expect(screen.getByText(/Are you sure you want to delete your account/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete Account' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/This action cannot be undone/i)).not.toBeInTheDocument();
   });
 });

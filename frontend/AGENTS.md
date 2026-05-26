@@ -1,63 +1,37 @@
 # Frontend Knowledge
 
-## OVERVIEW
-Standalone Vite/React 19 SPA with manual `BrowserRouter`, React Query hooks, Axios API modules, Tailwind v4, and no frontend CI coverage.
+## Overview
+- Standalone Vite/React 19 SPA in `frontend/`; run npm commands here, not at repo root.
+- Manual `BrowserRouter` routes live in `src/App.tsx`; do not use React Router framework/file-route commands unless deliberately migrating.
+- Data flow is Axios API module (`src/api/*`) -> React Query hook (`src/hooks/use*.ts`) -> route page (`src/pages/*`).
 
-## STRUCTURE
-```text
-frontend/
-|-- index.html              # Vite HTML entry
-|-- src/main.tsx            # React root mount
-|-- src/App.tsx             # Provider stack + route table
-|-- src/api/                # Axios-backed endpoint modules
-|-- src/contexts/           # Auth context
-|-- src/hooks/              # React Query hooks over api modules
-|-- src/pages/              # Route views
-|-- src/components/         # layout, common primitives, feature cards/grids
-|-- src/types/              # shared domain/API types
-`-- src/utils/              # validators/formatters
-```
-
-## WHERE TO LOOK
+## Where to look
 | Task | Location | Notes |
 |------|----------|-------|
-| App routes | `src/App.tsx` | Manual `BrowserRouter`; not file-based routing |
-| Auth state | `src/contexts/AuthContext.tsx` | Stores auth state and localStorage token |
-| Route guard | `src/components/ProtectedRoute.tsx` | Redirects unauthenticated users to `/login` |
-| HTTP client | `src/api/client.ts` | Axios base URL, bearer header, 401 redirect |
-| Endpoint wrappers | `src/api/*.ts` | One module per backend resource |
-| Data hooks | `src/hooks/use*.ts` | React Query keys and invalidation live here |
-| Page UI | `src/pages/*.tsx` | Detail pages are state/modals/action heavy |
-| Shared UI | `src/components/common/` | Button/Card/Input/Modal/Loader/Error/Rating |
-| Types | `src/types/index.ts` | Barrel for API/hooks/context imports |
+| Routes/providers | `src/App.tsx` | Routes include `/login`, `/register`, `/profile`, `/lists`, `/reviews`, `/recommendations`, `/admin/tmdb` |
+| Auth/session | `src/contexts/AuthContext.tsx`, `src/api/client.ts` | Token/user in localStorage; 401 clears session and redirects to `/login` |
+| Route guard | `src/components/ProtectedRoute.tsx` | `requiredAuthority="ADMIN"` renders inline Forbidden for logged-in non-admins |
+| Header nav | `src/components/layout/Header.tsx` | Profile link for auth users; Admin link only for `ADMIN` |
+| Catalog | `src/pages/Home.tsx`, `src/api/items.ts`, `src/components/features/PaginationControls.tsx` | Search submits explicitly; filters requery immediately; fixed `size=20` |
+| Profile | `src/pages/Profile.tsx`, `src/api/users.ts` | Uses `/me` self-profile APIs; edits `name` and `email`; no delete-account UI |
+| TMDB admin | `src/pages/AdminTmdb.tsx`, `src/api/tmdbAdmin.ts`, `src/hooks/useTmdbAdmin.ts` | Admin status + collect/sync actions |
+| Tests | `src/**/*.test.*`, `src/test/` | Vitest + jsdom; `src/test/render.tsx` wraps QueryClient/MemoryRouter |
 
-## CONVENTIONS
-- Run all frontend commands from `frontend/`; no root npm workspace exists.
-- `npm run build` is `tsc && vite build`; output is `dist`.
-- `npm run lint` uses `eslint src --ext ts,tsx`; no separate ESLint config file was found.
-- TypeScript is strict, `noEmit`, ES2022, `moduleResolution: bundler`.
-- API modules import the shared `apiClient`; hooks wrap API modules with React Query.
-- Tailwind v4 is wired through both `@tailwindcss/vite` and `@tailwindcss/postcss`; CSS imports `tailwindcss` directly.
-
-## ANTI-PATTERNS
-- `src/api/client.ts` hardcodes `baseURL: '/api'`, while backend routes are `/api/v1/**`; verify proxy/prefix before assuming calls work.
-- `src/App.tsx` routes `/login` and `/register` to placeholder divs even though `src/pages/auth/Login.tsx` and `Register.tsx` exist.
-- Header/Footer links include routes like `/my-lists`, `/my-reviews`, and `/search`; `App.tsx` uses `/lists`, `/reviews`, and has no `/search`.
-- Some pages use raw `<a href>` instead of React Router `Link`, causing full reloads.
-- `AuthContext.tsx` stores `response.id` as the token; confirm backend auth response before touching auth flow.
-- `react-router.config.ts` says `ssr: true`, but actual app uses `BrowserRouter`; don't run React Router framework commands unless migrating.
-- `Dockerfile` is stale: copies `build` and runs `npm run start`, but Vite outputs `dist` and package has no `start`.
-- `frontend/README.md` is template documentation; avoid copying its deployment assumptions.
-
-## COMMANDS
+## Commands
 ```bash
-npm run dev
-npm run build
-npm run lint
-npm run format
-npm run preview
+npm run dev       # Vite dev server; proxies /api to http://localhost:8080
+npm run test:run  # Vitest once
+npm test          # Vitest watch mode
+npm run build     # tsc && vite build, output dist/
+npm run lint      # eslint src --ext ts,tsx
+npm run format    # prettier --write src
 ```
 
-## NOTES
-- There is no `npm test` script and no Vitest/Jest/Cypress/Playwright config detected.
-- CI does not run frontend build or lint; run local checks for any frontend changes.
+## Project-specific gotchas
+- `src/api/client.ts` uses `baseURL: '/api/v1'`; Vite dev proxy handles `/api` locally, but deployment still needs backend/proxy support for `/api/v1/**`.
+- Backend item pagination response is project `PageResponse`: `content`, `actualPage`, `totalPages`, `totalItems`, `isLast`; query params use `page` and `size`, not `pageSize`.
+- `useItems` query key includes the full params object; create new params objects instead of mutating them in place.
+- TMDB admin status cache key is `['admin', 'tmdb', 'status']`; collect/sync mutations invalidate it.
+- Tailwind v4 is wired through `@tailwindcss/vite` and PostCSS; CSS imports `tailwindcss` directly.
+- `Dockerfile` and `frontend/README.md` are stale template guidance; trust `package.json`, `vite.config.ts`, and source code first.
+- GitHub CI does not run frontend checks; run local `test:run`, `build`, and `lint` for frontend changes.
