@@ -47,11 +47,13 @@ public class TmdbDataFetcher {
     private final TmdbClient tmdbClient;
     private final Executor tmdbTaskExecutor;
     private final RateLimiter rateLimiter;
+    private final int detailWindowSize;
 
     public TmdbDataFetcher(
             TmdbClient tmdbClient,
             @Qualifier("tmdbTaskExecutor") Executor tmdbTaskExecutor,
-            @Value("${tmdb.api.rate-limit:35}") double requestsPerSecond) {
+            @Value("${tmdb.api.rate-limit:35}") double requestsPerSecond,
+            @Value("${tmdb.fetcher.detail-window-size:100}") int detailWindowSize) {
 
         if (requestsPerSecond <= 0 || requestsPerSecond > 40) {
             throw new IllegalArgumentException("requestsPerSecond must be between 0 and 40.");
@@ -59,6 +61,7 @@ public class TmdbDataFetcher {
 
         this.tmdbClient = tmdbClient;
         this.tmdbTaskExecutor = tmdbTaskExecutor;
+        this.detailWindowSize = Math.max(1, detailWindowSize);
         // Set to 35 req/s for safety margin (TMDB hard limit is 40)
         this.rateLimiter = RateLimiter.create(requestsPerSecond);
         log.info("TmdbDataFetcher initialized with rate limit: {} req/s", requestsPerSecond);
@@ -170,29 +173,22 @@ public class TmdbDataFetcher {
     public List<TmdbMovieDetailsDto> fetchMoviesDetailsBatch(List<Long> tmdbIds) {
         log.debug("Fetching {} movies in parallel batch", tmdbIds.size());
 
-        List<CompletableFuture<TmdbMovieDetailsDto>> futures = tmdbIds.stream()
-                .map(this::fetchMovieDetailsAsync)
-                .toList();
+        List<TmdbMovieDetailsDto> results = new ArrayList<>();
+        for (int windowStart = 0; windowStart < tmdbIds.size(); windowStart += detailWindowSize) {
+            int windowEnd = Math.min(windowStart + detailWindowSize, tmdbIds.size());
+            List<CompletableFuture<TmdbMovieDetailsDto>> futures = tmdbIds.subList(windowStart, windowEnd).stream()
+                    .map(this::fetchMovieDetailsAsync)
+                    .toList();
 
-        CompletableFuture<Void> allOf = CompletableFuture.allOf(
-                futures.toArray(new CompletableFuture[0]));
-
-        return allOf.thenApply(v -> futures.stream()
-                        .map(f -> {
-                            try {
-                                return f.join();
-                            } catch (CompletionException e) {
-                                log.error("Future individual falló: {}", e.getCause().getMessage(), e);
-                                return null;
-                            }
-                        })
-                        .filter(Objects::nonNull)
-                        .toList())
-                .exceptionally(ex -> {
-                    log.error("Error en fetchTvShowsDetailsBatch: {}", ex.getMessage(), ex);
-                    return List.of();
-                })
-                .join();
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .exceptionally(ex -> null)
+                    .join();
+            futures.stream()
+                    .map(future -> joinOrNull(future, "movie"))
+                    .filter(Objects::nonNull)
+                    .forEach(results::add);
+        }
+        return results;
     }
 
     /**
@@ -204,18 +200,32 @@ public class TmdbDataFetcher {
     public List<TmdbTvShowDetailsDto> fetchTvShowsDetailsBatch(List<Long> tvShowIds) {
         log.debug("Fetching {} TV shows in parallel batch", tvShowIds.size());
 
-        List<CompletableFuture<TmdbTvShowDetailsDto>> futures = tvShowIds.stream()
-                .map(this::fetchTvShowDetailsAsync)
-                .toList();
+        List<TmdbTvShowDetailsDto> results = new ArrayList<>();
+        for (int windowStart = 0; windowStart < tvShowIds.size(); windowStart += detailWindowSize) {
+            int windowEnd = Math.min(windowStart + detailWindowSize, tvShowIds.size());
+            List<CompletableFuture<TmdbTvShowDetailsDto>> futures = tvShowIds.subList(windowStart, windowEnd).stream()
+                    .map(this::fetchTvShowDetailsAsync)
+                    .toList();
 
-        CompletableFuture<Void> allOf = CompletableFuture.allOf(
-                futures.toArray(new CompletableFuture[0]));
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .exceptionally(ex -> null)
+                    .join();
+            futures.stream()
+                    .map(future -> joinOrNull(future, "TV show"))
+                    .filter(Objects::nonNull)
+                    .forEach(results::add);
+        }
+        return results;
+    }
 
-        return allOf.thenApply(v -> futures.stream()
-                        .map(CompletableFuture::join)
-                        .filter(Objects::nonNull)
-                        .toList())
-                .join();
+    private <T> T joinOrNull(CompletableFuture<T> future, String itemType) {
+        try {
+            return future.join();
+        } catch (CompletionException e) {
+            Throwable cause = e.getCause() == null ? e : e.getCause();
+            log.error("Error fetching {} details: {}", itemType, cause.getMessage(), e);
+            return null;
+        }
     }
 
     /**

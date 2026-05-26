@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ListFavoriteService {
 
+    private static final String LIST_FAVORITE_NOT_FOUND_MESSAGE = "ListFavorite not found: ";
+
     private final ListFavoriteRepository listFavoriteRepository;
     private final ItemService itemService;
 
@@ -37,6 +39,16 @@ public class ListFavoriteService {
         return ListFavoriteEntityMapper.toDomain(listFavoriteRepository.save(entity));
     }
 
+    public ListFavorite createForUser(ListFavorite listFavorite, UUID userId) {
+        ListFavorite ownedList = ListFavorite.builder()
+                .userId(userId)
+                .name(listFavorite.getName())
+                .description(listFavorite.getDescription())
+                .items(listFavorite.getItems())
+                .build();
+        return create(ownedList);
+    }
+
     /**
      * Get a favorite list by id.
      *
@@ -47,7 +59,13 @@ public class ListFavoriteService {
     public ListFavorite getById(Long id) {
         return listFavoriteRepository.findById(id)
                 .map(ListFavoriteEntityMapper::toDomain)
-                .orElseThrow(() -> new ListFavoriteNotFoundException("ListFavorite not found: " + id));
+                .orElseThrow(() -> new ListFavoriteNotFoundException(LIST_FAVORITE_NOT_FOUND_MESSAGE + id));
+    }
+
+    public ListFavorite getByIdForUser(Long id, UUID userId) {
+        return listFavoriteRepository.findByIdAndUserId(id, userId)
+                .map(ListFavoriteEntityMapper::toDomain)
+                .orElseThrow(() -> new ListFavoriteNotFoundException(LIST_FAVORITE_NOT_FOUND_MESSAGE + id));
     }
 
     /**
@@ -84,6 +102,11 @@ public class ListFavoriteService {
                 .collect(Collectors.toList());
     }
 
+    public Page<ListFavorite> getByUserId(UUID userId, Pageable pageable) {
+        return listFavoriteRepository.findAllByUserId(userId, pageable)
+                .map(ListFavoriteEntityMapper::toDomain);
+    }
+
     /**
      * Update a favorite list.
      *
@@ -94,7 +117,7 @@ public class ListFavoriteService {
      */
     public ListFavorite update(Long id, ListFavorite listFavorite) {
         if (!listFavoriteRepository.existsById(id)) {
-            throw new ListFavoriteNotFoundException("ListFavorite not found: " + id);
+            throw new ListFavoriteNotFoundException(LIST_FAVORITE_NOT_FOUND_MESSAGE + id);
         }
         ListFavoriteEntity actual = listFavoriteRepository.getReferenceById(id);
         ListFavoriteEntity update = ListFavoriteEntityMapper.toEntity(listFavorite);
@@ -114,6 +137,27 @@ public class ListFavoriteService {
         return ListFavoriteEntityMapper.toDomain(listFavoriteRepository.save(actual));
     }
 
+    public ListFavorite updateForUser(Long id, ListFavorite listFavorite, UUID userId) {
+        ListFavoriteEntity actual = listFavoriteRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ListFavoriteNotFoundException(LIST_FAVORITE_NOT_FOUND_MESSAGE + id));
+
+        if (listFavorite.getName() != null) {
+            actual.setName(listFavorite.getName());
+        }
+
+        if (listFavorite.getDescription() != null) {
+            actual.setDescription(listFavorite.getDescription());
+        }
+
+        if (listFavorite.getItems() != null) {
+            actual.setItems(listFavorite.getItems().stream()
+                    .map(ItemEntityMapper::toEntity)
+                    .collect(Collectors.toSet()));
+        }
+
+        return ListFavoriteEntityMapper.toDomain(listFavoriteRepository.save(actual));
+    }
+
     /**
      * Delete a favorite list by id.
      *
@@ -122,7 +166,14 @@ public class ListFavoriteService {
      */
     public void deleteById(Long id) {
         if (!listFavoriteRepository.existsById(id)) {
-            throw new ListFavoriteNotFoundException("ListFavorite not found: " + id);
+            throw new ListFavoriteNotFoundException(LIST_FAVORITE_NOT_FOUND_MESSAGE + id);
+        }
+        listFavoriteRepository.deleteById(id);
+    }
+
+    public void deleteByIdForUser(Long id, UUID userId) {
+        if (listFavoriteRepository.findByIdAndUserId(id, userId).isEmpty()) {
+            throw new ListFavoriteNotFoundException(LIST_FAVORITE_NOT_FOUND_MESSAGE + id);
         }
         listFavoriteRepository.deleteById(id);
     }

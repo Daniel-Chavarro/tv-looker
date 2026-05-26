@@ -3,6 +3,7 @@ package org.tvl.tvlooker.api.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.tvl.tvlooker.domain.model.enums.UserAuthority;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -18,6 +19,6 @@ public class UserResponse {
     private String username;
     private String email;
     private String name;
-    private String password;
+    private UserAuthority authority;
     private Timestamp createdAt;
 }

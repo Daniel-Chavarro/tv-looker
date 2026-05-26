@@ -131,6 +131,133 @@ class ReviewServiceTest {
     }
 
     @Test
+    @DisplayName("getByIdForUser - should return review when review belongs to user")
+    void getByIdForUser_shouldReturnReview_whenReviewBelongsToUser() {
+        when(reviewRepository.findByIdAndUserId(testReviewId, testUserId)).thenReturn(Optional.of(testReviewEntity));
+
+        Review result = reviewService.getByIdForUser(testReviewId, testUserId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(testReviewId);
+        assertThat(result.getUserId()).isEqualTo(testUserId);
+        verify(reviewRepository, times(1)).findByIdAndUserId(testReviewId, testUserId);
+        verify(reviewRepository, never()).findById(testReviewId);
+    }
+
+    @Test
+    @DisplayName("getByIdForUser - should throw ReviewNotFoundException when review does not belong to user")
+    void getByIdForUser_shouldThrowReviewNotFoundException_whenReviewDoesNotBelongToUser() {
+        UUID otherUserId = UUID.randomUUID();
+        when(reviewRepository.findByIdAndUserId(testReviewId, otherUserId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> reviewService.getByIdForUser(testReviewId, otherUserId))
+                .isInstanceOf(ReviewNotFoundException.class)
+                .hasMessageContaining("Review not found: " + testReviewId);
+        verify(reviewRepository, times(1)).findByIdAndUserId(testReviewId, otherUserId);
+    }
+
+    @Test
+    @DisplayName("getByIdForAdmin - should return review by ID without owner check")
+    void getByIdForAdmin_shouldReturnReviewByIdWithoutOwnerCheck() {
+        when(reviewRepository.findById(testReviewId)).thenReturn(Optional.of(testReviewEntity));
+
+        Review result = reviewService.getByIdForAdmin(testReviewId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(testReviewId);
+        verify(reviewRepository, times(1)).findById(testReviewId);
+        verify(reviewRepository, never()).findByIdAndUserId(eq(testReviewId), any(UUID.class));
+    }
+
+    @Test
+    @DisplayName("createForUser - should ignore request user ID and save for JWT user")
+    void createForUser_shouldIgnoreRequestUserIdAndSaveForJwtUser() {
+        UUID requestUserId = UUID.randomUUID();
+        Review requestReview = Review.builder()
+                .userId(requestUserId)
+                .itemId(testItemId)
+                .reviewText("Great movie!")
+                .score(5)
+                .build();
+        ReviewEntity savedReviewEntity = ReviewEntity.builder()
+                .id(testReviewId)
+                .user(UserEntity.builder().id(testUserId).username("testuser").email("test@test.com").name("Test User").build())
+                .item(ItemEntity.builder().id(testItemId).title("Test Movie").overview("Test overview").build())
+                .reviewText("Great movie!")
+                .score(5)
+                .build();
+
+        when(userService.getById(testUserId)).thenReturn(testUser);
+        when(itemService.getById(testItemId)).thenReturn(testItem);
+        when(reviewRepository.save(any(ReviewEntity.class))).thenReturn(savedReviewEntity);
+
+        Review result = reviewService.createForUser(requestReview, testUserId);
+
+        assertThat(result.getUserId()).isEqualTo(testUserId);
+        verify(userService, times(1)).getById(testUserId);
+        verify(userService, never()).getById(requestUserId);
+        verify(reviewRepository, times(1)).save(any(ReviewEntity.class));
+    }
+
+    @Test
+    @DisplayName("updateForUser - should update only owned review and preserve owner")
+    void updateForUser_shouldUpdateOnlyOwnedReviewAndPreserveOwner() {
+        UUID requestUserId = UUID.randomUUID();
+        Review updatedReview = Review.builder()
+                .userId(requestUserId)
+                .itemId(999L)
+                .reviewText("Updated review")
+                .score(4)
+                .build();
+        ReviewEntity savedReviewEntity = ReviewEntity.builder()
+                .id(testReviewId)
+                .user(UserEntity.builder().id(testUserId).username("testuser").email("test@test.com").name("Test User").build())
+                .item(ItemEntity.builder().id(testItemId).title("Test Movie").overview("Test overview").build())
+                .reviewText("Updated review")
+                .score(4)
+                .build();
+
+        when(reviewRepository.findByIdAndUserId(testReviewId, testUserId)).thenReturn(Optional.of(testReviewEntity));
+        when(reviewRepository.save(any(ReviewEntity.class))).thenReturn(savedReviewEntity);
+
+        Review result = reviewService.updateForUser(testReviewId, updatedReview, testUserId);
+
+        assertThat(result.getUserId()).isEqualTo(testUserId);
+        assertThat(result.getItemId()).isEqualTo(testItemId);
+        assertThat(result.getReviewText()).isEqualTo("Updated review");
+        assertThat(result.getScore()).isEqualTo(4);
+        verify(reviewRepository, times(1)).findByIdAndUserId(testReviewId, testUserId);
+        verify(userService, never()).getById(requestUserId);
+        verify(itemService, never()).getById(999L);
+        verify(reviewRepository, times(1)).save(testReviewEntity);
+    }
+
+    @Test
+    @DisplayName("deleteByIdForUser - should delete only owned review")
+    void deleteByIdForUser_shouldDeleteOnlyOwnedReview() {
+        when(reviewRepository.findByIdAndUserId(testReviewId, testUserId)).thenReturn(Optional.of(testReviewEntity));
+        doNothing().when(reviewRepository).deleteById(testReviewId);
+
+        reviewService.deleteByIdForUser(testReviewId, testUserId);
+
+        verify(reviewRepository, times(1)).findByIdAndUserId(testReviewId, testUserId);
+        verify(reviewRepository, times(1)).deleteById(testReviewId);
+    }
+
+    @Test
+    @DisplayName("deleteByIdForUser - should throw ReviewNotFoundException for unowned review")
+    void deleteByIdForUser_shouldThrowReviewNotFoundExceptionForUnownedReview() {
+        UUID otherUserId = UUID.randomUUID();
+        when(reviewRepository.findByIdAndUserId(testReviewId, otherUserId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> reviewService.deleteByIdForUser(testReviewId, otherUserId))
+                .isInstanceOf(ReviewNotFoundException.class)
+                .hasMessageContaining("Review not found: " + testReviewId);
+        verify(reviewRepository, times(1)).findByIdAndUserId(testReviewId, otherUserId);
+        verify(reviewRepository, never()).deleteById(testReviewId);
+    }
+
+    @Test
     @DisplayName("getAll - should return all reviews")
     void getAll_shouldReturnAllReviews() {
         ReviewEntity review2 = ReviewEntity.builder()

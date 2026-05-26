@@ -144,6 +144,57 @@ class InteractionServiceTest {
     }
 
     @Test
+    @DisplayName("getByIdForUser - should return interaction when interaction belongs to user")
+    void getByIdForUser_shouldReturnInteraction_whenInteractionBelongsToUser() {
+        when(interactionRepository.findByIdAndUserId(testInteractionId, testUserId))
+                .thenReturn(Optional.of(testInteractionEntity));
+
+        Interaction result = interactionService.getByIdForUser(testInteractionId, testUserId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(testInteractionId);
+        assertThat(result.getUserId()).isEqualTo(testUserId);
+        verify(interactionRepository, times(1)).findByIdAndUserId(testInteractionId, testUserId);
+        verify(interactionRepository, never()).findById(testInteractionId);
+    }
+
+    @Test
+    @DisplayName("getByIdForUser - should throw InteractionNotFoundException when interaction does not belong to user")
+    void getByIdForUser_shouldThrowInteractionNotFoundException_whenInteractionDoesNotBelongToUser() {
+        UUID otherUserId = UUID.randomUUID();
+        when(interactionRepository.findByIdAndUserId(testInteractionId, otherUserId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> interactionService.getByIdForUser(testInteractionId, otherUserId))
+                .isInstanceOf(InteractionNotFoundException.class)
+                .hasMessageContaining("Interaction not found: " + testInteractionId);
+        verify(interactionRepository, times(1)).findByIdAndUserId(testInteractionId, otherUserId);
+    }
+
+    @Test
+    @DisplayName("createForUser - should ignore request user ID and save for JWT user")
+    void createForUser_shouldIgnoreRequestUserIdAndSaveForJwtUser() {
+        UUID requestUserId = UUID.randomUUID();
+        Interaction requestInteraction = Interaction.builder()
+                .userId(requestUserId)
+                .itemId(testItemId)
+                .interactionType(InteractionType.RATING)
+                .reviewId(1L)
+                .build();
+
+        when(userService.getById(testUserId)).thenReturn(testUser);
+        when(itemService.getById(testItemId)).thenReturn(testItem);
+        when(reviewService.getById(1L)).thenReturn(testReview);
+        when(interactionRepository.save(any(InteractionEntity.class))).thenReturn(testInteractionEntity);
+
+        Interaction result = interactionService.createForUser(requestInteraction, testUserId);
+
+        assertThat(result.getUserId()).isEqualTo(testUserId);
+        verify(userService, times(1)).getById(testUserId);
+        verify(userService, never()).getById(requestUserId);
+        verify(interactionRepository, times(1)).save(any(InteractionEntity.class));
+    }
+
+    @Test
     @DisplayName("getAll - should return all interactions")
     void getAll_shouldReturnAllInteractions() {
         InteractionEntity interaction2 = InteractionEntity.builder()
@@ -188,6 +239,21 @@ class InteractionServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getTotalElements()).isEqualTo(2L);
         verify(interactionRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    @DisplayName("getByUserId with Pageable - should return page of user interactions")
+    void givenUserIdAndPageable_whenGetByUserId_thenReturnsPageOfUserInteractions() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<InteractionEntity> entityPage = new PageImpl<>(List.of(testInteractionEntity), pageable, 1);
+
+        when(interactionRepository.findAllByUserId(testUserId, pageable)).thenReturn(entityPage);
+
+        Page<Interaction> result = interactionService.getByUserId(testUserId, pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTotalElements()).isEqualTo(1L);
+        verify(interactionRepository, times(1)).findAllByUserId(testUserId, pageable);
     }
 
     private InteractionEntity createInteractionEntityWithId(Long id) {
@@ -296,5 +362,51 @@ class InteractionServiceTest {
                 .hasMessageContaining("Interaction not found: " + nonExistentId);
         verify(interactionRepository, times(1)).existsById(nonExistentId);
         verify(interactionRepository, never()).deleteById(any(Long.class));
+    }
+
+    @Test
+    @DisplayName("updateForUser - should update only owned interaction and preserve owner")
+    void updateForUser_shouldUpdateOnlyOwnedInteractionAndPreserveOwner() {
+        UUID requestUserId = UUID.randomUUID();
+        Interaction updatedInteraction = Interaction.builder()
+                .userId(requestUserId)
+                .itemId(999L)
+                .interactionType(InteractionType.VIEW)
+                .reviewId(1L)
+                .build();
+        InteractionEntity savedInteraction = InteractionEntity.builder()
+                .id(testInteractionId)
+                .user(UserEntity.builder().id(testUserId).username("testuser").email("test@test.com").name("Test User").build())
+                .item(ItemEntity.builder().id(testItemId).title("Test Movie").overview("Test overview").build())
+                .interactionType(InteractionType.VIEW)
+                .build();
+
+        when(interactionRepository.findByIdAndUserId(testInteractionId, testUserId))
+                .thenReturn(Optional.of(testInteractionEntity));
+        when(reviewService.getById(1L)).thenReturn(testReview);
+        when(interactionRepository.save(any(InteractionEntity.class))).thenReturn(savedInteraction);
+
+        Interaction result = interactionService.updateForUser(testInteractionId, updatedInteraction, testUserId);
+
+        assertThat(result.getUserId()).isEqualTo(testUserId);
+        assertThat(result.getItemId()).isEqualTo(testItemId);
+        assertThat(result.getInteractionType()).isEqualTo(InteractionType.VIEW);
+        verify(interactionRepository, times(1)).findByIdAndUserId(testInteractionId, testUserId);
+        verify(userService, never()).getById(requestUserId);
+        verify(itemService, never()).getById(999L);
+        verify(interactionRepository, times(1)).save(testInteractionEntity);
+    }
+
+    @Test
+    @DisplayName("deleteForUser - should delete only owned interaction")
+    void deleteForUser_shouldDeleteOnlyOwnedInteraction() {
+        when(interactionRepository.findByIdAndUserId(testInteractionId, testUserId))
+                .thenReturn(Optional.of(testInteractionEntity));
+        doNothing().when(interactionRepository).deleteById(testInteractionId);
+
+        interactionService.deleteForUser(testInteractionId, testUserId);
+
+        verify(interactionRepository, times(1)).findByIdAndUserId(testInteractionId, testUserId);
+        verify(interactionRepository, times(1)).deleteById(testInteractionId);
     }
 }

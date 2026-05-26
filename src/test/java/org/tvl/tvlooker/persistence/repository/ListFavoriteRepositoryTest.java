@@ -244,6 +244,24 @@ class ListFavoriteRepositoryTest {
         assertThat(lists).isEmpty();
     }
 
+    @Test
+    @DisplayName("Should find list by ID and user ID only for owner")
+    void testFindByIdAndUserId() {
+        UserEntity user1 = createUserEntity("user1");
+        UserEntity user2 = createUserEntity("user2");
+
+        ListFavoriteEntity savedList = listFavoriteRepository.saveAndFlush(
+                ListFavoriteEntity.builder().name("User1 Private List").user(user1).items(new HashSet<>()).build()
+        );
+        userRepository.saveAndFlush(user2);
+
+        Optional<ListFavoriteEntity> ownedList = listFavoriteRepository.findByIdAndUserId(savedList.getId(), user1.getId());
+        Optional<ListFavoriteEntity> unownedList = listFavoriteRepository.findByIdAndUserId(savedList.getId(), user2.getId());
+
+        assertThat(ownedList).isPresent();
+        assertThat(unownedList).isEmpty();
+    }
+
     // ==================== UPDATE TESTS ====================
 
     @Test

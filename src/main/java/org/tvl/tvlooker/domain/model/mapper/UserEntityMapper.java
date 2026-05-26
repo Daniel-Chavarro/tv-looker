@@ -3,6 +3,7 @@ package org.tvl.tvlooker.domain.model.mapper;
 import org.springframework.stereotype.Component;
 import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
+import org.tvl.tvlooker.domain.model.enums.UserAuthority;
 
 /**
  * Mapper for converting between User domain model and UserEntity JPA entity.
@@ -26,6 +27,7 @@ public class UserEntityMapper {
                 .email(entity.getEmail())
                 .name(entity.getName())
                 .password(entity.getPassword())
+                .authority(entity.getAuthority() == null ? UserAuthority.USER : entity.getAuthority())
                 .createdAt(entity.getCreatedAt())
                 .build();
     }
@@ -46,6 +48,7 @@ public class UserEntityMapper {
                 .email(domain.getEmail())
                 .name(domain.getName())
                 .password(domain.getPassword())
+                .authority(domain.getAuthority() == null ? UserAuthority.USER : domain.getAuthority())
                 .createdAt(domain.getCreatedAt())
                 .build();
     }

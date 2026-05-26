@@ -104,6 +104,50 @@ class ListFavoriteServiceTest {
     }
 
     @Test
+    @DisplayName("getByIdForUser - should return list favorite when list belongs to user")
+    void getByIdForUser_shouldReturnListFavorite_whenListBelongsToUser() {
+        when(listFavoriteRepository.findByIdAndUserId(testListId, testUserId)).thenReturn(Optional.of(testListEntity));
+
+        ListFavorite result = listFavoriteService.getByIdForUser(testListId, testUserId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(testListId);
+        assertThat(result.getUserId()).isEqualTo(testUserId);
+        verify(listFavoriteRepository, times(1)).findByIdAndUserId(testListId, testUserId);
+        verify(listFavoriteRepository, never()).findById(testListId);
+    }
+
+    @Test
+    @DisplayName("getByIdForUser - should throw ListFavoriteNotFoundException when list does not belong to user")
+    void getByIdForUser_shouldThrowListFavoriteNotFoundException_whenListDoesNotBelongToUser() {
+        UUID otherUserId = UUID.randomUUID();
+        when(listFavoriteRepository.findByIdAndUserId(testListId, otherUserId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> listFavoriteService.getByIdForUser(testListId, otherUserId))
+                .isInstanceOf(ListFavoriteNotFoundException.class)
+                .hasMessageContaining("ListFavorite not found: " + testListId);
+        verify(listFavoriteRepository, times(1)).findByIdAndUserId(testListId, otherUserId);
+    }
+
+    @Test
+    @DisplayName("createForUser - should ignore request user ID and save for JWT user")
+    void createForUser_shouldIgnoreRequestUserIdAndSaveForJwtUser() {
+        UUID requestUserId = UUID.randomUUID();
+        ListFavorite requestList = ListFavorite.builder()
+                .userId(requestUserId)
+                .name("My Favorites")
+                .description("My favorite movies")
+                .build();
+
+        when(listFavoriteRepository.save(any(ListFavoriteEntity.class))).thenReturn(testListEntity);
+
+        ListFavorite result = listFavoriteService.createForUser(requestList, testUserId);
+
+        assertThat(result.getUserId()).isEqualTo(testUserId);
+        verify(listFavoriteRepository, times(1)).save(argThat(entity -> testUserId.equals(entity.getUser().getId())));
+    }
+
+    @Test
     @DisplayName("getAll - should return all list favorites")
     void getAll_shouldReturnAllListFavorites() {
         ListFavoriteEntity list2 = ListFavoriteEntity.builder()
@@ -254,6 +298,46 @@ class ListFavoriteServiceTest {
                 .hasMessageContaining("ListFavorite not found: " + nonExistentId);
         verify(listFavoriteRepository, times(1)).existsById(nonExistentId);
         verify(listFavoriteRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("updateForUser - should update only owned list and preserve owner")
+    void updateForUser_shouldUpdateOnlyOwnedListAndPreserveOwner() {
+        UUID requestUserId = UUID.randomUUID();
+        ListFavorite updatedList = ListFavorite.builder()
+                .userId(requestUserId)
+                .name("Updated List")
+                .description("Updated description")
+                .build();
+        ListFavoriteEntity savedList = ListFavoriteEntity.builder()
+                .id(testListId)
+                .user(UserEntity.builder().id(testUserId).username("testuser").email("test@test.com").name("Test User").build())
+                .name("Updated List")
+                .description("Updated description")
+                .build();
+
+        when(listFavoriteRepository.findByIdAndUserId(testListId, testUserId)).thenReturn(Optional.of(testListEntity));
+        when(listFavoriteRepository.save(any(ListFavoriteEntity.class))).thenReturn(savedList);
+
+        ListFavorite result = listFavoriteService.updateForUser(testListId, updatedList, testUserId);
+
+        assertThat(result.getUserId()).isEqualTo(testUserId);
+        assertThat(result.getName()).isEqualTo("Updated List");
+        assertThat(result.getDescription()).isEqualTo("Updated description");
+        verify(listFavoriteRepository, times(1)).findByIdAndUserId(testListId, testUserId);
+        verify(listFavoriteRepository, times(1)).save(testListEntity);
+    }
+
+    @Test
+    @DisplayName("deleteByIdForUser - should delete only owned list")
+    void deleteByIdForUser_shouldDeleteOnlyOwnedList() {
+        when(listFavoriteRepository.findByIdAndUserId(testListId, testUserId)).thenReturn(Optional.of(testListEntity));
+        doNothing().when(listFavoriteRepository).deleteById(testListId);
+
+        listFavoriteService.deleteByIdForUser(testListId, testUserId);
+
+        verify(listFavoriteRepository, times(1)).findByIdAndUserId(testListId, testUserId);
+        verify(listFavoriteRepository, times(1)).deleteById(testListId);
     }
 
     @Test

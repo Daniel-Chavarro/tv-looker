@@ -35,6 +35,11 @@ public class ItemMapper {
                 .actorItemResponses(item.getActorsInItem() != null
                         ? ActorItemMapper.toResponse(item.getActorsInItem())
                         : null)
+                .directorResponses(item.getDirectors() != null
+                        ? item.getDirectors().stream()
+                        .map(DirectorMapper::toResponse)
+                        .collect(java.util.stream.Collectors.toSet())
+                        : null)
                 .build();
     }
 }

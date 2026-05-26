@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.tvl.tvlooker.api.exception.GlobalExceptionHandler;
 import org.tvl.tvlooker.domain.exception.UserNotFoundException;
 import org.tvl.tvlooker.domain.model.dto.User;
+import org.tvl.tvlooker.domain.model.enums.UserAuthority;
 import org.tvl.tvlooker.service.UserService;
 
 import java.sql.Timestamp;
@@ -66,6 +67,7 @@ class UserControllerTest {
                 .email("test@example.com")
                 .name("Test User")
                 .password("password123")
+                .authority(UserAuthority.USER)
                 .createdAt(Timestamp.from(Instant.now()))
                 .build();
     }
@@ -79,6 +81,7 @@ class UserControllerTest {
                     .id(testUserId)
                     .username("seconduser")
                     .email("second@test.com")
+                    .authority(UserAuthority.USER)
                     .build();
             List<User> users = Arrays.asList(testUser, secondUser);
             Page<User> usersPage = new PageImpl<>(users, PageRequest.of(0, 50), users.size());
@@ -125,7 +128,9 @@ class UserControllerTest {
                     .andExpect(jsonPath("$.id", is(testUserId.toString())))
                     .andExpect(jsonPath("$.username", is("testuser")))
                     .andExpect(jsonPath("$.email", is("test@example.com")))
-                    .andExpect(jsonPath("$.name", is("Test User")));
+                    .andExpect(jsonPath("$.name", is("Test User")))
+                    .andExpect(jsonPath("$.password").doesNotExist())
+                    .andExpect(jsonPath("$.authority", is("USER")));
 
             verify(userService, times(1)).getById(testUserId);
         }
@@ -165,6 +170,7 @@ class UserControllerTest {
                     .email("new@example.com")
                     .name("New User")
                     .password("newpass123")
+                    .authority(UserAuthority.USER)
                     .createdAt(Timestamp.from(Instant.now()))
                     .build();
 
@@ -220,12 +226,13 @@ class UserControllerTest {
                     .email("updated@example.com")
                     .name("Updated User")
                     .password("updatedpass")
+                    .authority(UserAuthority.USER)
                     .createdAt(testUser.getCreatedAt())
                     .build();
 
             when(userService.update(eq(testUserId), any(User.class))).thenReturn(updatedUser);
 
-            mockMvc.perform(put("/api/v1/users/{id}", testUserId)
+            mockMvc.perform(patch("/api/v1/users/{id}", testUserId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isOk())
@@ -249,7 +256,7 @@ class UserControllerTest {
             when(userService.update(eq(nonExistentId), any(User.class)))
                     .thenThrow(new UserNotFoundException("User not found with id: " + nonExistentId));
 
-            mockMvc.perform(put("/api/v1/users/{id}", nonExistentId)
+            mockMvc.perform(patch("/api/v1/users/{id}", nonExistentId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isNotFound())
@@ -258,6 +265,69 @@ class UserControllerTest {
             verify(userService, times(1)).update(eq(nonExistentId), any(User.class));
         }
 
+    }
+
+    @Nested
+    class SelfProfile {
+
+        @Test
+        void givenAuthenticatedPrincipal_whenGetCurrentUser_thenReturnsCurrentUser() throws Exception {
+            SelfProfileController controller = new SelfProfileController(userService);
+            MockMvc selfProfileMvc = MockMvcBuilders.standaloneSetup(controller)
+                    .setControllerAdvice(new GlobalExceptionHandler())
+                    .build();
+
+            when(userService.getById(testUserId)).thenReturn(testUser);
+
+            selfProfileMvc.perform(get("/api/v1/me")
+                            .principal(() -> testUserId.toString()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id", is(testUserId.toString())))
+                    .andExpect(jsonPath("$.username", is("testuser")))
+                    .andExpect(jsonPath("$.email", is("test@example.com")))
+                    .andExpect(jsonPath("$.name", is("Test User")))
+                    .andExpect(jsonPath("$.authority", is("USER")))
+                    .andExpect(jsonPath("$.password").doesNotExist());
+
+            verify(userService, times(1)).getById(testUserId);
+        }
+
+        @Test
+        void givenAuthenticatedPrincipal_whenPatchCurrentUser_thenUpdatesCurrentUserOnly() throws Exception {
+            SelfProfileController controller = new SelfProfileController(userService);
+            MockMvc selfProfileMvc = MockMvcBuilders.standaloneSetup(controller)
+                    .setControllerAdvice(new GlobalExceptionHandler())
+                    .build();
+            String requestBody = """
+                    {
+                        "email": "updated@example.com",
+                        "name": "Updated User"
+                    }
+                    """;
+            User updatedUser = User.builder()
+                    .id(testUserId)
+                    .username("testuser")
+                    .email("updated@example.com")
+                    .name("Updated User")
+                    .authority(UserAuthority.USER)
+                    .createdAt(testUser.getCreatedAt())
+                    .build();
+
+            when(userService.update(eq(testUserId), any(User.class))).thenReturn(updatedUser);
+
+            selfProfileMvc.perform(patch("/api/v1/me")
+                            .principal(() -> testUserId.toString())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id", is(testUserId.toString())))
+                    .andExpect(jsonPath("$.email", is("updated@example.com")))
+                    .andExpect(jsonPath("$.name", is("Updated User")));
+
+            verify(userService, times(1)).update(eq(testUserId), any(User.class));
+        }
     }
 
     @Nested

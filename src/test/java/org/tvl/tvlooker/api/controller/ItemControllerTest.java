@@ -87,6 +87,7 @@ class ItemControllerTest {
                     .directors(new HashSet<>())
                     .actorsInItem(new HashSet<>())
                     .build();
+
             List<Item> items = Arrays.asList(testItem, secondItem);
             Page<Item> itemPage = new PageImpl<>(items, PageRequest.of(0, 50), items.size());
 
@@ -101,10 +102,10 @@ class ItemControllerTest {
                     .andExpect(jsonPath("$.content[0].id", is(1)))
                     .andExpect(jsonPath("$.content[0].title", is("Test Movie")))
                     .andExpect(jsonPath("$.content[1].title", is("Test TV Show")))
-                    .andExpect(jsonPath("$.totalElements", is(2)))
+                    .andExpect(jsonPath("$.actualPage", is(0)))
+                    .andExpect(jsonPath("$.totalItems", is(2)))
                     .andExpect(jsonPath("$.totalPages", is(1)))
-                    .andExpect(jsonPath("$.size", is(50)))
-                    .andExpect(jsonPath("$.number", is(0)));
+                    .andExpect(jsonPath("$.isLast", is(true)));
 
             verify(itemService, times(1)).getAll(org.mockito.ArgumentMatchers.any(Pageable.class));
         }
@@ -118,7 +119,10 @@ class ItemControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.content", hasSize(0)))
-                    .andExpect(jsonPath("$.totalElements", is(0)));
+                    .andExpect(jsonPath("$.actualPage", is(0)))
+                    .andExpect(jsonPath("$.totalItems", is(0)))
+                    .andExpect(jsonPath("$.totalPages", is(0)))
+                    .andExpect(jsonPath("$.isLast", is(true)));
 
             verify(itemService, times(1)).getAll(org.mockito.ArgumentMatchers.any(Pageable.class));
         }
