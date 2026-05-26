@@ -10,12 +10,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.tvl.tvlooker.persistence.tmdb.TmdbClient;
 import org.tvl.tvlooker.persistence.tmdb.TmdbMediaType;
 import org.tvl.tvlooker.persistence.tmdb.dto.*;
+import org.tvl.tvlooker.service.tmdb.support.TmdbEvidenceWriter;
 
 import java.time.LocalDate;
+import java.time.Duration;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -30,6 +37,11 @@ import static org.mockito.Mockito.*;
 @DisplayName("TmdbDataFetcher Behavior Tests")
 class TmdbDataFetcherTest {
 
+    private static final Path TASK_5_EVIDENCE_DIR = Path.of(
+            ".sisyphus/evidence/collector-thread-blocking/task-5");
+    private static final Path TASK_6_EVIDENCE_DIR = Path.of(
+            ".sisyphus/evidence/collector-thread-blocking/task-6");
+
     @Mock
     private TmdbClient tmdbClient;
 
@@ -42,7 +54,7 @@ class TmdbDataFetcherTest {
     void setUp() {
         // Execute tasks synchronously in tests for simplicity
         Executor syncExecutor = Runnable::run;
-        dataFetcher = new TmdbDataFetcher(tmdbClient, syncExecutor, 35.0);
+        dataFetcher = new TmdbDataFetcher(tmdbClient, syncExecutor, 35.0, 100);
     }
 
     @Test
@@ -316,6 +328,73 @@ class TmdbDataFetcherTest {
         assertEquals(2, result.size());
         assertTrue(result.stream().anyMatch(tv -> tv.id() == 100L));
         assertTrue(result.stream().anyMatch(tv -> tv.id() == 200L));
+    }
+
+    @Test
+    @DisplayName("Should keep movie detail requests within configured window")
+    void testFetchMoviesDetailsBatch_HonorsDetailWindow() throws InterruptedException {
+        ExecutorService detailExecutor = Executors.newFixedThreadPool(6);
+        TmdbDataFetcher windowedFetcher = new TmdbDataFetcher(tmdbClient, detailExecutor, 35.0, 2);
+        AtomicInteger inFlight = new AtomicInteger();
+        AtomicInteger maxInFlight = new AtomicInteger();
+
+        when(tmdbClient.getDetailsWithCredits(eq(TmdbMediaType.MOVIE), anyLong())).thenAnswer(invocation -> {
+            int active = inFlight.incrementAndGet();
+            maxInFlight.accumulateAndGet(active, Math::max);
+            try {
+                TimeUnit.MILLISECONDS.sleep(60);
+                return createMockMovieDetails(invocation.getArgument(1, Long.class));
+            } finally {
+                inFlight.decrementAndGet();
+            }
+        });
+
+        try {
+            List<TmdbMovieDetailsDto> result = windowedFetcher.fetchMoviesDetailsBatch(List.of(1L, 2L, 3L, 4L, 5L));
+
+            assertEquals(5, result.size());
+            assertTrue(maxInFlight.get() <= 2, "maxInFlight=" + maxInFlight.get());
+        } finally {
+            detailExecutor.shutdownNow();
+            assertTrue(detailExecutor.awaitTermination(1, TimeUnit.SECONDS));
+        }
+    }
+
+    @Test
+    @DisplayName("Should return successful movie details when one detail fetch fails")
+    void testFetchMoviesDetailsBatch_PartialFailureTerminates() throws Exception {
+        TmdbMovieDetailsDto movie1 = createMockMovieDetails(100L);
+        TmdbMovieDetailsDto movie3 = createMockMovieDetails(300L);
+        when(tmdbClient.getDetailsWithCredits(TmdbMediaType.MOVIE, 100L)).thenReturn(movie1);
+        when(tmdbClient.getDetailsWithCredits(TmdbMediaType.MOVIE, 200L))
+                .thenThrow(new IllegalStateException("mock detail failure"));
+        when(tmdbClient.getDetailsWithCredits(TmdbMediaType.MOVIE, 300L)).thenReturn(movie3);
+
+        List<TmdbMovieDetailsDto> result = assertTimeoutPreemptively(Duration.ofSeconds(1),
+                () -> dataFetcher.fetchMoviesDetailsBatch(List.of(100L, 200L, 300L)));
+
+        assertEquals(List.of(100L, 300L), result.stream().map(TmdbMovieDetailsDto::id).toList());
+        TmdbEvidenceWriter.write(TASK_5_EVIDENCE_DIR.resolve("task-5-partial-failure.txt"),
+                "Task 5 partial detail failure" + System.lineSeparator()
+                        + "terminalState=true" + System.lineSeparator()
+                        + "inputDetails=3" + System.lineSeparator()
+                        + "failedDetails=1" + System.lineSeparator()
+                        + "successfulDetails=" + result.size() + System.lineSeparator()
+                        + "resultIds=" + result.stream().map(TmdbMovieDetailsDto::id).toList() + System.lineSeparator()
+                        + "networkAccess=false" + System.lineSeparator()
+                        + "credentialRequired=false" + System.lineSeparator());
+        TmdbEvidenceWriter.write(TASK_6_EVIDENCE_DIR.resolve("task-6-fetcher-regression.txt"),
+                "Task 6 fetcher regression" + System.lineSeparator()
+                        + "terminalState=true" + System.lineSeparator()
+                        + "configuredConnectTimeout=PT5S" + System.lineSeparator()
+                        + "configuredReadTimeout=PT10S" + System.lineSeparator()
+                        + "noIndefiniteWait=true" + System.lineSeparator()
+                        + "inputDetails=3" + System.lineSeparator()
+                        + "failedDetails=1" + System.lineSeparator()
+                        + "successfulDetails=" + result.size() + System.lineSeparator()
+                        + "resultIds=" + result.stream().map(TmdbMovieDetailsDto::id).toList() + System.lineSeparator()
+                        + "networkAccess=false" + System.lineSeparator()
+                        + "credentialRequired=false" + System.lineSeparator());
     }
 
     @Test
