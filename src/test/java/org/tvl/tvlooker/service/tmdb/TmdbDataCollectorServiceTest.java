@@ -47,6 +47,7 @@ class TmdbDataCollectorServiceTest {
     void setUp() {
         // Set maxPages to 1 for testing to avoid long loops
         ReflectionTestUtils.setField(collectorService, "maxPages", 1);
+        ReflectionTestUtils.setField(collectorService, "pageWindowSize", 10);
         ReflectionTestUtils.setField(collectorService, "batchSize", 50);
     }
 
@@ -186,6 +187,30 @@ class TmdbDataCollectorServiceTest {
 
         // Then: Should fetch and process 3 pages
         verify(dataFetcher, times(3)).fetchPopularMoviesAsync(anyInt());
+    }
+
+    @Test
+    @DisplayName("Should finish and keep successful movie pages when one later page fails")
+    void testCollectPopularMovies_PartialPageFailureTerminates() {
+        ReflectionTestUtils.setField(collectorService, "maxPages", 3);
+        ReflectionTestUtils.setField(collectorService, "pageWindowSize", 2);
+
+        TmdbMovieDto movie1 = createMockMovie(1L);
+        TmdbMovieDto movie3 = createMockMovie(3L);
+        TmdbPagedResponseDto<TmdbMovieDto> firstPage =
+                new TmdbPagedResponseDto<>(1, List.of(movie1), 3, 3);
+        TmdbPagedResponseDto<TmdbMovieDto> thirdPage =
+                new TmdbPagedResponseDto<>(3, List.of(movie3), 3, 3);
+        CompletableFuture<TmdbPagedResponseDto<TmdbMovieDto>> failedPage = new CompletableFuture<>();
+        failedPage.completeExceptionally(new IllegalStateException("mock page failure"));
+
+        when(dataFetcher.fetchPopularMoviesAsync(1)).thenReturn(CompletableFuture.completedFuture(firstPage));
+        when(dataFetcher.fetchPopularMoviesAsync(2)).thenReturn(failedPage);
+        when(dataFetcher.fetchPopularMoviesAsync(3)).thenReturn(CompletableFuture.completedFuture(thirdPage));
+        when(persistenceService.discoverAndPersistNewMovies(anyList())).thenReturn(1);
+
+        assertDoesNotThrow(() -> collectorService.collectPopularMovies());
+        verify(persistenceService, times(2)).discoverAndPersistNewMovies(anyList());
     }
 
     @Test

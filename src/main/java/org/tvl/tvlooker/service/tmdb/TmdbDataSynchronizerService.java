@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.tvl.tvlooker.domain.model.entity.ItemEntity;
@@ -74,6 +75,7 @@ public class TmdbDataSynchronizerService {
     @Scheduled(
             fixedDelayString = "${tmdb.sync.interval-ms:86400000}",
             initialDelayString = "${tmdb.sync.initial-delay-ms:60000}")
+    @Async("tmdbOrchestrationExecutor")
     public void scheduledSync() {
         if (!syncEnabled) {
             log.warn("Scheduled sync is disabled");

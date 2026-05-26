@@ -66,4 +66,23 @@ public class AsyncConfiguration {
         executor.initialize();
         return executor;
     }
+
+    /**
+     * Thread pool executor for TMDB collection and synchronization orchestration.
+     *
+     * @return configured Executor bean
+     */
+    @Bean(name = "tmdbOrchestrationExecutor")
+    public Executor tmdbOrchestrationExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(8);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("tmdb-orchestration-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(60);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
+    }
 }
