@@ -8,13 +8,13 @@ import { useReviews } from '../hooks/useReviews';
 import type { Item } from '../types/item';
 
 const ItemDetailContent: React.FC<{ item: Item }> = ({ item }) => {
-  const { data: reviewsData, isLoading: reviewsLoading } = useReviews(item.id, { pageSize: 5 });
+  const { data: reviewsData, isLoading: reviewsLoading, error: reviewsError } = useReviews(item.id, { pageSize: 5 });
 
   return (
     <div className="min-h-screen">
       <div className="relative h-[50vh] min-h-[400px]">
         {item.backdropUrl && (
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 pointer-events-none">
             <img
               src={item.backdropUrl}
               alt={item.title}
@@ -23,11 +23,11 @@ const ItemDetailContent: React.FC<{ item: Item }> = ({ item }) => {
             <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/60 to-transparent" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/90 via-neutral-950/40 to-transparent" />
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-neutral-950/90 via-neutral-950/40 to-transparent" />
       </div>
 
-      <div className="container mx-auto px-4 relative -mt-48 z-10 pb-16">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="container mx-auto px-4 relative -mt-48 z-20 pb-16">
+        <div className="flex flex-col lg:flex-row gap-8 rounded-sm bg-neutral-950/80 backdrop-blur-sm p-6 shadow-2xl shadow-black/30">
           <div className="flex-shrink-0">
             <div className="w-64 aspect-[2/3] rounded-sm overflow-hidden bg-neutral-900 shadow-2xl shadow-black/50">
               {item.posterUrl ? (
@@ -122,6 +122,13 @@ const ItemDetailContent: React.FC<{ item: Item }> = ({ item }) => {
           </h2>
           {reviewsLoading ? (
             <PageLoader message="Loading reviews..." />
+          ) : reviewsError ? (
+            <div role="alert" aria-live="assertive">
+              <ErrorMessage
+                message="Failed to load reviews. Please try again."
+                className="items-start text-left p-4"
+              />
+            </div>
           ) : reviewsData?.content && reviewsData.content.length > 0 ? (
             <div className="grid gap-4">
               {reviewsData.content.map((review) => (

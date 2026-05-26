@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Card, CardBody, CardHeader, CardFooter } from '../../components/common/Card';
 import { useAuth } from '../../hooks/useAuth';
-import { validateEmail, validatePassword } from '../../utils/validators';
+import { validatePassword } from '../../utils/validators';
 
 interface FormErrors {
-  email?: string;
+  usernameOrEmail?: string;
   password?: string;
 }
 
 export const Login: React.FC = () => {
   const { login, isAuthenticated } = useAuth();
-  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +25,7 @@ export const Login: React.FC = () => {
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {
-      email: validateEmail(email) || undefined,
+      usernameOrEmail: usernameOrEmail.trim() ? undefined : 'Username or email is required',
       password: validatePassword(password) || undefined,
     };
     setErrors(newErrors);
@@ -43,7 +43,7 @@ export const Login: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
+      await login(usernameOrEmail, password);
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : 'Login failed. Please try again.'
@@ -72,14 +72,14 @@ export const Login: React.FC = () => {
               </div>
             )}
             <Input
-              id="email"
-              label="Email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={errors.email}
-              placeholder="your@email.com"
+              id="usernameOrEmail"
+              label="Username or email"
+              type="text"
+              autoComplete="username"
+              value={usernameOrEmail}
+              onChange={(e) => setUsernameOrEmail(e.target.value)}
+              error={errors.usernameOrEmail}
+              placeholder="username or email@example.com"
             />
             <Input
               id="password"
@@ -104,12 +104,12 @@ export const Login: React.FC = () => {
         <CardFooter>
           <p className="text-sm text-neutral-400 text-center">
             Don't have an account?{' '}
-            <a
-              href="/register"
+            <Link
+              to="/register"
               className="text-amber-500 hover:text-amber-400 transition-colors"
             >
               Create one
-            </a>
+            </Link>
           </p>
         </CardFooter>
       </Card>

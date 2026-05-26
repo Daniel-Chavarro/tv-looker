@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tvl.tvlooker.api.dto.mapper.ItemMapper;
+import org.tvl.tvlooker.api.dto.mapper.PageMapper;
+import org.tvl.tvlooker.api.dto.response.PageResponse;
 import org.tvl.tvlooker.api.dto.response.ItemResponse;
 import org.tvl.tvlooker.domain.model.dto.Item;
 import org.tvl.tvlooker.service.ItemService;
@@ -34,11 +36,11 @@ public class ItemController {
      * @return A paginated list of item responses.
      */
     @GetMapping
-    public ResponseEntity<Page<ItemResponse>> getAllItems(
+    public ResponseEntity<PageResponse<ItemResponse>> getAllItems(
             @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<Item> itemsPage = ITEM_SERVICE.getAll(pageable);
         Page<ItemResponse> response = itemsPage.map(ItemMapper::toResponse);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageMapper.toResponse(response));
     }
 
     /**

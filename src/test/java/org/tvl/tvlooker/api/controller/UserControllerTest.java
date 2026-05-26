@@ -268,6 +268,69 @@ class UserControllerTest {
     }
 
     @Nested
+    class SelfProfile {
+
+        @Test
+        void givenAuthenticatedPrincipal_whenGetCurrentUser_thenReturnsCurrentUser() throws Exception {
+            SelfProfileController controller = new SelfProfileController(userService);
+            MockMvc selfProfileMvc = MockMvcBuilders.standaloneSetup(controller)
+                    .setControllerAdvice(new GlobalExceptionHandler())
+                    .build();
+
+            when(userService.getById(testUserId)).thenReturn(testUser);
+
+            selfProfileMvc.perform(get("/api/v1/me")
+                            .principal(() -> testUserId.toString()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id", is(testUserId.toString())))
+                    .andExpect(jsonPath("$.username", is("testuser")))
+                    .andExpect(jsonPath("$.email", is("test@example.com")))
+                    .andExpect(jsonPath("$.name", is("Test User")))
+                    .andExpect(jsonPath("$.authority", is("USER")))
+                    .andExpect(jsonPath("$.password").doesNotExist());
+
+            verify(userService, times(1)).getById(testUserId);
+        }
+
+        @Test
+        void givenAuthenticatedPrincipal_whenPatchCurrentUser_thenUpdatesCurrentUserOnly() throws Exception {
+            SelfProfileController controller = new SelfProfileController(userService);
+            MockMvc selfProfileMvc = MockMvcBuilders.standaloneSetup(controller)
+                    .setControllerAdvice(new GlobalExceptionHandler())
+                    .build();
+            String requestBody = """
+                    {
+                        "email": "updated@example.com",
+                        "name": "Updated User"
+                    }
+                    """;
+            User updatedUser = User.builder()
+                    .id(testUserId)
+                    .username("testuser")
+                    .email("updated@example.com")
+                    .name("Updated User")
+                    .authority(UserAuthority.USER)
+                    .createdAt(testUser.getCreatedAt())
+                    .build();
+
+            when(userService.update(eq(testUserId), any(User.class))).thenReturn(updatedUser);
+
+            selfProfileMvc.perform(patch("/api/v1/me")
+                            .principal(() -> testUserId.toString())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id", is(testUserId.toString())))
+                    .andExpect(jsonPath("$.email", is("updated@example.com")))
+                    .andExpect(jsonPath("$.name", is("Updated User")));
+
+            verify(userService, times(1)).update(eq(testUserId), any(User.class));
+        }
+    }
+
+    @Nested
     class DeleteUser {
 
         @Test

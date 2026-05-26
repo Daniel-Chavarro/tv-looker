@@ -22,6 +22,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -40,6 +41,40 @@ class SecurityIntegrationTest {
     void givenNoToken_whenGetProtectedReview_thenReturnsUnauthorized() throws Exception {
         mockMvc.perform(get("/api/v1/reviews/1"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void givenNoToken_whenGetCurrentUserProfile_thenReturnsUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/me"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void givenUserJwt_whenGetCurrentUserProfile_thenPassesSecurityAuthorization() throws Exception {
+        int status = mockMvc.perform(get("/api/v1/me")
+                        .with(jwt()
+                                .jwt(token -> token.subject(UUID.randomUUID().toString()))
+                                .authorities(new SimpleGrantedAuthority("USER"))))
+                .andReturn()
+                .getResponse()
+                .getStatus();
+
+        assertThat(status).isNotIn(401, 403);
+    }
+
+    @Test
+    void givenUserJwt_whenPatchCurrentUserProfile_thenPassesSecurityAuthorization() throws Exception {
+        int status = mockMvc.perform(patch("/api/v1/me")
+                        .with(jwt()
+                                .jwt(token -> token.subject(UUID.randomUUID().toString()))
+                                .authorities(new SimpleGrantedAuthority("USER")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andReturn()
+                .getResponse()
+                .getStatus();
+
+        assertThat(status).isNotIn(401, 403);
     }
 
     @Test

@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { authApi } from '../api/auth';
-import type { User } from '../types';
+import { authApi, toUserFromAuthResponse } from '../api/auth';
+import { AUTH_STORAGE_KEYS, clearAuthSession } from '../api/client';
+import type { AuthUser } from '../types';
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (usernameOrEmail: string, password: string) => Promise<void>;
   register: (email: string, password: string, username: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -14,49 +15,61 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const isAuthenticated = !!user;
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const response = await authApi.getCurrentUser();
-          setUser(response);
-        } catch {
-          localStorage.removeItem('token');
-        }
-      }
-      setIsLoading(false);
-    };
-    checkAuth();
-  }, []);
+  const persistAuthSession = (nextUser: AuthUser, token: string) => {
+    localStorage.setItem(AUTH_STORAGE_KEYS.token, token);
+    localStorage.setItem(AUTH_STORAGE_KEYS.user, JSON.stringify(nextUser));
+  };
 
-  const login = async (email: string, password: string) => {
+  const readStoredUser = (): AuthUser | null => {
+    const rawUser = localStorage.getItem(AUTH_STORAGE_KEYS.user);
+    if (!rawUser) {
+      return null;
+    }
+
     try {
-      const response = await authApi.login(email, password);
-      localStorage.setItem('token', response.id);
-      setUser(response);
-    } catch (error) {
-      throw error;
+      return JSON.parse(rawUser) as AuthUser;
+    } catch {
+      return null;
     }
   };
 
-  const register = async (email: string, password: string, username: string) => {
-    try {
-      const response = await authApi.register({ email, password, username });
-      localStorage.setItem('token', response.id);
-      setUser(response);
-    } catch (error) {
-      throw error;
+  useEffect(() => {
+    const token = localStorage.getItem(AUTH_STORAGE_KEYS.token);
+    const storedUser = readStoredUser();
+
+    if (token && storedUser) {
+      setUser(storedUser);
+    } else if (token) {
+      clearAuthSession();
     }
+
+    setIsLoading(false);
+  }, []);
+
+  const login = async (usernameOrEmail: string, password: string) => {
+    const response = await authApi.login(usernameOrEmail, password);
+    const nextUser = toUserFromAuthResponse(response);
+
+    persistAuthSession(nextUser, response.token);
+    setUser(nextUser);
+  };
+
+  const register = async (email: string, password: string, username: string) => {
+    const response = await authApi.register({ email, password, username });
+    const nextUser = toUserFromAuthResponse(response);
+
+    persistAuthSession(nextUser, response.token);
+    setUser(nextUser);
   };
 
   const logout = async () => {
     await authApi.logout();
+    clearAuthSession();
     setUser(null);
   };
 

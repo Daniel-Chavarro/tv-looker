@@ -1,11 +1,11 @@
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
 
-export const Header: React.FC = () => {
+export function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = user?.authority === 'ADMIN';
 
   const handleLogout = async () => {
     await logout();
@@ -18,7 +18,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2 group">
             <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-sm flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-shadow">
-              <svg className="w-5 h-5 text-neutral-900" fill="currentColor" viewBox="0 0 20 20">
+              <svg aria-hidden="true" focusable="false" className="w-5 h-5 text-neutral-900" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" />
                 <path d="M10 5v4l3 2" stroke="currentColor" strokeWidth="1.5" fill="none" />
               </svg>
@@ -39,19 +39,33 @@ export const Header: React.FC = () => {
             {isAuthenticated && (
               <>
                 <Link
+                  to="/profile"
+                  className="px-4 py-2 text-neutral-400 hover:text-amber-400 hover:bg-neutral-800/50 rounded-sm transition-colors duration-200 text-sm font-medium"
+                >
+                  Profile
+                </Link>
+                {isAdmin && (
+                  <Link
+                    to="/admin/tmdb"
+                    className="px-4 py-2 text-neutral-400 hover:text-amber-400 hover:bg-neutral-800/50 rounded-sm transition-colors duration-200 text-sm font-medium"
+                  >
+                    Admin
+                  </Link>
+                )}
+                <Link
                   to="/recommendations"
                   className="px-4 py-2 text-neutral-400 hover:text-amber-400 hover:bg-neutral-800/50 rounded-sm transition-colors duration-200 text-sm font-medium"
                 >
                   Recommendations
                 </Link>
                 <Link
-                  to="/my-lists"
+                  to="/lists"
                   className="px-4 py-2 text-neutral-400 hover:text-amber-400 hover:bg-neutral-800/50 rounded-sm transition-colors duration-200 text-sm font-medium"
                 >
                   My Lists
                 </Link>
                 <Link
-                  to="/my-reviews"
+                  to="/reviews"
                   className="px-4 py-2 text-neutral-400 hover:text-amber-400 hover:bg-neutral-800/50 rounded-sm transition-colors duration-200 text-sm font-medium"
                 >
                   My Reviews
@@ -85,4 +99,4 @@ export const Header: React.FC = () => {
       </div>
     </header>
   );
-};
+}

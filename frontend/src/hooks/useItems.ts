@@ -1,13 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { itemsApi } from '../api/items';
+import { itemsApi, type ItemQueryParams } from '../api/items';
 
-export const useItems = (params?: {
-  type?: 'MOVIE' | 'TV';
-  genreId?: number;
-  search?: string;
-  page?: number;
-  pageSize?: number;
-}) => {
+export const useItems = (params?: ItemQueryParams) => {
   return useQuery({
     queryKey: ['items', params],
     queryFn: () => itemsApi.getItems(params),

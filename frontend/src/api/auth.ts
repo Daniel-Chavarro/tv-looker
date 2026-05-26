@@ -1,24 +1,27 @@
 import { apiClient } from './client';
-import type { User, CreateUserRequest} from '../types';
+import type { AuthResponse, AuthUser, CreateUserRequest } from '../types';
+
+export function toUserFromAuthResponse(response: AuthResponse): AuthUser {
+  return {
+    id: response.userId,
+    username: response.username,
+    email: response.email,
+    authority: response.authority,
+  };
+}
 
 export const authApi = {
-  login: async (email: string, password: string): Promise<User> => {
-    const response = await apiClient.post<User>('/auth/login', { email, password });
+  login: async (usernameOrEmail: string, password: string): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/login', { usernameOrEmail, password });
     return response.data;
   },
 
-  register: async (data: CreateUserRequest): Promise<User> => {
-    const response = await apiClient.post<User>('/auth/register', data);
+  register: async (data: CreateUserRequest): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/register', data);
     return response.data;
   },
 
   logout: async (): Promise<void> => {
-    await apiClient.post('/auth/logout');
-    localStorage.removeItem('token');
-  },
-
-  getCurrentUser: async (): Promise<User> => {
-    const response = await apiClient.get<User>('/auth/me');
-    return response.data;
+    return Promise.resolve();
   },
 };

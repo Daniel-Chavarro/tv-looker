@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Card, CardBody, CardHeader, CardFooter } from '../../components/common/Card';
@@ -135,12 +135,12 @@ export const Register: React.FC = () => {
         <CardFooter>
           <p className="text-sm text-neutral-400 text-center">
             Already have an account?{' '}
-            <a
-              href="/login"
+            <Link
+              to="/login"
               className="text-amber-500 hover:text-amber-400 transition-colors"
             >
               Sign in
-            </a>
+            </Link>
           </p>
         </CardFooter>
       </Card>

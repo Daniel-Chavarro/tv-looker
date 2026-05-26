@@ -61,31 +61,43 @@ export function MyReviews() {
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [editRating, setEditRating] = useState(5);
   const [editContent, setEditContent] = useState('');
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleEdit = (review: Review) => {
+    setUpdateError(null);
     setEditingReview(review);
     setEditRating(review.rating);
     setEditContent(review.comment);
   };
 
+  const closeEditModal = () => {
+    setUpdateError(null);
+    setEditingReview(null);
+  };
+
   const handleUpdateReview = async () => {
     if (!editingReview || !editContent.trim()) return;
+    setUpdateError(null);
     try {
       await updateReview.mutateAsync({
         id: editingReview.id,
         data: { score: editRating, reviewText: editContent.trim() },
       });
-      setEditingReview(null);
+      closeEditModal();
     } catch (err) {
+      setUpdateError('Failed to update review. Please try again.');
       console.error('Failed to update review:', err);
     }
   };
 
   const handleDeleteReview = async (id: number) => {
     if (!confirm('Are you sure you want to delete this review?')) return;
+    setDeleteError(null);
     try {
       await deleteReview.mutateAsync(id);
     } catch (err) {
+      setDeleteError('Failed to delete review. Please try again.');
       console.error('Failed to delete review:', err);
     }
   };
@@ -114,6 +126,15 @@ export function MyReviews() {
         <p className="text-neutral-500">Manage your reviews</p>
       </div>
 
+      {deleteError && (
+        <div
+          role="alert"
+          className="mb-6 rounded-sm border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300"
+        >
+          {deleteError}
+        </div>
+      )}
+
       {reviews.length > 0 ? (
         <div className="grid gap-4">
           {reviews.map((review) => (
@@ -128,7 +149,7 @@ export function MyReviews() {
       ) : (
         <div className="text-center py-16">
           <p className="text-neutral-500 mb-4">You haven't written any reviews yet.</p>
-          <Link to="/items">
+          <Link to="/">
             <Button>Browse Items</Button>
           </Link>
         </div>
@@ -136,7 +157,7 @@ export function MyReviews() {
 
       <Modal
         isOpen={!!editingReview}
-        onClose={() => setEditingReview(null)}
+        onClose={closeEditModal}
         title="Edit Review"
       >
         <div className="space-y-4">
@@ -171,10 +192,18 @@ export function MyReviews() {
             onChange={(e) => setEditContent(e.target.value)}
             placeholder="Write your review"
           />
+          {updateError && (
+            <div
+              role="alert"
+              className="rounded-sm border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300"
+            >
+              {updateError}
+            </div>
+          )}
           <div className="flex gap-3 pt-4">
             <Button
               variant="secondary"
-              onClick={() => setEditingReview(null)}
+              onClick={closeEditModal}
               className="flex-1"
             >
               Cancel

@@ -11,6 +11,9 @@ import { MyLists } from './pages/MyLists';
 import { ListDetail } from './pages/ListDetail';
 import { MyReviews } from './pages/MyReviews';
 import { Profile } from './pages/Profile';
+import { AdminTmdb } from './pages/AdminTmdb';
+import { Login } from './pages/auth/Login';
+import { Register } from './pages/auth/Register';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,8 +31,8 @@ export function App() {
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
-              <Route path="/login" element={<div>Login Page</div>} />
-              <Route path="/register" element={<div>Register Page</div>} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route
                 path="/items/:id"
                 element={
@@ -75,6 +78,14 @@ export function App() {
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/tmdb"
+                element={
+                  <ProtectedRoute requiredAuthority="ADMIN">
+                    <AdminTmdb />
                   </ProtectedRoute>
                 }
               />

@@ -1,24 +1,37 @@
-import type { UUID } from "crypto";
+export type UUID = string;
 
-export type User = {
-  id: UUID
+export type UserAuthority = 'USER' | 'ADMIN';
+
+export type AuthUser = {
+  id: UUID;
   username: string;
   email: string;
+  authority: UserAuthority;
   name?: string;
-  // Just meanwhile testing, will be removed in the future when we implement proper authentication
-  password: string;
+};
+
+export type User = AuthUser & {
+  name?: string;
   createdAt: string;
-}
+};
+
+export type AuthResponse = {
+  token: string;
+  userId: UUID;
+  username: string;
+  email: string;
+  authority: UserAuthority;
+};
 
 export type CreateUserRequest = {
   username: string;
   email: string;
   password: string;
   name?: string;
-}
+};
 
 export type UpdateUserRequest = {
   password?: string;
   name?: string;
   email?: string;
-}
+};
