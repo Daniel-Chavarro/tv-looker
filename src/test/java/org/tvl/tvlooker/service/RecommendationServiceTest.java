@@ -45,6 +45,9 @@ class RecommendationServiceTest {
     @Mock
     private InteractionService interactionService;
 
+    @Mock
+    private ReviewService reviewService;
+
     @InjectMocks
     private RecommendationService recommendationService;
 
@@ -140,6 +143,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(allInteractions);
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 
@@ -155,6 +159,7 @@ class RecommendationServiceTest {
         verify(userService, times(1)).getAll();
         verify(itemService, times(1)).getAll();
         verify(interactionService, times(1)).getAll();
+        verify(reviewService, times(1)).getAll();
         verify(recommendationEngine, times(1)).recommend(eq(testUser), any(RecommendationContext.class));
     }
 
@@ -166,6 +171,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(allInteractions);
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 
@@ -185,6 +191,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(allInteractions);
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(List.of());
 
@@ -202,6 +209,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(allInteractions);
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(testUser), contextCaptor.capture()))
                 .thenReturn(scoredRecommendations);
 
@@ -212,6 +220,8 @@ class RecommendationServiceTest {
         assertThat(capturedContext.getUsers()).hasSize(2);
         assertThat(capturedContext.getItems()).hasSize(3);
         assertThat(capturedContext.getInteractions()).hasSize(2);
+        assertThat(capturedContext.getReviews()).isNotNull();
+        assertThat(capturedContext.getReviews()).isEmpty();
     }
 
     @Test
@@ -222,6 +232,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(allInteractions);
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 
@@ -231,6 +242,7 @@ class RecommendationServiceTest {
         verify(userService, times(1)).getAll();
         verify(itemService, times(1)).getAll();
         verify(interactionService, times(1)).getAll();
+        verify(reviewService, times(1)).getAll();
     }
 
     @Test
@@ -299,6 +311,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(allInteractions);
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenThrow(new InsufficientDataException("Insufficient data to generate recommendations"));
 
@@ -326,6 +339,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(List.of(newUser));
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(List.of());
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(newUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 
@@ -344,6 +358,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(List.of());
         when(interactionService.getAll()).thenReturn(allInteractions);
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(List.of());
 
@@ -361,6 +376,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(allInteractions);
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 
@@ -378,6 +394,7 @@ class RecommendationServiceTest {
         when(userService.getAll()).thenReturn(allUsers);
         when(itemService.getAll()).thenReturn(allItems);
         when(interactionService.getAll()).thenReturn(allInteractions);
+        when(reviewService.getAll()).thenReturn(List.of());
         when(recommendationEngine.recommend(eq(testUser), any(RecommendationContext.class)))
                 .thenReturn(scoredRecommendations);
 

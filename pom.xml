@@ -155,6 +155,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
     </dependencies>
 
     <!-- ========================================= -->
@@ -193,6 +198,9 @@
                             <systemPropertyVariables>
                                 <spring.profiles.active>test</spring.profiles.active>
                             </systemPropertyVariables>
+                            <environmentVariables>
+                                <SPRING_DATASOURCE_URL>jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH</SPRING_DATASOURCE_URL>
+                            </environmentVariables>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -308,6 +316,7 @@
                     </excludes>
                 </configuration>
             </plugin>
+            
         </plugins>
     </build>
 

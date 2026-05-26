@@ -12,6 +12,8 @@ import org.tvl.tvlooker.domain.motor.utils.DataProvider;
 import org.tvl.tvlooker.domain.strategy.aggregation.AggregationStrategy;
 import org.tvl.tvlooker.domain.strategy.aggregation.ConstantConvexAggregation;
 import org.tvl.tvlooker.domain.strategy.aggregation.RankingBasedAggregation;
+import org.tvl.tvlooker.domain.strategy.recommendation.ContentBasedStrategy;
+import org.tvl.tvlooker.domain.strategy.recommendation.MatrixFactorizationStrategy;
 import org.tvl.tvlooker.domain.strategy.recommendation.PopularityStrategy;
 import org.tvl.tvlooker.domain.strategy.recommendation.RecommendationStrategy;
 
@@ -44,6 +46,26 @@ public class RecommendationConfig {
         return new PopularityStrategy();
     }
 
+    @Bean
+    @Order(2)
+    @ConditionalOnProperty(
+            name = "recommendation.strategies.content.enabled",
+            havingValue = "true",
+            matchIfMissing = false)
+    public RecommendationStrategy contentBasedStrategy() {
+        return new ContentBasedStrategy();
+    }
+
+    @Bean
+    @Order(5)
+    @ConditionalOnProperty(
+            name = "recommendation.strategies.matrix-factorization.enabled",
+            havingValue = "true",
+            matchIfMissing = false)
+    public RecommendationStrategy matrixFactorizationStrategy() {
+        return new MatrixFactorizationStrategy();
+    }
+
     // AGGREGATION STRATEGIES
 
     @Bean
@@ -58,7 +80,7 @@ public class RecommendationConfig {
         
         Map<String, Double> weights = new HashMap<>();
         weights.put("popularity", weightPopularity);
-        weights.put("content", weightContent);
+        weights.put("content-based", weightContent);
         weights.put("item-collaborative", weightItemCollaborative);
         weights.put("user-collaborative", weightUserCollaborative);
         weights.put("matrix-factorization", weightMatrixFactorization);
@@ -73,4 +95,3 @@ public class RecommendationConfig {
     }
 
 }
-

@@ -1,0 +1,316 @@
+# Content-Based Strategy - Implementacion
+
+**Fecha:** 2026-05-08  
+**Estado:** Implementado  
+**Tipo:** Feature  
+**Milestone:** Phase 1 - Foundation
+
+---
+
+## 1) Objetivo
+
+Implementar la estrategia de recomendacion basada en contenido que utiliza metadatos de items (generos, actores, directores, tags) para recomendar items similares a los que el usuario ha visto.
+
+Esta estrategia:
+- Construye perfiles de usuario basados en el contenido de items que han visto/calificado
+- Utiliza vectores de caracteristicas con ponderacion TF-IDF
+- Calcula similitud coseno entre el perfil del usuario y los items candidatos
+- Es la segunda estrategia del sistema (Phase 1 - Foundation)
+
+Referencia: [Recommendation Strategies Design](2026-03-06-recommendation-strategies-and-aggregations-design.md#2-content-based-strategy)
+
+---
+
+## 2) Como funciona
+
+La implementacion consta de cuatro componentes principales:
+
+### ItemFeatureVector (Data Structure)
+
+Representa un item o perfil de usuario como un vector de caracteristicas separadas por tipo:
+- `genres`: Map<String, Double> - pesos por genero
+- `actors`: Map<String, Double> - pesos por actor
+- `directors`: Map<String, Double> - pesos por director
+- `tags`: Map<String, Double> - pesos por tag (reservado para futura implementacion)
+
+Operaciones principales:
+- `cosineSimilarity(ItemFeatureVector other)`: calcula similitud coseno como `dotProduct / (norm1 * norm2)`
+- `addVectorWithWeight(ItemFeatureVector other, double weight)`: agrega otro vector escalado por peso (usado para generar perfiles de usuario)
+
+### ItemFeatureVectorProvider (Data Provider)
+
+Provider ID: `"item-feature-vectors"`
+
+1. Calcula frecuencias de documento (DF) para cada feature (genero, actor, director)
+2. Calcula IDF: `log(N / (1 + df))` donde N = total de items
+3. Construye vectores TF-IDF para cada item
+4. Cache: 24 horas (86400 segundos)
+
+Nota: Tags no se procesan en esta implementacion porque el modelo de datos aun no incluye una entidad Tag. La estructura `ItemFeatureVector` soporta tags para implementacion futura.
+
+### UserProfileProvider (Data Provider)
+
+Provider ID: `"user-content-profiles"`
+
+1. Obtiene los vectores de items de `ItemFeatureVectorProvider`
+2. Pre-indexa los reviews en un `Map<Long, Double>` (reviewId → score) para lookup O(1) — evita linear scan por cada interacción RATING
+3. Agrega interacciones de usuarios ponderadas por tipo:
+   - LIKE: peso 5.0
+   - VIEW: peso 3.0
+   - RATING: obtiene el score real desde el mapa de reviews; si no hay review o score, default 4.0; score >= 4.0 contribuye positivo, score <= 2.0 contribuye como penalización (-score), neutral entre 2 y 4
+   - Otros tipos: peso 0.0
+4. Construye perfil del usuario sumando vectores de items con sus pesos
+5. Cache: 1 hora (3600 segundos)
+
+### ContentBasedStrategy (Recommendation Strategy)
+
+Strategy name: `"content-based"`
+
+1. Obtiene perfiles de usuario y vectores de items del contexto
+2. Para cada item candidato, calcula similitud coseno entre perfil de usuario y vector del item
+3. Normaliza score a rango `[0, 1]` usando `Math.max(0.0, Math.min(1.0, similarity))`
+4. Filtra items con score > 0 y ordena descendente
+5. Cold start: usuarios sin historial retornan lista vacia
+6. Explicacion: `"Consistent with the type of content you usually enjoy"`
+
+---
+
+## 3) Comportamiento clave
+
+- **TF-IDF**: pondera features raras mas alto (menor df = mayor idf)
+- **Cold start users**: retorna lista vacia cuando no hay perfil de usuario
+- **Cold start items**: items sin vector en el provider se omiten
+- **Scores**: normalizados en [0, 1]
+- **Similitud coseno**: como todos los features tienen pesos TF-IDF no negativos, la similitud coseno naturalmente esta en [0, 1]
+- **Agregacion de perfil**: ponderada por tipo de interaccion (no por rating numerico exacto debido a limitaciones de datos en contexto)
+- **Configuracion deshabilitable**: via `recommendation.content.tfidf.enabled=false`
+
+---
+
+## 4) Configuracion
+
+Habilitar/deshabilitar TF-IDF:
+
+```properties
+recommendation.content.tfidf.enabled=true
+```
+
+Peso en agregacion constante:
+
+```properties
+recommendation.weights.content=0.25
+```
+
+- **Nota (2026-05-19):** En la configuración de los pesos (e.g. `RecommendationConfig`), el key usado en el mapa interno es `"content-based"` para alinearse con el nombre que retorna la estrategia y evitar que el peso se ignore.
+
+La estrategia se habilita/deshabilita via:
+
+```properties
+recommendation.strategies.content.enabled=true
+```
+
+Controlada por `@ConditionalOnProperty` con `matchIfMissing = false`, lo que significa que **no** se carga sin la propiedad explícita `=true`. Actualmente está habilitada en los 3 profiles:
+- `application.properties`: `recommendation.strategies.content.enabled=true`
+- `application-test.properties`: `recommendation.strategies.content.enabled=true`
+- `application-dev.properties`: `recommendation.strategies.content.enabled=true`
+
+El switch de estrategia es independiente del switch de TF-IDF (`recommendation.content.tfidf.enabled`). Se puede tener la estrategia habilitada con TF-IDF deshabilitado (usa pesos planos) o viceversa.
+
+---
+
+## 5) Archivos de implementacion
+
+### Produccion
+
+- `src/main/java/org/tvl/tvlooker/domain/data_structure/ItemFeatureVector.java`
+- `src/main/java/org/tvl/tvlooker/domain/motor/utils/provider/ItemFeatureVectorProvider.java`
+- `src/main/java/org/tvl/tvlooker/domain/motor/utils/provider/UserProfileProvider.java`
+- `src/main/java/org/tvl/tvlooker/domain/strategy/recommendation/ContentBasedStrategy.java`
+- `src/main/resources/application-dev.properties` (nuevo, configuracion de desarrollo)
+- `src/main/resources/application.properties` (modificado, agrega `recommendation.content.tfidf.enabled=true`)
+
+### Testing
+
+- `src/test/java/org/tvl/tvlooker/domain/data_structure/ItemFeatureVectorTest.java`
+- `src/test/java/org/tvl/tvlooker/domain/motor/utils/provider/ItemFeatureVectorProviderTest.java`
+- `src/test/java/org/tvl/tvlooker/domain/motor/utils/provider/UserProfileProviderTest.java`
+- `src/test/java/org/tvl/tvlooker/domain/strategy/recommendation/ContentBasedStrategyTest.java`
+
+---
+
+## 6) Casos cubiertos por tests
+
+### ItemFeatureVectorTest (4 tests)
+
+1. Similitud coseno entre vectores identicos = 1.0
+2. Similitud coseno entre vectores ortogonales = 0.0
+3. Agregar vector con peso positivo: suma ponderada correcta
+4. Agregar vector con peso negativo: resta ponderada correcta
+
+### ItemFeatureVectorProviderTest (6 tests)
+
+1. Extraccion y calculo TF-IDF correcto para generos
+2. Verificacion de cache: provider ID y expiracion de 86400 segundos
+3. Manejo cuando esta deshabilitado: retorna vectores con pesos planos (1.0)
+4. Omite items con nombres de genero null o blank (nuevo)
+5. Omite items con nombres de director null o blank (nuevo)
+6. Omite items con ID null (nuevo)
+
+### UserProfileProviderTest (3 tests)
+
+1. Agregacion de perfiles basada en pesos de interaccion
+   - LIKE (peso 5.0) sobre item con genero Action -> Action=5.0 en perfil
+   - VIEW (peso 3.0) sobre item con genero Comedy -> Comedy=3.0 en perfil
+   - RESEARCH (peso 0.0) se ignora
+2. Omite interacciones con null userId o itemId (nuevo)
+3. Maneja null reviewId de forma segura (nuevo)
+
+### ContentBasedStrategyTest (1 test)
+
+1. Recomendacion normal + cold start: usuario con perfil obtiene items similares, usuario sin perfil retorna lista vacia
+2. Filtrado de items con score 0
+3. Verificacion de nombre de estrategia `"content-based"`
+4. Verificacion de `sourceStrategy` y `explanation` en ScoredItem
+
+---
+
+## 7) Ejemplo rapido
+
+Dado:
+- Item1: generos [Action]
+- Item2: generos [Action, Comedy]
+- Item3: generos [Drama]
+- Total items N = 3
+- Usuario vio Item1 (LIKE, peso 5.0)
+
+Document frequencies:
+- Action: df=2 (Item1, Item2)
+- Comedy: df=1 (Item2)
+- Drama: df=1 (Item3)
+
+IDF:
+- Action: log((3+1) / (2+1)) = log(4/3) ≈ 0.288
+- Comedy: log((3+1) / (1+1)) = log(4/2) ≈ 0.693
+- Drama: log((3+1) / (1+1)) = log(4/2) ≈ 0.693
+
+Perfil de usuario (solo vio Item1):
+- Action: 5.0 * 0.288 = 1.44
+
+Scores contra candidatos (similitud coseno normalizada a [0, 1]):
+- Item1: cosineSimilarity([Action:1.44], [Action:0.288]) = 1.0 -> score 1.0
+- Item2: cosineSimilarity([Action:1.44], [Action:0.288, Comedy:0.693]) ≈ 0.384 -> score 0.384
+- Item3: cosineSimilarity([Action:1.44], [Drama:0.693]) = 0.0 -> filtrado
+
+---
+
+## 8) Como validarlo localmente
+
+Ejecutar tests especificos:
+
+```powershell
+# From the project root (tv-looker)
+mvn "-Dtest=ItemFeatureVectorTest" test
+mvn "-Dtest=ItemFeatureVectorProviderTest" test
+mvn "-Dtest=UserProfileProviderTest" test
+mvn "-Dtest=ContentBasedStrategyTest" test
+```
+
+Validacion de regresion:
+
+```powershell
+# From the project root (tv-looker)
+mvn "-Dtest=HybridRecommendationEngineTest" test
+```
+
+---
+
+## 9) Mejoras de seguridad y robustez (2026-05-11)
+
+Se agregaron validaciones de null para prevenir NullPointerExceptions:
+
+### ItemFeatureVectorProvider
+- Valida nombres de genero antes de usar como claves en mapas (lineas 73-76)
+- Valida nombres de director antes de usar como claves en mapas (lineas 87-90)
+- Valida item ID antes de almacenar vector (lineas 97-100)
+- Omite items con nombres null/blank o IDs null
+- Previene NPEs y corrupcion de datos en vectores
+
+### UserProfileProvider
+- Valida `userId` y `itemId` antes de procesar interacciones (lineas 57-59)
+- Usa un mapa preconstruido `reviewId` -> `score` para resolver scores de reviews de forma segura (linea 94-103)
+- Previene NPEs al buscar scores de reviews mediante lookup en mapa
+
+### ContentBasedStrategy
+- Actualizo comentario para reflejar comportamiento real de normalizacion (lineas 66-70)
+- La similitud coseno se clamp a [0, 1] en lugar de ser remapeada desde [-1, 1]
+- Similitudes negativas (por pesos negativos en perfil) se tratan como 0
+
+### ItemFeatureVector
+- Agrego braces para ifs de una linea para cumplir con regla Checkstyle NeedBraces (lineas 32-34, 96-98)
+
+## 11) Limitaciones actuales
+
+Fuera de alcance en esta feature:
+
+- **Embeddings de texto**: solo TF-IDF, no embeddings semanticos
+- **Aprendizaje de pesos dinamicos**: pesos por feature type son fijos
+- **Actualizacion incremental de perfiles**: se recomputan desde cero
+- **Tags**: no implementados por falta de entidad Tag en modelo de datos
+- **Rating numérico exacto en RATING**: se extraen los puntajes directamente desde los objetos `Review` incluidos en el `RecommendationContext`. Solo en casos donde no exista la reseña o puntaje, se usa un valor proxy neutral.
+- **Normalizacion de perfiles**: el perfil de usuario no se normaliza por peso total (acumulacion directa)
+
+---
+
+## 12) Decisiones tecnicas y desviaciones del diseno
+
+### Diferencias respecto al diseno original (2026-03-06)
+
+1. **Nombre de campos en ItemFeatureVector**: el diseno usaba `genreWeights`, `actorWeights`, etc.; la implementacion usa `genres`, `actors`, `directors`, `tags` para consistencia interna y simplicidad.
+
+2. **Tipo de ID de usuario en UserProfileProvider**: el diseno usaba `Map<Long, ItemFeatureVector>` con `user.getId()` tipo Long; la implementacion usa `Map<String, ItemFeatureVector>` con `user.getId().toString()` (UUID) para consistencia con otros providers.
+
+3. **Peso en RATING**: el diseno sugeria usar `interaction.getRating()` como peso; la implementacion ahora asocia los IDs de las reseñas de las interacciones con las reseñas reales expuestas en `RecommendationContext.getReviews()` para usar la valoración explícita cuando está disponible.
+
+4. **Tags**: reservados en la estructura pero no procesados por `ItemFeatureVectorProvider` debido a la ausencia de entidad Tag.
+
+5. **Cache**: implementado via `getCacheExpirationSeconds()` en cada provider, no via `CachedData` interno como sugeria el diseno (la cache es manejada por el consumidor del provider).
+
+---
+
+## 13) Optimización de rendimiento: lookup de reviews con mapa (2026-05-19)
+
+### Problema original
+
+`UserProfileProvider.computeWeight()` y `RatingAccumulator.lookupReviewScore()` escaneaban `context.getReviews()` linealmente por cada interacción RATING. Con N reviews y M ratings, la complejidad era O(N×M) por request.
+
+### Solución
+
+Ambos componentes construyen un `Map` pre-indexado una sola vez antes de iterar interacciones:
+
+| Componente | Estructura | Default si no encuentra |
+|---|---|---|
+| `UserProfileProvider` | `Map<Long, Double>` (reviewId → score, con nulls flatteados a 4.0) | 4.0 |
+| `RatingAccumulator` | `Map<Long, Review>` (reviewId → Review object) | 3.0 |
+
+### Cambios concretos
+
+- **`UserProfileProvider`:**
+  - Nuevo método `buildReviewScoreMap()` construye el mapa al inicio de `provide()`
+  - `computeWeight()` recibe el mapa como parámetro y hace `reviewScoreMap.get(reviewId)` en O(1)
+
+- **`RatingAccumulator`:**
+  - Nuevo método `buildReviewMap()` construye el mapa al inicio de `accumulate()`
+  - `extractRating()` recibe el mapa en vez del contexto
+  - `lookupReviewScore()` eliminada (reemplazada por lookup directo en el mapa)
+
+### Archivos modificados
+
+- `src/main/java/org/tvl/tvlooker/domain/motor/utils/provider/UserProfileProvider.java`
+- `src/main/java/org/tvl/tvlooker/domain/motor/utils/provider/RatingAccumulator.java`
+
+---
+
+## 14) Referencias
+
+- [Recommendation Strategies Design](https://github.com/Daniel-Chavarro/tv-looker/blob/main/docs/plans/2026-03-06-recommendation-strategies-and-aggregations-design.md#2-content-based-strategy)
+- Issue original: feature request para Content-Based Strategy (Phase 1 - Foundation)
