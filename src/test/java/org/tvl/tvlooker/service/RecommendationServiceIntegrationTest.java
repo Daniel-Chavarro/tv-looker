@@ -1,5 +1,6 @@
 package org.tvl.tvlooker.service;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,11 +17,14 @@ import org.tvl.tvlooker.domain.model.entity.ItemEntity;
 import org.tvl.tvlooker.domain.model.entity.UserEntity;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
+import org.tvl.tvlooker.domain.model.entity.SavedRecommendationEntity;
 import org.tvl.tvlooker.persistence.repository.InteractionRepository;
 import org.tvl.tvlooker.persistence.repository.ItemRepository;
+import org.tvl.tvlooker.persistence.repository.SavedRecommendationRepository;
 import org.tvl.tvlooker.persistence.repository.UserRepository;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +51,12 @@ public class RecommendationServiceIntegrationTest {
     @Autowired
     private InteractionRepository interactionRepository;
 
+    @Autowired
+    private SavedRecommendationRepository savedRecommendationRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
     private UserEntity testUser1Entity;
     private UserEntity testUser2Entity;
     private UserEntity newUserEntity;
@@ -57,6 +67,7 @@ public class RecommendationServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        savedRecommendationRepository.deleteAll();
         interactionRepository.deleteAll();
         itemRepository.deleteAll();
         userRepository.deleteAll();
@@ -164,6 +175,7 @@ public class RecommendationServiceIntegrationTest {
 
     @AfterEach
     void tearDown() {
+        savedRecommendationRepository.deleteAll();
         interactionRepository.deleteAll();
         itemRepository.deleteAll();
         userRepository.deleteAll();
@@ -285,5 +297,98 @@ public class RecommendationServiceIntegrationTest {
 
         assertThat(recommendations).hasSize(1);
         assertThat(recommendations.get(0)).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should persist saved recommendation rows on first request")
+    void testGetRecommendations_FirstRequest_PersistsSavedRows() {
+        List<Item> recommendations = recommendationService.getUserRecommendations(testUser1Entity.getId(), 3);
+
+        List<SavedRecommendationEntity> savedRows = savedRecommendationRepository
+                .findFreshByUserIdOrderByRankPositionAsc(testUser1Entity.getId(), Instant.now());
+        assertThat(savedRows).isNotEmpty();
+        assertThat(savedRows).hasSizeGreaterThanOrEqualTo(recommendations.size());
+        assertThat(savedRows).extracting(SavedRecommendationEntity::getRankPosition)
+                .containsExactlyElementsOf(java.util.stream.IntStream.range(0, savedRows.size()).boxed().toList());
+    }
+
+    @Test
+    @DisplayName("Should reuse saved recommendation rows before TTL expiry")
+    void testGetRecommendations_SecondRequest_ReusesSavedRows() {
+        List<Item> firstRecommendations = recommendationService.getUserRecommendations(testUser1Entity.getId(), 3);
+        List<Long> savedIds = savedRecommendationRepository
+                .findFreshByUserIdOrderByRankPositionAsc(testUser1Entity.getId(), Instant.now())
+                .stream()
+                .map(SavedRecommendationEntity::getId)
+                .toList();
+
+        assertThat(firstRecommendations).isNotEmpty();
+        assertThat(savedIds).isNotEmpty();
+
+        List<Item> secondRecommendations = recommendationService.getUserRecommendations(testUser1Entity.getId(), 3);
+        List<Long> savedIdsAfterSecondRequest = savedRecommendationRepository
+                .findFreshByUserIdOrderByRankPositionAsc(testUser1Entity.getId(), Instant.now())
+                .stream()
+                .map(SavedRecommendationEntity::getId)
+                .toList();
+
+        assertThat(secondRecommendations).extracting(Item::getId)
+                .containsExactlyElementsOf(firstRecommendations.stream().map(Item::getId).toList());
+        assertThat(savedIdsAfterSecondRequest).containsExactlyElementsOf(savedIds);
+    }
+
+    @Test
+    @DisplayName("Should replace expired saved recommendation rows")
+    void testGetRecommendations_ExpiredRows_ReplacesSavedRows() {
+        recommendationService.getUserRecommendations(testUser1Entity.getId(), 3);
+        List<SavedRecommendationEntity> savedRows = savedRecommendationRepository
+                .findFreshByUserIdOrderByRankPositionAsc(testUser1Entity.getId(), Instant.now());
+        assertThat(savedRows).isNotEmpty();
+        savedRows.forEach(row -> row.setExpiresAt(Instant.now().minusSeconds(1)));
+        savedRecommendationRepository.saveAll(savedRows);
+        List<Long> expiredIds = savedRows.stream().map(SavedRecommendationEntity::getId).toList();
+        entityManager.flush();
+        entityManager.clear();
+
+        recommendationService.getUserRecommendations(testUser1Entity.getId(), 3);
+
+        List<Long> freshIds = savedRecommendationRepository.findAll().stream()
+                .filter(r -> r.getUser().getId().equals(testUser1Entity.getId()))
+                .map(SavedRecommendationEntity::getId)
+                .toList();
+        assertThat(freshIds).isNotEmpty();
+        assertThat(freshIds).doesNotContainAnyElementsOf(expiredIds);
+    }
+
+    @Test
+    @DisplayName("Should return cached items ordered by rank position")
+    void testGetRecommendations_CacheHit_ReturnsRankOrder() {
+        savedRecommendationRepository.deleteAllByUserId(testUser1Entity.getId());
+        Instant now = Instant.now();
+        savedRecommendationRepository.saveAll(List.of(
+                SavedRecommendationEntity.builder()
+                        .user(testUser1Entity)
+                        .item(popularItem2Entity)
+                        .score(0.9)
+                        .rankPosition(1)
+                        .createdAt(now)
+                        .expiresAt(now.plusSeconds(3600))
+                        .build(),
+                SavedRecommendationEntity.builder()
+                        .user(testUser1Entity)
+                        .item(popularItem3Entity)
+                        .score(0.6)
+                        .rankPosition(0)
+                        .createdAt(now)
+                        .expiresAt(now.plusSeconds(3600))
+                        .build()
+        ));
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Item> recommendations = recommendationService.getUserRecommendations(testUser1Entity.getId(), 2);
+
+        assertThat(recommendations).extracting(Item::getId)
+                .containsExactly(popularItem3Entity.getId(), popularItem2Entity.getId());
     }
 }

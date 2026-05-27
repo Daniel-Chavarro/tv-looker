@@ -1,6 +1,5 @@
 package org.tvl.tvlooker.domain.motor;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
 import org.tvl.tvlooker.domain.exception.InsufficientDataException;
@@ -18,6 +17,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * The HybridRecommendationEngine class is a concrete implementation of the RecommendationEngine interface that combines
@@ -25,7 +25,6 @@ import java.util.Map;
  * for flexible configuration of STRATEGIES and can be extended to include various recommendation algorithms.
  */
 @Getter
-@AllArgsConstructor
 public class HybridRecommendationEngine implements RecommendationEngine {
     /** A list of recommendation STRATEGIES that the engine will use to generate recommendations. */
     private final List<RecommendationStrategy> STRATEGIES;
@@ -38,6 +37,43 @@ public class HybridRecommendationEngine implements RecommendationEngine {
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(HybridRecommendationEngine.class);
 
     private final List<DataProvider<?>> DATA_PROVIDERS;
+
+    /** Executor reserved for future asynchronous recommendation work. */
+    private final Executor RECOMMENDATION_TASK_EXECUTOR;
+
+    public HybridRecommendationEngine(
+            List<RecommendationStrategy> strategies,
+            AggregationStrategy aggregationStrategy,
+            List<DataProvider<?>> dataProviders) {
+        this(strategies, aggregationStrategy, dataProviders, Runnable::run);
+    }
+
+    public HybridRecommendationEngine(
+            List<RecommendationStrategy> strategies,
+            AggregationStrategy aggregationStrategy,
+            List<DataProvider<?>> dataProviders,
+            Executor recommendationTaskExecutor) {
+        this.STRATEGIES = strategies;
+        this.AGGREGATION_STRATEGY = aggregationStrategy;
+        this.DATA_PROVIDERS = dataProviders;
+        this.RECOMMENDATION_TASK_EXECUTOR = recommendationTaskExecutor;
+    }
+
+    public List<RecommendationStrategy> getSTRATEGIES() {
+        return STRATEGIES;
+    }
+
+    public AggregationStrategy getAGGREGATION_STRATEGY() {
+        return AGGREGATION_STRATEGY;
+    }
+
+    public List<DataProvider<?>> getDATA_PROVIDERS() {
+        return DATA_PROVIDERS;
+    }
+
+    public Executor getRECOMMENDATION_TASK_EXECUTOR() {
+        return RECOMMENDATION_TASK_EXECUTOR;
+    }
 
 
     /** Generates a list of scored items as recommendations for a given user based on the provided recommendation

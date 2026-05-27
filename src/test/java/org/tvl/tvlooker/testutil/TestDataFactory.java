@@ -3,11 +3,14 @@ package org.tvl.tvlooker.testutil;
 import org.tvl.tvlooker.domain.model.dto.Genre;
 import org.tvl.tvlooker.domain.model.dto.Interaction;
 import org.tvl.tvlooker.domain.model.dto.Item;
+import org.tvl.tvlooker.domain.model.dto.Review;
 import org.tvl.tvlooker.domain.model.dto.User;
 import org.tvl.tvlooker.domain.model.enums.InteractionType;
 import org.tvl.tvlooker.domain.model.enums.TmdbType;
+import org.tvl.tvlooker.domain.motor.utils.DataPage;
 import org.tvl.tvlooker.domain.motor.utils.RecommendationContext;
 import org.tvl.tvlooker.domain.data_structure.ScoredItem;
+import org.tvl.tvlooker.domain.motor.utils.RecommendationDataGateway;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -245,6 +248,66 @@ public class TestDataFactory {
                 .dataProviders(new HashMap<>())
                 .dataCache(new HashMap<>())
                 .build();
+    }
+
+    /**
+     * Creates a page-aware recommendation context for gateway-based tests.
+     */
+    public static RecommendationContext createPagedContext(
+            User targetUser,
+            RecommendationDataGateway dataGateway,
+            int candidatePageSize,
+            int representativesPerPage,
+            long asyncTimeoutMillis) {
+        return RecommendationContext.builder()
+                .targetUser(targetUser)
+                .dataGateway(dataGateway)
+                .candidatePageSize(candidatePageSize)
+                .representativesPerPage(representativesPerPage)
+                .asyncTimeoutMillis(asyncTimeoutMillis)
+                .dataProviders(new HashMap<>())
+                .dataCache(new HashMap<>())
+                .build();
+    }
+
+    /**
+     * Creates a deterministic in-memory paging gateway fixture.
+     */
+    public static RecommendationDataGateway createGateway(
+            List<Item> items,
+            List<Interaction> interactions,
+            List<Review> reviews) {
+        return new RecommendationDataGateway() {
+            @Override
+            public DataPage<Item> getCandidateItems(int pageNumber, int pageSize) {
+                return getAllItems(pageNumber, pageSize);
+            }
+
+            @Override
+            public DataPage<Item> getAllItems(int pageNumber, int pageSize) {
+                return page(items, pageNumber, pageSize);
+            }
+
+            @Override
+            public DataPage<Interaction> getAllInteractions(int pageNumber, int pageSize) {
+                return page(interactions, pageNumber, pageSize);
+            }
+
+            @Override
+            public DataPage<Review> getAllReviews(int pageNumber, int pageSize) {
+                return page(reviews, pageNumber, pageSize);
+            }
+        };
+    }
+
+    private static <T> DataPage<T> page(List<T> values, int pageNumber, int pageSize) {
+        int fromIndex = pageNumber * pageSize;
+        if (fromIndex >= values.size()) {
+            return DataPage.empty();
+        }
+        int toIndex = Math.min(fromIndex + pageSize, values.size());
+        boolean hasNext = toIndex < values.size();
+        return new DataPage<>(values.subList(fromIndex, toIndex), hasNext);
     }
 
     /**

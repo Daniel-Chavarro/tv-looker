@@ -1,6 +1,7 @@
 package org.tvl.tvlooker.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import org.tvl.tvlooker.domain.strategy.recommendation.RecommendationStrategy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 @Configuration
 public class RecommendationConfig {
@@ -30,8 +32,9 @@ public class RecommendationConfig {
     public RecommendationEngine recommendationEngine(
             List<RecommendationStrategy> strategies,
             AggregationStrategy aggregation,
-            List<DataProvider<?>> dataProviders) {
-        return new HybridRecommendationEngine(strategies, aggregation, dataProviders);
+            List<DataProvider<?>> dataProviders,
+            @Qualifier("recommendationTaskExecutor") Executor recommendationTaskExecutor) {
+        return new HybridRecommendationEngine(strategies, aggregation, dataProviders, recommendationTaskExecutor);
     }
 
     // RECOMMENDATION STRATEGIES

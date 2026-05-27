@@ -1,0 +1,1887 @@
+{
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\mvnw": {
+    "mtime": 1778806843.2248232,
+    "ast_hash": "ab50dd89da7da2346b28003352eeeeeb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\.opencode\\opencode.json": {
+    "mtime": 1779827939.816712,
+    "ast_hash": "1efe24ecf938911d4f23e4b1c6ec91f7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\.opencode\\package.json": {
+    "mtime": 1779827950.3806913,
+    "ast_hash": "878115d31c721840fc3330b89a3f8c20",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\.opencode\\plugins\\graphify.js": {
+    "mtime": 1779827784.9278307,
+    "ast_hash": "32b67963417a30cb80544e0b2a56a98d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\package.json": {
+    "mtime": 1779796871.943213,
+    "ast_hash": "3a162ee38e752d6fa6bfde9c29d7eddf",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\postcss.config.js": {
+    "mtime": 1779649370.5147982,
+    "ast_hash": "bce9395a2e003ccde76a3f98eb5ff6de",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\react-router.config.ts": {
+    "mtime": 1779630319.8494341,
+    "ast_hash": "c233d5af302c041f077dceb7e1653506",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\tailwind.config.js": {
+    "mtime": 1779630319.8768008,
+    "ast_hash": "2827a53013b086b08f7d51babcddcca5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\tsconfig.app.json": {
+    "mtime": 1779630319.8778026,
+    "ast_hash": "104e5c607628321785b63db8a13061c7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\tsconfig.json": {
+    "mtime": 1779651462.2147703,
+    "ast_hash": "3affead9901ad5171382f10ef3acf37c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\vite.config.ts": {
+    "mtime": 1779796871.965232,
+    "ast_hash": "7536135e675ec0f090aed1b477e7afeb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\vitest.config.ts": {
+    "mtime": 1779796871.9662325,
+    "ast_hash": "5465c17be531f97bd3084c9c5fe98978",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\App.test.tsx": {
+    "mtime": 1779796871.943213,
+    "ast_hash": "4572183804bb837f4104db8d1db80151",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\App.tsx": {
+    "mtime": 1779796871.9442134,
+    "ast_hash": "ab6284cbb73348f92b566c45202e6990",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\main.tsx": {
+    "mtime": 1779630319.866801,
+    "ast_hash": "6c9286143ad33b2b92888894ff65a209",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\auth.test.ts": {
+    "mtime": 1779796871.9452128,
+    "ast_hash": "60fa3e64545e1e86a4f198dc5e0feaaa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\auth.ts": {
+    "mtime": 1779796871.9452128,
+    "ast_hash": "1a10591c2f626782efeb8da495b925f7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\client.test.ts": {
+    "mtime": 1779796871.9452128,
+    "ast_hash": "e4c13d2b33a66ad23351b4e9d1d69d21",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\client.ts": {
+    "mtime": 1779796871.9462135,
+    "ast_hash": "39fbf5e61542a47e6b808d4ce6e654da",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\items.ts": {
+    "mtime": 1779796871.9462135,
+    "ast_hash": "12604519cc3fe57db25ffa2e852bf906",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\lists.ts": {
+    "mtime": 1779651107.7512882,
+    "ast_hash": "c93a82d89c8898f5effeb56f28401b84",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\recommendations.test.ts": {
+    "mtime": 1779796871.9472153,
+    "ast_hash": "41b3ed202d32f395a81f9480a4450b9e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\recommendations.ts": {
+    "mtime": 1779796871.9472153,
+    "ast_hash": "a85380d78011b7a129baf1d896c6e2d2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\reviews.ts": {
+    "mtime": 1779651214.607016,
+    "ast_hash": "44f4033575d80a91bd19adfeb2976441",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\tmdbAdmin.ts": {
+    "mtime": 1779796871.948216,
+    "ast_hash": "cd10ce1814943646b4ac0a3d0b89a5f5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\api\\users.ts": {
+    "mtime": 1779796871.948216,
+    "ast_hash": "a8e6330c6569360842616f21660f9ad6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\ProtectedRoute.test.tsx": {
+    "mtime": 1779796871.948216,
+    "ast_hash": "e8cab4eafb596451b7b0b6c0ea04d7e0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\ProtectedRoute.tsx": {
+    "mtime": 1779796871.9492157,
+    "ast_hash": "b018618d4af52e0165af9f88eb2ae565",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\common\\Button.tsx": {
+    "mtime": 1779630319.8544364,
+    "ast_hash": "20629846ad6907ae9139c446937b5f54",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\common\\Card.tsx": {
+    "mtime": 1779630319.8554366,
+    "ast_hash": "55f9839aafba7e113b3401e0a06b5d92",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\common\\ErrorMessage.tsx": {
+    "mtime": 1779630319.8554366,
+    "ast_hash": "cfb2d1ca1a12412871ff0b8d018901a9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\common\\Input.tsx": {
+    "mtime": 1779630319.8554366,
+    "ast_hash": "bffe936f54ec15d80ebe2b835d9de844",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\common\\Loader.tsx": {
+    "mtime": 1779630319.8554366,
+    "ast_hash": "58ff98bb13bebd71d1f5b6d503e66f0b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\common\\Modal.tsx": {
+    "mtime": 1779630319.8584366,
+    "ast_hash": "be6e09d817b323915fee1b1c9e9d2de3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\common\\Rating.tsx": {
+    "mtime": 1779651422.2077446,
+    "ast_hash": "44a8c7e4509a46e6dfea4b6eb156fe46",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\features\\ItemCard.tsx": {
+    "mtime": 1779630319.8594341,
+    "ast_hash": "228dea7c4534f735fa8e7d52fe6603ff",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\features\\ItemGrid.tsx": {
+    "mtime": 1779630319.8594341,
+    "ast_hash": "171c8c89dbeaadc63579f20607df3770",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\features\\PaginationControls.test.tsx": {
+    "mtime": 1779796871.9492157,
+    "ast_hash": "5b18af1e4e4a445d7ae72387cba6f071",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\features\\PaginationControls.tsx": {
+    "mtime": 1779796871.950216,
+    "ast_hash": "4db0ec5b66f87d385eac265bf2210eb8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\features\\ReviewCard.tsx": {
+    "mtime": 1779651457.4898975,
+    "ast_hash": "176597f1e6294c654227009812e9b918",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\layout\\Footer.test.tsx": {
+    "mtime": 1779796871.950216,
+    "ast_hash": "be954e0e5b673595ec27a01a49579154",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\layout\\Footer.tsx": {
+    "mtime": 1779796871.950216,
+    "ast_hash": "180da4749b404e595d2264cea096ba0e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\layout\\Header.test.tsx": {
+    "mtime": 1779796871.951267,
+    "ast_hash": "2d22427b120a4f63b8aa6443177bb74b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\layout\\Header.tsx": {
+    "mtime": 1779796871.951267,
+    "ast_hash": "329582d914338b02f4dc4baf58429f60",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\components\\layout\\Layout.tsx": {
+    "mtime": 1779630319.862538,
+    "ast_hash": "903e6fa1d31903cbefe7fdb8a39b1961",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\contexts\\AuthContext.test.tsx": {
+    "mtime": 1779796871.9522324,
+    "ast_hash": "2905dea1fbc0a963236add90a042806c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\contexts\\AuthContext.tsx": {
+    "mtime": 1779796871.9522324,
+    "ast_hash": "5a731b5fb70f669e49dcaa10b9ee81e5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\hooks\\useAuth.ts": {
+    "mtime": 1779651356.7878652,
+    "ast_hash": "410c066ce873ca90fb6933e409a49f0d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\hooks\\useItems.ts": {
+    "mtime": 1779796871.9532318,
+    "ast_hash": "e48f34774df1e2ea0440cef670f91c10",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\hooks\\useLists.ts": {
+    "mtime": 1779651845.797255,
+    "ast_hash": "e06da89d2525a4ef4e9bb2b42b91e126",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\hooks\\useRecommendations.test.tsx": {
+    "mtime": 1779796871.9532318,
+    "ast_hash": "cdadb9eab2a790e13cf2d4fa4a6a435e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\hooks\\useRecommendations.ts": {
+    "mtime": 1779796871.9532318,
+    "ast_hash": "533aaf8ea38514af17f7d562330658bb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\hooks\\useReviews.ts": {
+    "mtime": 1779796871.9542322,
+    "ast_hash": "d8c68eaf02d8adf1bf4c3f08244d3f9a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\hooks\\useTmdbAdmin.ts": {
+    "mtime": 1779796871.9542322,
+    "ast_hash": "eb1e704a6bb73274465e7a2a7128626e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\hooks\\useUsers.ts": {
+    "mtime": 1779796871.9552324,
+    "ast_hash": "14aeea00a7ba47da086407578f7bf1cb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\AdminTmdb.test.tsx": {
+    "mtime": 1779796871.9552324,
+    "ast_hash": "5a6a6e0aa6bdcfa837eb80362ac048cd",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\AdminTmdb.tsx": {
+    "mtime": 1779796871.9562333,
+    "ast_hash": "7a69d1ddc1eda011b16496a99a13f0af",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\Home.test.tsx": {
+    "mtime": 1779796871.9562333,
+    "ast_hash": "3bf60c3eff13221766d1b87413ee9c1f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\Home.tsx": {
+    "mtime": 1779796871.9562333,
+    "ast_hash": "95686b46c4e27a82ecfc75f894e6fa27",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\ItemDetail.test.tsx": {
+    "mtime": 1779796871.957233,
+    "ast_hash": "cbf71096ce97f75cfbb706096e9d19ca",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\ItemDetail.tsx": {
+    "mtime": 1779796871.957233,
+    "ast_hash": "14a91bc9615bd84f106a15ad8d04a09c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\ListDetail.test.tsx": {
+    "mtime": 1779796871.9582326,
+    "ast_hash": "0ead1c6c542cb041b4336190377137f1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\ListDetail.tsx": {
+    "mtime": 1779796871.9582326,
+    "ast_hash": "010e1f4089e6ebaf4a57dc43e6bc233a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\MyLists.test.tsx": {
+    "mtime": 1779796871.9592323,
+    "ast_hash": "bd1b236cfdbd2317021198bb4ad450ed",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\MyLists.tsx": {
+    "mtime": 1779796871.9592323,
+    "ast_hash": "854aa80a53d8491636821d4fe6676f15",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\MyReviews.test.tsx": {
+    "mtime": 1779796871.9602315,
+    "ast_hash": "2f5025e991992a6e92517593422eae0e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\MyReviews.tsx": {
+    "mtime": 1779796871.9602315,
+    "ast_hash": "107cc4466cf687139d4e54fd609707e0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\NotFound.tsx": {
+    "mtime": 1779630319.869803,
+    "ast_hash": "8316c6fa29c8e13c303387fb4cc189bc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\Profile.test.tsx": {
+    "mtime": 1779796871.9612327,
+    "ast_hash": "4387b55ca721cb2e5e99c70532e31e49",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\Profile.tsx": {
+    "mtime": 1779796871.9612327,
+    "ast_hash": "fba507f24edaa31aa7f33fb3f19d1730",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\Recommendations.tsx": {
+    "mtime": 1779651565.7538633,
+    "ast_hash": "71fe836e24c14ecf10f58a1324e26c74",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\auth\\Login.test.tsx": {
+    "mtime": 1779796871.9622319,
+    "ast_hash": "4e219c9026632fa2c0b992733741a409",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\auth\\Login.tsx": {
+    "mtime": 1779796871.9622319,
+    "ast_hash": "5cefe15dfe3128a006d782c56d1b6ab1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\auth\\Register.test.tsx": {
+    "mtime": 1779796871.9622319,
+    "ast_hash": "12f08463ab9b7f6727bde473188d725e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\pages\\auth\\Register.tsx": {
+    "mtime": 1779796871.963232,
+    "ast_hash": "b9e7bf788589c7090c82b6f501eddfdd",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\test\\AppSmoke.test.tsx": {
+    "mtime": 1779796871.963232,
+    "ast_hash": "be8a2a80f11d843dac303eec6410940c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\test\\render.tsx": {
+    "mtime": 1779796871.9642286,
+    "ast_hash": "9bb1e4572b987253b07633e6194c5bcd",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\test\\setup.ts": {
+    "mtime": 1779796871.9642286,
+    "ast_hash": "5d1d2e0c08d371a038f78b4f4e64a6bc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\types\\api.ts": {
+    "mtime": 1779650977.5509543,
+    "ast_hash": "4ea5750a3db11cec291914129e579a1f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\types\\error.ts": {
+    "mtime": 1779630319.8738027,
+    "ast_hash": "7f530b032c1a8c5b329037140558a6be",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\types\\index.ts": {
+    "mtime": 1779796871.9642286,
+    "ast_hash": "53cf71b33c31b3957a8daaa43f86a62b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\types\\item.ts": {
+    "mtime": 1779651335.1629262,
+    "ast_hash": "2d7fb703a4c8166322e5363e2113a172",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\types\\list.ts": {
+    "mtime": 1779651045.1815162,
+    "ast_hash": "df1e37c52adefc7d6a0d7d4394066e24",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\types\\review.ts": {
+    "mtime": 1779651013.5025942,
+    "ast_hash": "8272c9cebf150b2869f0316abaf7ba48",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\types\\tmdb.ts": {
+    "mtime": 1779630319.8758025,
+    "ast_hash": "29919b3c8f07867cdc5a2abda06dfa83",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\types\\user.ts": {
+    "mtime": 1779796871.965232,
+    "ast_hash": "27ca34b815efb29237b7db36a9a07a1f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\utils\\formatters.ts": {
+    "mtime": 1779630319.8768008,
+    "ast_hash": "dae10ed204132d0c5a3e8c7003eef9f1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\src\\utils\\validators.ts": {
+    "mtime": 1779630319.8768008,
+    "ast_hash": "ea81fe3644b161deea6f72636f482cf0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\scripts\\cleanup.sh": {
+    "mtime": 1778806843.2278235,
+    "ast_hash": "c08a4f4ec2cb4a0d04202d1bd5b20424",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\scripts\\setup.sh": {
+    "mtime": 1778806843.2283845,
+    "ast_hash": "dedf8923614ddb6311789168e5ba0e38",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\TvLookerApplication.java": {
+    "mtime": 1778806843.229383,
+    "ast_hash": "cafe202393d373dec155a92edff52ae6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\ActorController.java": {
+    "mtime": 1779649454.940191,
+    "ast_hash": "9bc77cd0e7041888d49dde7b8e37322d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\AuthController.java": {
+    "mtime": 1779630319.8798027,
+    "ast_hash": "157ddbdac600a03c4d91eddfda79fd8f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\DirectorController.java": {
+    "mtime": 1779649462.828727,
+    "ast_hash": "36546a5e90291922516c949173071ad8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\GenreController.java": {
+    "mtime": 1778806843.231383,
+    "ast_hash": "dbe119a98acffd9a9fd0032dda531e3a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\InteractionController.java": {
+    "mtime": 1779649469.497189,
+    "ast_hash": "ed04398e2f3bf93561721e2e99b4df2c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\ItemController.java": {
+    "mtime": 1779796871.9678106,
+    "ast_hash": "7e899d51473fc6090bd5e0e9957fe004",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\ListFavoriteController.java": {
+    "mtime": 1779651879.4547234,
+    "ast_hash": "59e4724874a50c279684da77d65979af",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\RecommendationController.java": {
+    "mtime": 1778806843.2333858,
+    "ast_hash": "294b8cf34b569aa91f7ba8f012179684",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\ReviewController.java": {
+    "mtime": 1779651896.2780094,
+    "ast_hash": "152a055ccb23234e03ca745d450ed61a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\SelfProfileController.java": {
+    "mtime": 1779796871.9683306,
+    "ast_hash": "71ef04cbb98370334c116d1edecf43aa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\TmdbAdminController.java": {
+    "mtime": 1778806843.234382,
+    "ast_hash": "44b695489e32e4957a3d24ec359ab51d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\controller\\UserController.java": {
+    "mtime": 1779630319.8828025,
+    "ast_hash": "8bbcc59d08e7617979e7433ce8f2acfa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\mapper\\ActorItemMapper.java": {
+    "mtime": 1778806843.2353811,
+    "ast_hash": "7e21e52eee7d1c9851e2e4672ae635b7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\mapper\\DirectorMapper.java": {
+    "mtime": 1778806843.2363818,
+    "ast_hash": "8b2141bd1536a070c85e770a9bc315be",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\mapper\\GenreMapper.java": {
+    "mtime": 1778806843.2363818,
+    "ast_hash": "fff74c959b3d0b7da728b6a6075f9c47",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\mapper\\InteractionMapper.java": {
+    "mtime": 1778806843.2373831,
+    "ast_hash": "834fb451169d88333984b5536301b7ba",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\mapper\\ItemMapper.java": {
+    "mtime": 1779649483.1407022,
+    "ast_hash": "6cf7a6e3e3d85c3dc129a0511632fc4c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\mapper\\ListFavoriteMapper.java": {
+    "mtime": 1778806843.238381,
+    "ast_hash": "9f25cd7a16b84ae052fa94d1ac847ab5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\mapper\\PageMapper.java": {
+    "mtime": 1779651761.5556095,
+    "ast_hash": "34754c903f8b68392344226e1bcc2eab",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\mapper\\ReviewMapper.java": {
+    "mtime": 1778806843.2393816,
+    "ast_hash": "c36e3d606d82393f883f23dffa674f4b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\mapper\\UserMapper.java": {
+    "mtime": 1779796871.9693313,
+    "ast_hash": "683fe7181ed51c4ca5742c003a1d77c0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\CreateInteractionRequest.java": {
+    "mtime": 1778806843.2403848,
+    "ast_hash": "b975e27ab2edc1c39df1d759f064a24f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\CreateListFavoriteRequest.java": {
+    "mtime": 1778806843.2413828,
+    "ast_hash": "333ce95b31f312189a9b59415223b39e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\CreateReviewRequest.java": {
+    "mtime": 1778806843.2423825,
+    "ast_hash": "eee34b44384dc4e2d874894f368d09a8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\CreateUserRequest.java": {
+    "mtime": 1779630319.8838027,
+    "ast_hash": "cd902a3e857f3fda2401a2d9e33c9385",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\LoginRequest.java": {
+    "mtime": 1779630319.8848078,
+    "ast_hash": "97911ec53a4e0b699b7c3a243dc53173",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\RegisterRequest.java": {
+    "mtime": 1779630319.8848078,
+    "ast_hash": "3c155cac81c44a64c9eff6dfb580e282",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\UpdateInteractionRequest.java": {
+    "mtime": 1778806843.2433822,
+    "ast_hash": "9dae8f6e53ad6b2f3b3cc83797976017",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\UpdateListFavoriteRequest.java": {
+    "mtime": 1778806843.2443812,
+    "ast_hash": "1e58e7b8213309a8934d97686e33d081",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\UpdateReviewRequest.java": {
+    "mtime": 1778806843.2443812,
+    "ast_hash": "f01ed63116a95e80f6524437aff7e521",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\request\\UpdateUserRequest.java": {
+    "mtime": 1779630319.8848078,
+    "ast_hash": "e9210cde8f1a6089bf2e8276602776e3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\ActorItemResponse.java": {
+    "mtime": 1778806843.2463815,
+    "ast_hash": "e208de62407056cd195617ead7491477",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\ActorResponse.java": {
+    "mtime": 1778806843.2463815,
+    "ast_hash": "24b7ad0b5df646e1c932726423a03e6c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\AuthResponse.java": {
+    "mtime": 1779630319.8858027,
+    "ast_hash": "0f8b97a0fcc76aefbbd415d2ab46d681",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\DirectorResponse.java": {
+    "mtime": 1778806843.2473838,
+    "ast_hash": "12ca4717273bb49243a8942796fdddfb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\GenreResponse.java": {
+    "mtime": 1778806843.2483816,
+    "ast_hash": "d30ea2553234385ff8dba7df42eea701",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\InteractionResponse.java": {
+    "mtime": 1778806843.2483816,
+    "ast_hash": "216dadacb00442d4dc5d5ab431ed5f91",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\ItemResponse.java": {
+    "mtime": 1779649498.8033674,
+    "ast_hash": "97877e886ab538012bd33acb26ce7732",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\ListFavoriteResponse.java": {
+    "mtime": 1778806843.2503824,
+    "ast_hash": "fbd5133340ed794810feb6fcdbfe0900",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\PageResponse.java": {
+    "mtime": 1779651637.1674175,
+    "ast_hash": "8aca98813d3e0022e7f1391d96f53e4c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\RecommendationResponse.java": {
+    "mtime": 1778806843.251383,
+    "ast_hash": "5979593955afae572621589ba82486d1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\ReviewResponse.java": {
+    "mtime": 1778806843.251383,
+    "ast_hash": "3920099c7bae289db0efc5df36d52b07",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\TmdbOperationResponse.java": {
+    "mtime": 1778806843.2523818,
+    "ast_hash": "af367f22ea8b19b3842bd7a87ee808c5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\TmdbStatusResponse.java": {
+    "mtime": 1778806843.2523818,
+    "ast_hash": "c7a3fc9f829de97226c27222e874a810",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\dto\\response\\UserResponse.java": {
+    "mtime": 1779630319.8868024,
+    "ast_hash": "a7134c711080c0d7be5cd6707f7b1606",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\api\\exception\\GlobalExceptionHandler.java": {
+    "mtime": 1779630319.8868024,
+    "ast_hash": "6c455ce558f3a0caa3792da8953470c7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\config\\AsyncConfiguration.java": {
+    "mtime": 1779911573.8536587,
+    "ast_hash": "2e818e1191cd5e81ef3bf4ab981812be",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\config\\OpenApiConfig.java": {
+    "mtime": 1779630319.8868024,
+    "ast_hash": "075bcf607b6069268317e9dac2bab34c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\config\\RecommendationConfig.java": {
+    "mtime": 1779911627.7160172,
+    "ast_hash": "215dbd06162f8f0ebfb6da27b08f7d05",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\config\\SecurityConfig.java": {
+    "mtime": 1779651932.3895133,
+    "ast_hash": "7a8745613b6b257dd9d5d4af7660f758",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\config\\TmdbConfig.java": {
+    "mtime": 1779796871.9713302,
+    "ast_hash": "14fa5d2418e6c5f1cafb0b220ba9f97e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\data_structure\\ItemFeatureVector.java": {
+    "mtime": 1779796871.9713302,
+    "ast_hash": "a093a351c4dadde1ba86a21694c36697",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\data_structure\\ScoredItem.java": {
+    "mtime": 1778806843.262907,
+    "ast_hash": "c0ee8778db7bf2522d06560886c723ab",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\data_structure\\SVDFactors.java": {
+    "mtime": 1779796871.9723294,
+    "ast_hash": "c3f8c2edb8c12f0d18996e4a678c587e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\ActorNotFoundException.java": {
+    "mtime": 1778806843.2639067,
+    "ast_hash": "9115806ad94cd422743488d6a300c66b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\DirectorNotFoundException.java": {
+    "mtime": 1778806843.2639067,
+    "ast_hash": "d4c1857e94f4444e238f35b290b75e22",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\GenreNotFoundException.java": {
+    "mtime": 1778806843.2649074,
+    "ast_hash": "2f86a2bc0f10dfa60d4809f2a0366a79",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\InsufficientDataException.java": {
+    "mtime": 1778806843.2649074,
+    "ast_hash": "7574b72c05d067bd807fa991b126608b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\InteractionNotFoundException.java": {
+    "mtime": 1778806843.2659068,
+    "ast_hash": "cc131f7c1a71a77e5175ae3583cdc86e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\InvalidEngineConfigurationException.java": {
+    "mtime": 1778806843.2659068,
+    "ast_hash": "0f5f3308d9ed75f6434e471d5cc79f5a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\ItemNotFoundException.java": {
+    "mtime": 1778806843.2669055,
+    "ast_hash": "a1222d7e533c8ee67a8253aabfa4b16f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\ListFavoriteNotFoundException.java": {
+    "mtime": 1778806843.2679064,
+    "ast_hash": "c0a85d4526efdef89a6cba2dc222c4d3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\NoDataProviderException.java": {
+    "mtime": 1778806843.2679064,
+    "ast_hash": "a09e9cc8d3c610170797cb5c41febbeb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\NoRecommendationsAvailableException.java": {
+    "mtime": 1778806843.2679064,
+    "ast_hash": "ecc8fd0d8dd51f29d7b98ec942c85af2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\ReviewNotFoundException.java": {
+    "mtime": 1778806843.2689068,
+    "ast_hash": "103756815cca317fb2d3a696279873c1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\TmdbCollectionInProgressException.java": {
+    "mtime": 1778806843.2699084,
+    "ast_hash": "a1a2e9e276c917b0e5b73782e3d76dd3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\exception\\UserNotFoundException.java": {
+    "mtime": 1778806843.2699084,
+    "ast_hash": "7d5a794d6eab6d204516e7e3d1a0d727",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\dto\\Actor.java": {
+    "mtime": 1778806843.270907,
+    "ast_hash": "8ea03af806796b806b5bebc1bfc08992",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\dto\\ActorItem.java": {
+    "mtime": 1778806843.270907,
+    "ast_hash": "9a9cb17335343e66fb5c83eeadf6861c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\dto\\Director.java": {
+    "mtime": 1778806843.2719092,
+    "ast_hash": "2fc8334c4f531a999315792a596e55be",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\dto\\Genre.java": {
+    "mtime": 1778806843.2729094,
+    "ast_hash": "36c0597a50877e5316e4507b820adcf1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\dto\\Interaction.java": {
+    "mtime": 1778806843.2729094,
+    "ast_hash": "a9d1a3469a068655c1a7053d5e6aff3e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\dto\\Item.java": {
+    "mtime": 1778806843.2729094,
+    "ast_hash": "7793e607e25cb6e8231745a3fd7aa16f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\dto\\ListFavorite.java": {
+    "mtime": 1778806843.2739055,
+    "ast_hash": "341f1afd9a63d87a546d3e689a29410e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\dto\\Review.java": {
+    "mtime": 1778806843.2739055,
+    "ast_hash": "f595face5401bce428edf934b30de1bb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\dto\\User.java": {
+    "mtime": 1779630319.8889425,
+    "ast_hash": "30fdf0a554840a18eecdec3ba36fc54f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\ActorEntity.java": {
+    "mtime": 1778806843.2749052,
+    "ast_hash": "d3146c163738b9a7f03271e48eab1ac3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\ActorItemEntity.java": {
+    "mtime": 1778806843.2759075,
+    "ast_hash": "e85d3bce6e07fb85981849e89d7c85cd",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\DirectorEntity.java": {
+    "mtime": 1778806843.2769058,
+    "ast_hash": "60775d2433d9b407e52124a40803d8cc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\GenreEntity.java": {
+    "mtime": 1778806843.2769058,
+    "ast_hash": "63bad717e80ba7b27b814a6f038ba30c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\InteractionEntity.java": {
+    "mtime": 1778806843.2779062,
+    "ast_hash": "2352d8d695e1918c38e9774709a1f14c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\ItemEntity.java": {
+    "mtime": 1778806843.2789066,
+    "ast_hash": "d72ffc66b1d1711339113b82fa20396f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\ListFavoriteEntity.java": {
+    "mtime": 1778806843.2789066,
+    "ast_hash": "d92467c0f419f970ede64ca9617a893a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\ReviewEntity.java": {
+    "mtime": 1778806843.2799058,
+    "ast_hash": "a073f947f82421925e62536308c3248f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\UserEntity.java": {
+    "mtime": 1779630319.8889425,
+    "ast_hash": "775f29cf1bc2b01b0e71c31aaeec6c7a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\enums\\InteractionType.java": {
+    "mtime": 1778806843.2809064,
+    "ast_hash": "6f3662dde5ca6ca613e2f82bbe9de37d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\enums\\TmdbType.java": {
+    "mtime": 1778806843.2809064,
+    "ast_hash": "6d9b9e1fd11d673758f3e8f88c189840",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\enums\\UserAuthority.java": {
+    "mtime": 1779630319.8889425,
+    "ast_hash": "d2a03ac7759da1f2e51f17c75eeb594d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\mapper\\ActorEntityMapper.java": {
+    "mtime": 1778806843.2819052,
+    "ast_hash": "cc1fea69c125184b3293bd10ff87afda",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\mapper\\ActorItemEntityMapper.java": {
+    "mtime": 1778806843.2819052,
+    "ast_hash": "7383e235b6e07ebcb9a546c7160250b5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\mapper\\DirectorEntityMapper.java": {
+    "mtime": 1778806843.2829077,
+    "ast_hash": "4523b8c41df5db72b7041e75b750a069",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\mapper\\GenreEntityMapper.java": {
+    "mtime": 1778806843.2829077,
+    "ast_hash": "57d7aba9a5eae0edbf588d187bde6245",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\mapper\\InteractionEntityMapper.java": {
+    "mtime": 1778806843.2839074,
+    "ast_hash": "2b39b484b45d6cdd4921bb4c84ed3bbc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\mapper\\ItemEntityMapper.java": {
+    "mtime": 1778806843.2839074,
+    "ast_hash": "c55766401cefbfdde1da4087a1a2e486",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\mapper\\ListFavoriteEntityMapper.java": {
+    "mtime": 1779630319.8899443,
+    "ast_hash": "9e74f13a8bf2b91cbc63d15d356502a5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\mapper\\ReviewEntityMapper.java": {
+    "mtime": 1778806843.2849054,
+    "ast_hash": "6c289d960286829dc364c929511fbde8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\mapper\\UserEntityMapper.java": {
+    "mtime": 1779630319.8899443,
+    "ast_hash": "da0b46c0434f98cff634174671e40013",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\HybridRecommendationEngine.java": {
+    "mtime": 1779911736.9159877,
+    "ast_hash": "654e5bb5ad82ff167b3c487c20bced7b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\RecommendationEngine.java": {
+    "mtime": 1778806843.2869055,
+    "ast_hash": "4870a92eafd0a7defdf8be88796816cb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\DataPage.java": {
+    "mtime": 1779843864.5754406,
+    "ast_hash": "3412119e2b2bf2d53d43b31debde36bb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\DataProvider.java": {
+    "mtime": 1778806843.2869055,
+    "ast_hash": "292885c454a6baaa969671248c7625fe",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\RecommendationContext.java": {
+    "mtime": 1779911222.8746998,
+    "ast_hash": "cbcad1be92104375d0593cc4ac04e99f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\RecommendationDataGateway.java": {
+    "mtime": 1779843864.5854385,
+    "ast_hash": "75dad5b578bae1ec4bcbaab4f85096b5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\ItemFeatureVectorProvider.java": {
+    "mtime": 1779910137.48373,
+    "ast_hash": "e117cc5a0efcea86607d06ffd17856ee",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\ItemPopularityProvider.java": {
+    "mtime": 1779910137.4847293,
+    "ast_hash": "a5f90680c146ad177391418bc26410bf",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\MatrixFactorizationProvider.java": {
+    "mtime": 1779910137.4847293,
+    "ast_hash": "c98feb6d5250ac231ce73918094f11b4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\RatingAccumulator.java": {
+    "mtime": 1779910137.4857292,
+    "ast_hash": "ffb5dbd9e2fb54ba74aaf433184c0587",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\RatingMatrixBuilder.java": {
+    "mtime": 1779796871.975332,
+    "ast_hash": "ed468452ae778875136128d8ab50f5fd",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\SVDMatrixProcessor.java": {
+    "mtime": 1779796871.975332,
+    "ast_hash": "ba7ad031d8ad118e0e77184a953dca3e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\UserProfileProvider.java": {
+    "mtime": 1779910137.4867275,
+    "ast_hash": "48a4e8aa28f51b0b6f26ef22d61b5f4b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\strategy\\aggregation\\AggregationStrategy.java": {
+    "mtime": 1778806843.3129077,
+    "ast_hash": "c793fe7b3ab3116e4a1492f871a0d716",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\strategy\\aggregation\\ConstantConvexAggregation.java": {
+    "mtime": 1778806843.313907,
+    "ast_hash": "cfc8434995cf1c74c15e47bffdad40e1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\strategy\\aggregation\\RankingBasedAggregation.java": {
+    "mtime": 1779648797.672645,
+    "ast_hash": "4357c22bc88ab059d6fefadfc33720af",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\strategy\\recommendation\\ContentBasedStrategy.java": {
+    "mtime": 1779796871.97633,
+    "ast_hash": "01fecbcf543c27be9db55c6aed09c9c7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\strategy\\recommendation\\MatrixFactorizationStrategy.java": {
+    "mtime": 1779796871.9773297,
+    "ast_hash": "12557723243b108cd3a941c79a6d43c0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\strategy\\recommendation\\PopularityStrategy.java": {
+    "mtime": 1778806843.323905,
+    "ast_hash": "b9be1f4aa9d201b4ed460dc5dffcde09",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\strategy\\recommendation\\RecommendationStrategy.java": {
+    "mtime": 1778806843.323905,
+    "ast_hash": "9340c45c8dc89dfe7d5fc7ea9f3693fd",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\ActorItemRepository.java": {
+    "mtime": 1778806843.3249068,
+    "ast_hash": "46a576defece092c79e4de24e6ce91a6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\ActorRepository.java": {
+    "mtime": 1778806843.3249068,
+    "ast_hash": "0f09124783952775274978e345f6055e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\DirectorRepository.java": {
+    "mtime": 1778806843.3259068,
+    "ast_hash": "b6fd1f5731f2de58df8e68d7695870bb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\GenreRepository.java": {
+    "mtime": 1778806843.3259068,
+    "ast_hash": "700ee83f98547ab5a161a45c5d9d7b50",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\InteractionRepository.java": {
+    "mtime": 1779630319.8919425,
+    "ast_hash": "a64d71f817fc3505a890b7f1c8cde204",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\ItemRepository.java": {
+    "mtime": 1778806843.326907,
+    "ast_hash": "d665c79041cb89ef2957b589d2f163a5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\ListFavoriteRepository.java": {
+    "mtime": 1779651903.523668,
+    "ast_hash": "0eff13d9e0bdb8456621bd95adb45951",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\ReviewRepository.java": {
+    "mtime": 1779630319.892944,
+    "ast_hash": "e4db3d27b6343c8c4d49ffdba2afbf2d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\UserRepository.java": {
+    "mtime": 1779630319.892944,
+    "ast_hash": "c3bab905c3f0dab15eff15f12ee1d0d6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\TmdbClient.java": {
+    "mtime": 1778806843.329907,
+    "ast_hash": "cbd420d9cd59eb296ec3e0e331ad87fb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\TmdbMediaType.java": {
+    "mtime": 1778806843.330906,
+    "ast_hash": "36d4132165076a9181fdc6e72e679afc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbChangesDto.java": {
+    "mtime": 1778806843.330906,
+    "ast_hash": "c2f5b0ebf1356c9dee6e89954688f1be",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbCreditsDto.java": {
+    "mtime": 1778806843.3319056,
+    "ast_hash": "91c2620a1f3c2f17521f1a6334032e98",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbGenreDto.java": {
+    "mtime": 1778806843.332906,
+    "ast_hash": "1b48f6e0c9f75e60a0c3647da5a5e3b0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbGenreListDto.java": {
+    "mtime": 1778806843.332906,
+    "ast_hash": "39dc43172e677acc7cc0549aa4afc5a9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbMediaDetails.java": {
+    "mtime": 1778806843.3339067,
+    "ast_hash": "ebd33d007dc01c19cb3b57546ce5ab56",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbMediaItem.java": {
+    "mtime": 1778806843.3339067,
+    "ast_hash": "c8e411acb45d118d322a342c6e66bed5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbMovieDetailsDto.java": {
+    "mtime": 1778806843.334906,
+    "ast_hash": "e2802c7a15ee7e279a95eb995f98f23f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbMovieDto.java": {
+    "mtime": 1778806843.334906,
+    "ast_hash": "368bdfdcf4c332b23ab41eb199e6344e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbPagedResponseDto.java": {
+    "mtime": 1778806843.335906,
+    "ast_hash": "dc29b681a534695545f2526c9aed1950",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbTvShowDetailsDto.java": {
+    "mtime": 1778806843.335906,
+    "ast_hash": "85836a0521becf10f4778c627b750231",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\dto\\TmdbTvShowDto.java": {
+    "mtime": 1778806843.336906,
+    "ast_hash": "b3af13b676b0bc94fbb30d158f76de51",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\mapper\\TmdbCastMemberMapper.java": {
+    "mtime": 1778806843.337906,
+    "ast_hash": "7878c26728242ba9b138b9ef05c8f5cd",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\mapper\\TmdbGenreMapper.java": {
+    "mtime": 1778806843.337906,
+    "ast_hash": "9f7a19a92c0e7b47f4986ba62ec6e30b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\mapper\\TmdbItemBuilder.java": {
+    "mtime": 1778806843.337906,
+    "ast_hash": "b0843a7ca22a14531ea741a5c6618d5f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\mapper\\TmdbItemMapper.java": {
+    "mtime": 1778806843.338906,
+    "ast_hash": "3e1990464e9f9aec151e8d87f48c713f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\ActorService.java": {
+    "mtime": 1778806843.3399067,
+    "ast_hash": "60e417bff64c40193b189a18db0fb68b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\AuthService.java": {
+    "mtime": 1779630319.8939447,
+    "ast_hash": "aa58d6f8ae9a68766771a75c00b436df",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\DirectorService.java": {
+    "mtime": 1778806843.3399067,
+    "ast_hash": "7c9344ab58eca8dc21adffe0efc99036",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\GenreService.java": {
+    "mtime": 1778806843.340906,
+    "ast_hash": "d9e91dfd5860699160d3c8c2df11e547",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\InteractionService.java": {
+    "mtime": 1779651654.8451936,
+    "ast_hash": "5317478c3eb5fe4cc456c2675336e328",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\ItemService.java": {
+    "mtime": 1779910137.4867275,
+    "ast_hash": "9245bef5e5954526a407ff70b1fd067d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\JwtService.java": {
+    "mtime": 1779630319.8939447,
+    "ast_hash": "466f0e4ebed749eb86b33ab38e165fc0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\ListFavoriteService.java": {
+    "mtime": 1779630319.8949444,
+    "ast_hash": "f48a672adce5720bd5d3a91ef7db787b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\RecommendationDomainDataGateway.java": {
+    "mtime": 1779843999.6613586,
+    "ast_hash": "62201aa485af9bf5b715771d4d4e637f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\RecommendationService.java": {
+    "mtime": 1779911081.9285684,
+    "ast_hash": "63e1c596cbe620c6b994311e4fb0df49",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\ReviewService.java": {
+    "mtime": 1779651744.1010232,
+    "ast_hash": "bb5b3cc8f5d699fc6edc579921b22c5e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\UserService.java": {
+    "mtime": 1779651772.2692554,
+    "ast_hash": "984da030807340cb37c59d9e51987b5f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\tmdb\\EntityCacheService.java": {
+    "mtime": 1778806843.3459053,
+    "ast_hash": "a74742ddf9742dfd01395df7b8ab87fa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\tmdb\\EntitySaveHelper.java": {
+    "mtime": 1778806843.3459053,
+    "ast_hash": "2a46eae7229b896bd6dfd79549562d7a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbDataCollectorService.java": {
+    "mtime": 1779796871.9783292,
+    "ast_hash": "fbb582eba261ec8aa02277d5eabd2030",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbDataFetcher.java": {
+    "mtime": 1779796871.979331,
+    "ast_hash": "4da4815539eeb1bd93fc5243c6432eaa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbDataSynchronizerService.java": {
+    "mtime": 1779796871.979331,
+    "ast_hash": "a3feef9ec39638b1bedd8424bac275d9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbItemPersistenceService.java": {
+    "mtime": 1778806843.3479068,
+    "ast_hash": "9ceacd35d846e3fa7951225e23a5f09d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\utils\\AdminStartupUtil.java": {
+    "mtime": 1779630319.8969443,
+    "ast_hash": "cae722cf537b7b36847955539d7d7621",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\TvLookerApplicationTests.java": {
+    "mtime": 1778806843.3529074,
+    "ast_hash": "1a253c67c96fd75c6303199166fc011a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\ActorControllerTest.java": {
+    "mtime": 1778806843.3539052,
+    "ast_hash": "ef3de1880defd3e973705fae09df2c3b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\AuthControllerTest.java": {
+    "mtime": 1779630319.8979442,
+    "ast_hash": "43d94b9d21d15ee53a27f01b62388584",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\DirectorControllerTest.java": {
+    "mtime": 1778806843.3549047,
+    "ast_hash": "9a0135c772fa0554baa0399f393ac707",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\GenreControllerTest.java": {
+    "mtime": 1778806843.3549047,
+    "ast_hash": "5fb5b85e5ec7e7d7ba102cf93f4d5ef0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\InteractionControllerTest.java": {
+    "mtime": 1779630319.8989441,
+    "ast_hash": "9dbbce1f95572b27556a4390ee1ee534",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\ItemControllerTest.java": {
+    "mtime": 1779796871.9813287,
+    "ast_hash": "b92456d68d44a9a51a9c1637dcd6d6d7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\ListFavoriteControllerTest.java": {
+    "mtime": 1779651713.5758674,
+    "ast_hash": "3abc2641ade2821b35104cbc1daea716",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\RecommendationControllerTest.java": {
+    "mtime": 1778806843.3579068,
+    "ast_hash": "14391b08e20d81475e94a900c73a8aa0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\ReviewControllerTest.java": {
+    "mtime": 1779630319.8999422,
+    "ast_hash": "99b7d8234569031219121f4498e11ff8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\SecurityIntegrationTest.java": {
+    "mtime": 1779796871.9823296,
+    "ast_hash": "9a6956d46561b8e646254834832deb6f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\TmdbAdminControllerTest.java": {
+    "mtime": 1778806843.3590035,
+    "ast_hash": "e3e4c5e94bec8eb555f662897f9b5ab3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\api\\controller\\UserControllerTest.java": {
+    "mtime": 1779796871.983331,
+    "ast_hash": "c201fabfb24de2eb626b45f591de4872",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\config\\AsyncConfigurationTest.java": {
+    "mtime": 1779844662.0910559,
+    "ast_hash": "992eef56f0523ec0aca5e7318e987794",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\config\\RecommendationConfigTest.java": {
+    "mtime": 1779844676.905718,
+    "ast_hash": "2edba10d6d8366d6dcd2f51674555959",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\config\\SecurityConfigTest.java": {
+    "mtime": 1779630319.9009423,
+    "ast_hash": "4f76948732281c97e8a9083ec846f69d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\config\\TestTmdbSynchronizerConfig.java": {
+    "mtime": 1778806843.3600051,
+    "ast_hash": "e74a2bc76d40cb55aaef0c7d233a31d0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\data_structure\\ItemFeatureVectorTest.java": {
+    "mtime": 1779796871.9843318,
+    "ast_hash": "15dde8732753e66e0020b7c1d76caa4d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\model\\ReviewPersistenceTest.java": {
+    "mtime": 1779630319.9019442,
+    "ast_hash": "39e21c5c576ec35094765b810e37374f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\motor\\HybridRecommendationEngineTest.java": {
+    "mtime": 1779910137.4877286,
+    "ast_hash": "91df5feb3446120befc64758d333a8a4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\RecommendationContextTest.java": {
+    "mtime": 1779845009.0799499,
+    "ast_hash": "66396ec500dc31e4a6aaf8e2b1cb094a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\RecommendationDataGatewayTest.java": {
+    "mtime": 1779843864.5874403,
+    "ast_hash": "345336e6e755dc4b91941dc4bc68a4fa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\ItemFeatureVectorProviderTest.java": {
+    "mtime": 1779910137.4887297,
+    "ast_hash": "b491e2ffe6f96ca3942daa9ede19b25c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\ItemPopularityProviderTest.java": {
+    "mtime": 1779910137.4897313,
+    "ast_hash": "c3b2a21818fd19814d6eef75e09955c0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\MatrixFactorizationProviderTest.java": {
+    "mtime": 1779910137.490728,
+    "ast_hash": "e0f45a011d0779287de910d4b1ba5d0f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\RatingAccumulatorTest.java": {
+    "mtime": 1779910137.4917305,
+    "ast_hash": "dc2a54f965cdb1a46c019cb7064170fd",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\motor\\utils\\provider\\UserProfileProviderTest.java": {
+    "mtime": 1779910137.4917305,
+    "ast_hash": "4d3744ee39380a3d92cd25d66255f653",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\strategy\\aggregation\\ConstantConvexAggregationTest.java": {
+    "mtime": 1779910137.4927294,
+    "ast_hash": "b0b445458e64ed56a04768de9cb378b3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\strategy\\aggregation\\RankingBasedAggregationTest.java": {
+    "mtime": 1779648797.6731713,
+    "ast_hash": "9e4ad45526bba6b9bc9b4ac28818244d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\strategy\\recommendation\\ContentBasedStrategyTest.java": {
+    "mtime": 1779796871.987333,
+    "ast_hash": "23cb34696f3f51824ca992449cb303cc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\strategy\\recommendation\\MatrixFactorizationStrategyTest.java": {
+    "mtime": 1779796871.987333,
+    "ast_hash": "effc084b72f4d8faff23bc0b2e1a03f1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\domain\\strategy\\recommendation\\PopularityStrategyTest.java": {
+    "mtime": 1778806843.4180028,
+    "ast_hash": "fbcbd83b69f4a3e30fd3d7675f7bd5e0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\persistence\\repository\\ActorRepositoryTest.java": {
+    "mtime": 1778806843.419004,
+    "ast_hash": "a59ff6cc7dcfef25c4c2693674d62543",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\persistence\\repository\\DirectorRepositoryTest.java": {
+    "mtime": 1778806843.4200034,
+    "ast_hash": "124aee7cc1cbd8bc220c73ed0d7a08de",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\persistence\\repository\\GenreRepositoryTest.java": {
+    "mtime": 1778806843.4200034,
+    "ast_hash": "5eeb2811b420f94113faa42ca5431b29",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\persistence\\repository\\InteractionRepositoryTest.java": {
+    "mtime": 1779630319.9019442,
+    "ast_hash": "48308e89f3f4d5cacd51aaf7262fce11",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\persistence\\repository\\ItemRepositoryTest.java": {
+    "mtime": 1778806843.4220054,
+    "ast_hash": "29a6f217fffc4e4146294f9ee0611d2b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\persistence\\repository\\ListFavoriteRepositoryTest.java": {
+    "mtime": 1779630319.9029443,
+    "ast_hash": "cf1024787b76b7b8f93062973fe773ad",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\persistence\\repository\\ReviewRepositoryTest.java": {
+    "mtime": 1779630319.9029443,
+    "ast_hash": "1aa3065946e3e80e78bcdce6b9d0cb1c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\persistence\\repository\\UserRepositoryTest.java": {
+    "mtime": 1779630319.9039443,
+    "ast_hash": "424be1bc71239b4f2ed4807ee0b185d2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\ActorServiceTest.java": {
+    "mtime": 1778806843.427005,
+    "ast_hash": "6cb44b2bffb23a5650d775aa50ded7a9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\AuthServiceTest.java": {
+    "mtime": 1779630319.9039443,
+    "ast_hash": "5172bd0c8172cc21650d3d8e6ba54bc0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\DirectorServiceTest.java": {
+    "mtime": 1778806843.4280047,
+    "ast_hash": "100b8d9bf6bf9cb0256c49e7237e1642",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\GenreServiceTest.java": {
+    "mtime": 1778806843.4280047,
+    "ast_hash": "0bb1de1adf64189b66b9078844d4e339",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\InteractionServiceTest.java": {
+    "mtime": 1779651660.8301027,
+    "ast_hash": "9171dabc816d856d292191be8714bca1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\ItemServiceTest.java": {
+    "mtime": 1779910137.4937298,
+    "ast_hash": "7249f2e99591034c34800817db80550e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\JwtServiceTest.java": {
+    "mtime": 1779630319.9049442,
+    "ast_hash": "06298d7b31252e04f897bbba008c194d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\ListFavoriteServiceTest.java": {
+    "mtime": 1779651721.3138611,
+    "ast_hash": "9b6539bb3abe147aee2f32a2dc72e23e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\RecommendationDomainDataGatewayTest.java": {
+    "mtime": 1779844015.4737358,
+    "ast_hash": "a484c9b5b97da5279e0a459a56799d1a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\RecommendationServiceIntegrationTest.java": {
+    "mtime": 1779911354.4159446,
+    "ast_hash": "d055f95bb83a733dd341bb521580e163",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\RecommendationServiceTest.java": {
+    "mtime": 1779911152.7165082,
+    "ast_hash": "619633e2d11e5043dbadea3c84eecf59",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\ReviewServiceTest.java": {
+    "mtime": 1779630319.9069445,
+    "ast_hash": "df2bd432dd71ef0015adc305c75cc99c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\UserServiceTest.java": {
+    "mtime": 1779651784.2508478,
+    "ast_hash": "0ba9bf2025d099e6024b786963d7c070",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbCollectorExecutorStarvationTest.java": {
+    "mtime": 1779796871.9893308,
+    "ast_hash": "dd6649f7a87336c435987a38d3bf095d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbCollectorRealStressTest.java": {
+    "mtime": 1779796871.9893308,
+    "ast_hash": "4dc8607a52945da44f05eed4e321d555",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbDataCollectorLocalTest.java": {
+    "mtime": 1778806843.4405227,
+    "ast_hash": "e0bbcc50b5f5289755848b9e62463f45",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbDataCollectorServiceTest.java": {
+    "mtime": 1779796871.99033,
+    "ast_hash": "08e84646e423ed5e917d3a11f2a12d4c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbDataFetcherTest.java": {
+    "mtime": 1779796871.991331,
+    "ast_hash": "6b1153e1d9f15b6cd4d8e2e3a2414a13",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\TmdbDataSynchronizerServiceTest.java": {
+    "mtime": 1778806843.4425223,
+    "ast_hash": "38c9e4498b1e2d0f74087fc5aa86293f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\support\\TmdbAsyncTestSupport.java": {
+    "mtime": 1779796871.9923348,
+    "ast_hash": "eeda9f61c8a91534e2c6b26dbad7bd9d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\support\\TmdbBlockingCategory.java": {
+    "mtime": 1779796871.9923348,
+    "ast_hash": "df92a9fbd51fc9658b368ba777149c94",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\support\\TmdbDiagnosticsSnapshot.java": {
+    "mtime": 1779796871.9923348,
+    "ast_hash": "29442f2878705d7a04b75115aafdd638",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\support\\TmdbEvidenceWriter.java": {
+    "mtime": 1779796871.9933317,
+    "ast_hash": "b8811ab6633b6b9af46c78061377d5ee",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\support\\TmdbExecutorSnapshot.java": {
+    "mtime": 1779796871.9933317,
+    "ast_hash": "1c59c8d958e365cfc622169c921feb94",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\support\\TmdbFakeDtoFactory.java": {
+    "mtime": 1779796871.9943316,
+    "ast_hash": "f31c414b607966bb999dba2f7879fbe9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\support\\TmdbPhaseMetrics.java": {
+    "mtime": 1779796871.9943316,
+    "ast_hash": "321d6eea0bf3adfb99e8e204319d7147",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\service\\tmdb\\support\\TmdbThreadDumpSnapshot.java": {
+    "mtime": 1779796871.9953306,
+    "ast_hash": "c1832a84e5eff19d37dabbacc6d11b6b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\testutil\\TestDataFactory.java": {
+    "mtime": 1779911245.442011,
+    "ast_hash": "00ed9e11542c722be1c577aec607029a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\test\\java\\org\\tvl\\tvlooker\\utils\\AdminStartupUtilTest.java": {
+    "mtime": 1779630319.9079442,
+    "ast_hash": "4dc34dc3a9f2ffe368db59d90e9c117e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\AGENTS.md": {
+    "mtime": 1779827784.9268303,
+    "ast_hash": "81778fdaf069c4e30fa45fedb7be0c75",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docker-compose.yml": {
+    "mtime": 1778806763.9908612,
+    "ast_hash": "55d2006f33198bf60b9f306e5a88c3a2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\QUICKSTART.md": {
+    "mtime": 1778806763.984861,
+    "ast_hash": "b9abf141bdb6a012e9120ce1efcc4c6c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\README.md": {
+    "mtime": 1778806763.987861,
+    "ast_hash": "e8400da735df49d06b184fad3bcf0808",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\.github\\pull_request_template.md": {
+    "mtime": 1778806763.887344,
+    "ast_hash": "4226ec1a43aafc564f9ef5b135f47b8e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\.github\\ISSUE_TEMPLATE\\feature.md": {
+    "mtime": 1778806763.886344,
+    "ast_hash": "d7898baa38fea7cc35ec8f751a6cd867",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\.github\\workflows\\ci.yml": {
+    "mtime": 1778806763.887344,
+    "ast_hash": "717826e4479b618c1f38c9d0ef7a37d2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\.github\\workflows\\opencode.yml": {
+    "mtime": 1778806763.8888795,
+    "ast_hash": "8ce5cc66fa2adc405220551eb057b232",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\.github\\workflows\\pr-title.yml": {
+    "mtime": 1778806763.8888795,
+    "ast_hash": "93db37e941bc4d4898dab3671d1f6502",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-03-05-recommendation-engine-design.md": {
+    "mtime": 1778806764.0048609,
+    "ast_hash": "a58f19f7de2a50d548ad353f7d78ae9e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-03-06-recommendation-strategies-and-aggregations-design.md": {
+    "mtime": 1778806764.0068605,
+    "ast_hash": "4491bc7e766d052496b0ffdb288b9cdc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-03-09-service-layer-design.md": {
+    "mtime": 1778806764.0078619,
+    "ast_hash": "025ee6be39fcb898ba3ef03769393e41",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-03-10-tmdb-api-integration-design.md": {
+    "mtime": 1778806764.008862,
+    "ast_hash": "966a4cf1669f7d499aba6da6f50f8d9e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-03-14-rest-controller-design.md": {
+    "mtime": 1778806764.0108604,
+    "ast_hash": "065b8090094e35f77dda643480658b05",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-01-frontend-design.md": {
+    "mtime": 1779630319.8398414,
+    "ast_hash": "feff8f086b37fac03c2b5111bc8de047",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-03-tmdb-service-refactoring-design.md": {
+    "mtime": 1778806764.012862,
+    "ast_hash": "dbdba69ac6bd2d0fd74904a704ac9bfc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-05-mapper-cleanup-design.md": {
+    "mtime": 1778806764.0138621,
+    "ast_hash": "8af7f78d56d26f8abc81b49cbacdb702",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-05-persist-methods-refactoring-design.md": {
+    "mtime": 1778806764.0148616,
+    "ast_hash": "8933bef6ded2f6eeb1402a9bd8efebc5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-05-tmdb-client-refactoring-design.md": {
+    "mtime": 1778806764.015862,
+    "ast_hash": "78df000e12accf5db34ca8140b9ea798",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-05-tmdb-services-refactoring-design.md": {
+    "mtime": 1778806764.015862,
+    "ast_hash": "fb628f2c4f2953afd16fa19a8498e84d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-07-tmdb-services-testing-design.md": {
+    "mtime": 1778806764.0178604,
+    "ast_hash": "1466d785e9a01221e6201a3bf3fc7dda",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-17-pagination-design.md": {
+    "mtime": 1778806764.0188634,
+    "ast_hash": "dbed71eed120c1213bd7c0ee720e439c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-17-pagination-implementation.md": {
+    "mtime": 1778806764.0198605,
+    "ast_hash": "f2f96d6a172d978d3bd4a9202813cd54",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-18-pagination-all-controllers-design.md": {
+    "mtime": 1778806764.0198605,
+    "ast_hash": "c32af88ee157c8e79f1149700a2a4c04",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-18-pagination-all-controllers-implementation.md": {
+    "mtime": 1778806764.0208611,
+    "ast_hash": "2597b6771e48d1c5cabaa6cb4946ce71",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-04-19-ranking-based-aggregation-implementation.md": {
+    "mtime": 1779648797.644647,
+    "ast_hash": "88aa1026927584d2201714bf4cef3975",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-05-03-matrix-factorization-implementation.md": {
+    "mtime": 1779796871.9372141,
+    "ast_hash": "36c94684dacc08046055e038efc8b172",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\plans\\2026-05-08-content-based-strategy-implementation.md": {
+    "mtime": 1779796871.9382143,
+    "ast_hash": "30b4d05e2917a4a351d4ef60b3382d86",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\plans\\2026-04-01-frontend-implementation.md": {
+    "mtime": 1779651058.366781,
+    "ast_hash": "14380b96f4c0fa6264244f08e3073a36",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\plans\\2026-04-05-tmdb-client-refactoring-plan.md": {
+    "mtime": 1778806764.0248609,
+    "ast_hash": "3129c5baa0f52464f8d94afa87e26b3d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\plans\\2026-04-05-tmdb-services-refactoring-plan.md": {
+    "mtime": 1778806764.0258615,
+    "ast_hash": "03523f0b9b80da21c804c5b3bae03770",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\plans\\2026-04-30-jwt-authentication-implementation.md": {
+    "mtime": 1779630319.8443959,
+    "ast_hash": "c8786c2db4b6ce3347820a7b92cdae57",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\plans\\2026-05-24-frontend-admin-catalog-profile.md": {
+    "mtime": 1779796871.9382143,
+    "ast_hash": "96fdcde0b4de2feb7dce647cafa614ab",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\plans\\2026-05-26-recommendation-pipeline-async-pagination.md": {
+    "mtime": 1779843584.7402947,
+    "ast_hash": "606a94a08b7dbd85e6ab816cb16fb8df",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\specs\\2026-04-30-jwt-authentication-design.md": {
+    "mtime": 1779630319.845435,
+    "ast_hash": "618c16e80c313dda43e3adf069797127",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\specs\\2026-05-24-frontend-admin-catalog-profile-design.md": {
+    "mtime": 1779796871.9392142,
+    "ast_hash": "a9d68bc56b5f4fe8e5f2a04c7d218751",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\specs\\2026-05-26-recommendation-pipeline-async-pagination-design.md": {
+    "mtime": 1779830512.634652,
+    "ast_hash": "4ff5a31dc91c38846d4a61b7f180c92b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\AGENTS.md": {
+    "mtime": 1779796871.9402134,
+    "ast_hash": "21e308195013c6a45e71634b48974e87",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\index.html": {
+    "mtime": 1779630319.8474362,
+    "ast_hash": "6476060f7501da43ed2728f03f5d7faf",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\frontend\\README.md": {
+    "mtime": 1779630319.8474362,
+    "ast_hash": "2f193eca35123c34693c5354e10eab44",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\scripts\\README.md": {
+    "mtime": 1778806843.2268238,
+    "ast_hash": "43d7a1a3d32bd07f1b50484384933afe",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\motor\\AGENTS.md": {
+    "mtime": 1779630319.8909442,
+    "ast_hash": "2e7473eb0d8325168deeb6935692d558",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\tmdb\\AGENTS.md": {
+    "mtime": 1779630319.892944,
+    "ast_hash": "bfc947cc14c92e6007e99ff4ba31d6e6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\service\\tmdb\\AGENTS.md": {
+    "mtime": 1779630319.8969443,
+    "ast_hash": "8ba0162335b807c647bcdbe45c5654a4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\design\\Analisis_Sistemico.pdf": {
+    "mtime": 1778806763.9968615,
+    "ast_hash": "de129f4b8402cea9b6c79775c1f8a435",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\design\\reporte_MER.pdf": {
+    "mtime": 1778806764.0038612,
+    "ast_hash": "4ccf672a5fce12813836c303f019956b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\design\\Requerimientos_y_Arquitectura.pdf": {
+    "mtime": 1778806763.9988613,
+    "ast_hash": "e7388c76660f54816e56d3494782965b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\design\\diagramaFielAlMER.png": {
+    "mtime": 1778806763.9998603,
+    "ast_hash": "fd1096d216a6c631a8fb705c20d6fece",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\design\\diagramaMotorDeRecomendacion.png": {
+    "mtime": 1778806764.0018613,
+    "ast_hash": "3b31d4caf0c363f1f1668f4e7b645195",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\plans\\2026-05-27-recommendation-controller-e2e.md": {
+    "mtime": 1779895703.8169515,
+    "ast_hash": "5913bea2e51112224a888ac9aa0482df",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\specs\\2026-05-27-recommendation-controller-e2e-design.md": {
+    "mtime": 1779895156.387607,
+    "ast_hash": "d0b3f83313e13f4c6e99a26487788b0a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\domain\\model\\entity\\SavedRecommendationEntity.java": {
+    "mtime": 1779908339.8114653,
+    "ast_hash": "8cc3de62b1409f417adea10d76afac13",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\src\\main\\java\\org\\tvl\\tvlooker\\persistence\\repository\\SavedRecommendationRepository.java": {
+    "mtime": 1779910063.5716596,
+    "ast_hash": "bfe4eb2639be6cc1799bd8c43717df80",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\plans\\2026-05-27-saveable-recommendations.md": {
+    "mtime": 1779907978.9437065,
+    "ast_hash": "c8cf9961354dd1204a1a795cc36947b5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\CH3\\Documents\\GitHub\\tv-looker\\docs\\superpowers\\specs\\2026-05-27-saveable-recommendations-design.md": {
+    "mtime": 1779907627.433753,
+    "ast_hash": "4d3b3441bc848d79df88b564c882360d",
+    "semantic_hash": ""
+  }
+}

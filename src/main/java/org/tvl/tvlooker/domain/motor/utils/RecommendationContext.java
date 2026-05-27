@@ -34,6 +34,26 @@ public class RecommendationContext {
     @Builder.Default
     private Map<String, DataProvider<?>> dataProviders = new HashMap<>();
     /**
+     * The user recommendations are being generated for.
+     */
+    private User targetUser;
+    /**
+     * Page-aware data gateway for strategies that stream large datasets.
+     */
+    private RecommendationDataGateway dataGateway;
+    /**
+     * Number of candidate items fetched per gateway page.
+     */
+    private int candidatePageSize;
+    /**
+     * Number of representative records fetched per gateway page.
+     */
+    private int representativesPerPage;
+    /**
+     * Timeout budget for asynchronous recommendation work.
+     */
+    private long asyncTimeoutMillis;
+    /**
      * A list of users in the recommendation context.
      */
     private List<User> users;
@@ -102,7 +122,7 @@ public class RecommendationContext {
      * @return true if either users or items is not null, false otherwise.
      */
     public boolean checkDataNotNull(){
-        return users != null || items != null;
+        return users != null || items != null || dataGateway != null;
     }
 
     /**
